@@ -1,0 +1,15 @@
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Diarrhea/cdi_schubert/cdi_schubert_genus_table.tsv
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Diarrhea/cdi_vincent/cdi_vincent_genus_table.tsv
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Diarrhea/edd_singh/edd_singh_genus_table.tsv
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Diarrhea/dia_schneider/dia_schneider_genus.tsv
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Diarrhea/GEMS1/GEMS1_genus.tsv
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Diarrhea/cdi_schubert/cdi_schubert_metadata.tsv
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Diarrhea/cdi_vincent/cdi_vincent_metadata.tsv
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Diarrhea/dia_schneider/dia_schneider_metadata.tsv
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Diarrhea/edd_singh/edd_singh_metadata.tsv
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Diarrhea/GEMS1/GEMS1_metadata.tsv
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Diarrhea/cdi_schubert/Genus_filt
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Diarrhea/cdi_vincent/Genus_filt
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Diarrhea/dia_schneider/Genus_filt
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Diarrhea/edd_singh/Genus_filt
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Diarrhea/GEMS1/Genus_filt

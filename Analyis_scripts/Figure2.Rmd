@@ -1,0 +1,235 @@
+---
+title: "Figure2"
+author: "Jacob T. Nearing"
+date: "1/7/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#libraries
+library(ggplot2)
+library(ggridges)
+library(cowplot)
+library(pheatmap)
+```
+
+
+#Load in data
+```{r}
+filt_results <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/Filt_results.RDS")
+unfilt_results <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/Unfilt_results.RDS")
+
+unfilt_study_tab  <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/unfilt_study_tab.RDS")
+filt_study_tab <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/filt_study_tab.RDS")
+
+```
+
+#Consistentcy Analysis
+```{r}
+## Pull out P-values from each
+Adj_p_tabs_filt <- list()
+
+for(study in names(filt_results)){
+  
+  Adj_p_tabs_filt[[study]] <- filt_results[[study]]$adjP_table
+  
+  
+}
+
+Adj_p_all_filt <- do.call(rbind, Adj_p_tabs_filt)
+### okay next thing we need to do is set sig hits to 2 and non-sig hits to 0
+## remeber the sig hits for ancom were coded as 0 so we need to account for this.
+Adj_p_all_filt[Adj_p_all_filt < 0.05] <- 2
+
+Adj_p_all_filt[Adj_p_all_filt != 2] <- 0
+#now we set 2 to =1
+Adj_p_all_filt[Adj_p_all_filt==2] <- 1
+
+### okay now for each feature we need to get its row sum
+Feature_sig_count_filt <- rowSums(Adj_p_all_filt, na.rm=T)
+
+
+### same as above but with unfiltered data
+Adj_p_tabs_unfilt <- list()
+
+for(study in names(unfilt_results)){
+  
+  Adj_p_tabs_unfilt[[study]] <- unfilt_results[[study]]$adjP_table
+  
+}
+
+### remove dataset that Aldex2 didn't work on
+### Either that or just set that column to NA... HMMMM
+### I think for now we will just remove that dataset
+No_FreshWater_Adj_p_tabs_unfilt <- Adj_p_tabs_unfilt
+No_FreshWater_Adj_p_tabs_unfilt[[2]] <- NULL
+
+Adj_p_all_unfilt <- do.call(rbind, No_FreshWater_Adj_p_tabs_unfilt)
+
+Adj_p_all_unfilt[Adj_p_all_unfilt < 0.05] <- 2
+Adj_p_all_unfilt[Adj_p_all_unfilt != 2] <- 0
+Adj_p_all_unfilt[Adj_p_all_unfilt==2] <- 1
+
+
+Feature_sig_count_unfilt <- rowSums(Adj_p_all_unfilt, na.rm=T)
+
+
+
+
+### okay now we need to characteris each tool... We can add a row to the p value table with the "Type of Significant feature it is"
+## Okay now we go through the dataframe and replace the significant hit numbers (1) with the number of hits that feature has...
+
+Feature_count_tab_filt <- Adj_p_all_filt
+### first we need to set NA to 0 and then remove any rows that sum to 0
+Feature_count_tab_filt[is.na(Feature_count_tab_filt)] <- 0
+row_to_remove <- which(rowSums(Feature_count_tab_filt)==0)
+
+Feature_count_tab_filt <- Feature_count_tab_filt[-row_to_remove, ]
+
+
+### next we need go through ASV and set its score in the column if it was found by that tool.
+#for(row_num in 1:length(rownames(Feature_count_tab_filt))){
+#  
+#  row_name <- rownames(Feature_count_tab_filt)[row_num]
+#  Score_for_that_row <- Feature_sig_count_filt[row_name]
+#  
+#  for(j in 1:length(colnames(Feature_count_tab_filt))){
+#    if(is.na(Feature_count_tab_filt[row_num, j])){
+#      
+#    }else if(Feature_count_tab_filt[row_num, j] == 1){
+#      Feature_count_tab_filt[row_num, j] <- Score_for_that_row
+#    }
+#  }
+#}
+  
+#saveRDS(Feature_count_tab_filt, "~/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_filt.RDS")
+Feature_count_tab_filt <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_filt.RDS")
+
+
+### get in ggplot format.
+## for now we will remove NAs
+plot_info_barplot <- reshape2::melt(Feature_count_tab_filt, na.rm=T)
+### remove any with 0 which represents a feature that was significant by one tool but not found by that tool...
+remove_row <- which(plot_info_barplot$value==0)
+no_zero <- plot_info_barplot[-remove_row,]
+
+
+feat_sum_filt <- Feature_count_tab_filt
+feat_sum_filt[feat_sum_filt > 0] <- 1
+Tool_total_feats_found <- as.data.frame(colSums(feat_sum_filt))
+
+colnames(Tool_total_feats_found) <- "Total Sig Hits"
+
+
+Tool_total_feats_found <- data.frame(Tool_total_feats_found)
+Tool_total_feats_found$variable <- rownames(Tool_total_feats_found)
+
+merged_no_zero_filt <- dplyr::inner_join(no_zero, Tool_total_feats_found)
+colnames(merged_no_zero_filt)[3] <- "total_hits"
+
+
+
+### Unfilt data now!
+#Feature_count_tab_unfilt <- Adj_p_all_unfilt
+#set NAs to 0 b/c the tool didn't find them.1
+#Feature_count_tab_unfilt[is.na(Feature_count_tab_unfilt)] <- 0
+#remove rows that sum to 0
+#remove_rows <- which(rowSums(Feature_count_tab_unfilt)==0)
+
+#Feature_count_tab_unfilt <- Feature_count_tab_unfilt[-remove_rows,]
+
+
+#for(row_num in 1:length(rownames(Feature_count_tab_unfilt))){
+#  
+#  row_name <- rownames(Feature_count_tab_unfilt)[row_num]
+#  Score_for_that_row <- Feature_sig_count_unfilt[row_name]
+#  
+#  for(j in 1:length(colnames(Feature_count_tab_unfilt))){
+#    if(is.na(Feature_count_tab_unfilt[row_num, j])){
+#      
+#    }else if(Feature_count_tab_unfilt[row_num, j] == 1){
+#      Feature_count_tab_unfilt[row_num, j] <- Score_for_that_row
+#    }
+#  }
+#}
+
+#saveRDS(Feature_count_tab_unfilt, file="~/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_unfilt.RDS")
+Feature_count_tab_unfilt <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_unfilt.RDS")
+plot_info_barplot_unfilt <- reshape2::melt(Feature_count_tab_unfilt, na.rm=T)
+remove_row <- which(plot_info_barplot_unfilt$value==0)
+no_zero_unfilt <- plot_info_barplot_unfilt[-remove_row,]
+
+
+feat_sum_unfilt <- Feature_count_tab_unfilt
+feat_sum_unfilt[feat_sum_unfilt > 0 ] <- 1
+Tool_total_feats_found_unfilt <- as.data.frame(colSums(feat_sum_unfilt))
+Tool_total_feats_found_unfilt$variable <- rownames(Tool_total_feats_found_unfilt)
+
+merged_no_zero_unfilt <- dplyr::inner_join(no_zero_unfilt, Tool_total_feats_found_unfilt)
+colnames(merged_no_zero_unfilt)[3] <- "total_hits"
+merged_no_zero_unfilt$log_total_hits <- log(merged_no_zero_unfilt$total_hits)
+
+### change name of variables for plotting.
+tool_names <- names(table(merged_no_zero_unfilt$variable))
+tool_names <- c(aldex2="ALDEx2", ancom="ANCOM", corncob="Corncob", deseq2="DESeq2", edger="edgeR", lefse="LEfSe", 
+                limma_voom_TMM="Limma Voom TMM", limma_voom_TMMwsp="Limma Voom TMMwsp", maaslin2="MaAsLin2",
+                maaslin2rare="MaAsLin2 Rarified", metagenomeSeq="metagenomeSeq", ttestrare="T-test Rarified", 
+                wilcoxonclr="Wilcoxon CLR", wilcoxonrare="Wilcoxon Rarified")
+
+merged_no_zero_unfilt$clean_variable <- tool_names[merged_no_zero_unfilt$variable]
+merged_no_zero_filt$clean_variable <- tool_names[merged_no_zero_filt$variable]
+
+
+### need to make a new data.frame that has the total counts for each tool and each value
+test <- reshape2::dcast(merged_no_zero_filt, variable ~ value)
+## convert to R.A
+test_RA2 <- test
+test_RA2[,-1] <- sweep(test_RA2[,-1], 1, rowSums(test_RA2[,-1]), '/')*100
+
+
+
+test_melt <- reshape2::melt(test_RA2)
+colnames(test_melt) <- c("variable", "Score", "value")
+test_melt$Method_clean <- tool_names[test_melt$variable]
+
+test_join <- dplyr::inner_join(test_melt, Tool_total_feats_found)
+colnames(test_join)[5] <- "Total_Hits"
+
+Filt_bars <- ggplot(test_join, aes(x=as.numeric(Score), y=value, width=1, fill=Total_Hits)) + geom_bar(stat="identity") +
+  xlab("Consistency Score") + ylab("") + ggtitle("Filtered") + 
+  facet_grid(rows=vars(Method_clean), switch='y') + theme_classic() + 
+  scale_y_continuous(position = "right") + 
+  theme(strip.text.y.left = element_text(angle=0), strip.background = element_blank()) +scale_x_continuous(breaks=c(1:14), expand=c(0,0)) +
+  theme(text=element_text(size=16)) + guides(fill=guide_legend(title="Total Hits"))
+
+Filt_bars
+
+## now unfilt
+unfilt_bars_data <- reshape2::dcast(merged_no_zero_unfilt, variable ~ value)
+unfilt_bars_data_RA <- unfilt_bars_data
+unfilt_bars_data_RA[,-1] <- sweep(unfilt_bars_data_RA[,-1], 1, rowSums(unfilt_bars_data_RA[,-1]), '/')*100
+
+unfilt_bars_data_melt <- reshape2::melt(unfilt_bars_data_RA)
+colnames(unfilt_bars_data_melt) <- c("variable", "Score", "value")
+unfilt_bars_data_melt$Method_clean <- tool_names[unfilt_bars_data_melt$variable]
+unfilt_bars_data_join <- dplyr::inner_join(unfilt_bars_data_melt, Tool_total_feats_found_unfilt)
+colnames(unfilt_bars_data_join)[5] <- "Total_Hits"
+
+Unfilt_bars <- ggplot(unfilt_bars_data_join, aes(x=as.numeric(Score), y=value, width=1, fill=Total_Hits)) + geom_bar(stat="identity") +
+  xlab("Consistency Score") + ylab("") + ggtitle("Unfiltered") + 
+  facet_grid(rows=vars(Method_clean), switch='y') + theme_classic() + 
+  scale_y_continuous(position = "right") + 
+  theme(strip.text.y.left = element_text(angle=0), strip.background = element_blank()) +scale_x_continuous(breaks=c(1:14), expand=c(0,0)) +
+  theme(text=element_text(size=16)) + guides(fill=guide_legend(title="Total Hits"))
+
+Unfilt_bars
+
+## need to scale the data to relative abundances...
+## new figure2
+
+Figure2 <- plot_grid(Unfilt_bars, Filt_bars, labels=c("A", "B"), nrow=1)
+Figure2
+
+```

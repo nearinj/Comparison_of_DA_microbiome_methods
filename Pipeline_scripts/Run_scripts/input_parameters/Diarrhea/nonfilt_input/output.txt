@@ -1,0 +1,5 @@
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Diarrhea/cdi_schubert/Genus_no_filt
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Diarrhea/cdi_vincent/Genus_no_filt
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Diarrhea/dia_schneider/Genus_no_filt
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Diarrhea/edd_singh/Genus_no_filt
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Diarrhea/GEMS1/Genus_no_filt

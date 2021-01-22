@@ -1,0 +1,9 @@
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Obesity/baxter/obesity_baxter_genera_metadata_rare.tsv
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Obesity/goodrich/ob_goodrich_genus_table_rare.tsv
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Obesity/HMP/obesity_HMP_genera_metadata_rare.tsv
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Obesity/ross/ob_ross_genus_table_rare.tsv
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Obesity/schubert/obesity_schubert_genera_metadata_rare.tsv
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Obesity/turnbaugh/ob_turnbaugh_genus_table_rare.tsv
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Obesity/zeevi/obesity_zeevi_genera_metadata_rare.tsv
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Obesity/zhu/ob_zhu_genus_table_rare.tsv
+/home/jacob/projects/Hackathon/Testing_Bias_robustness/Obesity/zupancic/ob_zupancic_genus_table_rare.tsv

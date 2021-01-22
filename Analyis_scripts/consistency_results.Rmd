@@ -1,0 +1,300 @@
+---
+title: "Differential abundance genus consistency results"
+author: "Gavin Douglas"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output:
+  html_document:
+    code_folding: hide
+    theme: cerulean
+    toc: true
+    toc_float: true
+---
+
+# Introduction
+
+This R notebook contains the analysis code and results for the genus-level consistency part of our project. The goal with these analyses was to determine whether there was a difference in how consistently tools identified significant genera across different case-control datasets. We considered two sets of case-control datasets: a set of obesity and a set of diarrhea datasets. **There are numerous technical and biological factors that differ across these datasets that could drive differences in which genera are significant.** Accordingly, it's important to appreciate that it's not necessarily surprising if the results do not agree well across studies or not: we simply do not have enough data to figure out what factors are driving the differences. Rather, in this case, we are interested only in which tools are **most** consistent. In this way we believe it is a fair comparison: **all of the tools may have low consistency, but we can compare how inconsistent they are relative to one another**.
+
+**In terms of actual results included in the manuscript, the final tables written out will likely be included. These tables correspond to KS-test results of comparing distributions of how consistently genera were called across datasets compared to how consistent they are expected to be by chance.**
+
+# Read in result files
+
+The results shown in this file are based on tables output by other Rscripts (which originally were called `prep_obesity_consistency.R` and `prep_diarrhea_consistency.R`). These Rscripts output the results as RDS files, which can now be read in.
+
+```{r setup, message=FALSE}
+library(ape)
+library(ComplexHeatmap)
+library(pheatmap)
+library(cowplot)
+library(ggplot2)
+library(ggridges)
+library(knitr)
+library(kableExtra)
+library(reshape2)
+library(rowr)
+library(tidyverse)
+library(vegan)
+
+
+theme_set(theme_classic())
+
+
+```
+
+```{r read_RDS}
+diarrhea_outputs_binary_clean_combined <- readRDS(file =                                           "~/GitHub_Repos/Hackathon_testing/Data/diarrhea_outputs_binary_clean_combined.rds")
+
+diarrhea_combined_overlap <- readRDS(file ="~/GitHub_Repos/Hackathon_testing/Data/diarrhea_combined_overlap.rds")
+
+obesity_outputs_binary_clean_combined <- readRDS(file = "~/GitHub_Repos/Hackathon_testing/Data/obesity_outputs_binary_clean_combined.rds")
+
+obesity_combined_overlap <- readRDS(file = "~/GitHub_Repos/Hackathon_testing/Data/obesity_combined_overlap.rds")
+
+```
+
+
+# Pricipal Coordinates Analyses {.tabset}
+
+One basic way to compare how consistent the tools are is to create PCoAs based on the binary distance between each study/tool combination. This will tell us if the results cluster by dataset or by tool. More specifically, the PCoAs are based on the Jaccard distances between each study/tool combination where 1 is a significant genus and 0 is a non-significant (or NA) genus.
+
+In the below plots the shapes indicate different datasets and the colours indicate different tools. Overall the results cluster by dataset, which is somewhat reassuring.
+
+
+## Diarrhea PCoA
+
+```{r diarrhea_jaccard_PCoA}
+
+diarrhea_combined_jaccard <- vegdist(t(diarrhea_outputs_binary_clean_combined),  method = "jaccard")
+
+# Jaccard distance of two vectors that are all zeros is undefined so set it at 1.
+diarrhea_combined_jaccard[is.na(diarrhea_combined_jaccard)] <- 1
+
+diarrhea_combined_jaccard_PCOA <- pcoa(diarrhea_combined_jaccard)
+
+diarrhea_combined_jaccard_PCOA$values$Axis <- 1:nrow(diarrhea_combined_jaccard_PCOA$values)
+
+diarrhea_combined_jaccard_PCOA_df <- data.frame(diarrhea_combined_jaccard_PCOA$vectors)
+
+diarrhea_combined_jaccard_PCOA_df$Dataset <- gsub("\\..*$", "", rownames(diarrhea_combined_jaccard_PCOA_df))
+diarrhea_combined_jaccard_PCOA_df$Tool <- gsub("^.*\\.", "", rownames(diarrhea_combined_jaccard_PCOA_df))
+
+scree_plot <- ggplot(head(diarrhea_combined_jaccard_PCOA$values, 10), aes(y=Relative_eig, x=Axis)) +
+  geom_bar(stat="identity", position="dodge") +
+  ylab("Relative eigenvalue")
+axis_1_vs_2 <- ggplot(diarrhea_combined_jaccard_PCOA_df, aes(x=Axis.1, y=Axis.2, colour=Tool, shape=Dataset)) + geom_point(size=4) + theme(legend.position = "none")
+
+plot_grid(scree_plot, axis_1_vs_2, labels=c('a', 'b'), nrow=1, ncol=2)
+
+```
+
+## Obesity PCoA
+
+```{r obesity_jaccard_PCoA}
+
+obesity_combined_jaccard <- vegdist(t(obesity_outputs_binary_clean_combined),  method = "jaccard")
+
+# Jaccard distance of two vectors that are all zeros is undefined so set it at 1.
+obesity_combined_jaccard[is.na(obesity_combined_jaccard)] <- 1
+
+obesity_combined_jaccard_PCOA <- pcoa(obesity_combined_jaccard)
+
+obesity_combined_jaccard_PCOA$values$Axis <- 1:nrow(obesity_combined_jaccard_PCOA$values)
+
+obesity_combined_jaccard_PCOA_df <- data.frame(obesity_combined_jaccard_PCOA$vectors)
+
+obesity_combined_jaccard_PCOA_df$Dataset <- gsub("\\..*$", "", rownames(obesity_combined_jaccard_PCOA_df))
+obesity_combined_jaccard_PCOA_df$Tool <- gsub("^.*\\.", "", rownames(obesity_combined_jaccard_PCOA_df))
+
+scree_plot <- ggplot(head(obesity_combined_jaccard_PCOA$values, 10), aes(y=Relative_eig, x=Axis)) +
+  geom_bar(stat="identity", position="dodge") +
+  ylab("Relative eigenvalue")
+axis_1_vs_2 <- ggplot(obesity_combined_jaccard_PCOA_df, aes(x=Axis.1, y=Axis.2, colour=Tool, shape=Dataset)) + geom_point(size=4) + theme(legend.position = "none")
+axis_1_vs_3 <- ggplot(obesity_combined_jaccard_PCOA_df, aes(x=Axis.1, y=Axis.3, colour=Tool, shape=Dataset)) + geom_point(size=4) + theme(legend.position = "none")
+axis_2_vs_3 <- ggplot(obesity_combined_jaccard_PCOA_df, aes(x=Axis.2, y=Axis.3, colour=Tool, shape=Dataset)) + geom_point(size=4) + theme(legend.position = "none")
+
+plot_grid(scree_plot, axis_1_vs_2, axis_1_vs_3, axis_2_vs_3, labels=c('a', 'b', 'c', 'd'), nrow=2, ncol=2)
+
+```
+
+
+
+
+# Raw consistency plots {.tabset}
+Unsurprisingly the tools cluster by dataset in the above PCoAs, but we're mainly interested in which tools yield reproducible insights across datasets. There are many reasons why there would not be reproducible signals besides issues with the DA tools, so it's not surprising that there is little consistency. **We just care about which tools are the most consistent overall (even if still they aren't very consistent)**.
+
+The raw consistency plots aren't very useful because the tools vary a lot in terms of how many significant features in general they identify. Nevertheless it can be useful to take a look at the distributions to just get a base-line, but remember that it's not fair to compare these raw values between tools. Instead they need to be compared to the correct null expectation for each tool, which is presented in the next section.
+
+## Diarrhea - raw consistency
+
+```{r diarrhea_raw_consistency}
+  ### Get counts of how many datasets overlap for each tool for each significant genera
+  
+  diarrhea_outputs_binary_clean_summed <- diarrhea_combined_overlap[, grep("observed", colnames(diarrhea_combined_overlap))]
+
+  diarrhea_outputs_binary_clean_summed <- diarrhea_outputs_binary_clean_summed[-which(rowSums(is.na(diarrhea_outputs_binary_clean_summed)) == ncol(diarrhea_outputs_binary_clean_summed)), ]
+
+  colnames(diarrhea_outputs_binary_clean_summed) <- gsub(".observed", "", colnames(diarrhea_outputs_binary_clean_summed))
+  
+  diarrhea_outputs_binary_clean_summed_melt <- melt(diarrhea_outputs_binary_clean_summed)
+  
+  diarrhea_outputs_binary_clean_summed_melt[which(diarrhea_outputs_binary_clean_summed_melt$value == 0), "value"] <- NA
+  
+  ggplot(data=diarrhea_outputs_binary_clean_summed_melt, aes(x=variable, y=value)) + geom_violin() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+```
+
+
+## Obesity - raw consistency
+
+```{r obesity_raw_consistency}
+  ### Get counts of how many datasets overlap for each tool for each significant genera
+  
+  obesity_outputs_binary_clean_summed <- obesity_combined_overlap[, grep("observed", colnames(obesity_combined_overlap))]
+
+  obesity_outputs_binary_clean_summed <- obesity_outputs_binary_clean_summed[-which(rowSums(is.na(obesity_outputs_binary_clean_summed)) == ncol(obesity_outputs_binary_clean_summed)), ]
+
+  colnames(obesity_outputs_binary_clean_summed) <- gsub(".observed", "", colnames(obesity_outputs_binary_clean_summed))
+  
+  obesity_outputs_binary_clean_summed_melt <- melt(obesity_outputs_binary_clean_summed)
+  
+  obesity_outputs_binary_clean_summed_melt[which(obesity_outputs_binary_clean_summed_melt$value == 0), "value"] <- NA
+  
+  ggplot(data=obesity_outputs_binary_clean_summed_melt, aes(x=variable, y=value)) + geom_violin() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+```
+
+
+# Comparing consistencies with tool expectations {.tabset}
+
+As mentioned above, the per-tool consistencies need to be to the null expectation for each tool. These null expectations were generated based on distributions of how many features would be expected to overlap if they were randomly sampled. The probability of sampling for each dataset / tool was given by the (# of significant genera) / (# total genera) for that dataset and tool.
+
+Below are the results for each set of datasets - first as ridge plots, which enable the observed and expected consistency for each tool to be compared (in alternating colours for each tool) followed by Kolmogorov–Smirnov test results based on comparing the observed and expected distributions for each tool.
+
+
+
+## Diarrhea - observed vs expected results {.tabset}
+
+### Histograms
+
+```{r diarrhea_observed_vs_expected_hist}
+  diarrhea_combined_overlap_melt <- melt(diarrhea_combined_overlap)
+  diarrhea_combined_overlap_melt$raw_tool <- factor(gsub("\\..*$", "", diarrhea_combined_overlap_melt$variable))
+  
+  ggplot(data=diarrhea_combined_overlap_melt, aes(y=variable, x=value, fill=raw_tool)) +
+    scale_fill_manual(values=rep(x=c("black", "grey"), 7)) +
+    geom_density_ridges(scale=4) +
+    ylab("Distribution source") +
+    xlab("Number of studies a genus is significant in") +
+    theme(legend.position = "none")
+  
+  
+  
+  ### of only aldex2 and lefes
+  
+  aldex_lefse_df <- diarrhea_combined_overlap[,c(1,2,11,12)]
+  aldex_lefse_df_melt <- melt(aldex_lefse_df)
+  aldex_lefse_df_melt$raw_tool <- factor(gsub("\\..*$", "", aldex_lefse_df_melt$variable))
+  
+  ggplot(data=aldex_lefse_df_melt, aes(y=variable, x=value, fill=raw_tool)) +
+    scale_fill_manual(values=rep(x=c("black", "grey"), 7)) +
+    geom_density_ridges(scale=4) +
+    ylab("Distribution source") +
+    xlab("Number of studies a genus is significant in") +
+    theme(legend.position = "none")
+  
+
+```
+
+### KS-test results
+```{r diarrhea_observed_vs_expected_ks}
+  ### Run KS test
+  diarrhea_ks_out <- data.frame(matrix(NA, nrow=ncol(diarrhea_outputs_binary_clean_summed), ncol=6))
+  colnames(diarrhea_ks_out) <- c("Tool", "No. sig. genera", "Mean exp.", "Mean obs.", "D", "P")
+  rownames(diarrhea_ks_out) <- colnames(diarrhea_outputs_binary_clean_summed)
+  diarrhea_ks_out$Tool <- colnames(diarrhea_outputs_binary_clean_summed)
+  
+  for(tool in colnames(diarrhea_outputs_binary_clean_summed)) {
+    
+    exp_name <- paste(tool, "expected", sep=".") 
+    obs_name <- paste(tool, "observed", sep=".")
+    
+    raw_diarrhea_ks_out <- ks.test(diarrhea_combined_overlap[, exp_name], diarrhea_combined_overlap[, obs_name])
+    
+    diarrhea_ks_out[tool, c("D", "P")] <- c(round(raw_diarrhea_ks_out$statistic, 3), raw_diarrhea_ks_out$p.value)
+    
+    diarrhea_ks_out[tool, "Mean exp."] <- round(mean(diarrhea_combined_overlap[, exp_name], na.rm = TRUE), 3)
+    
+    diarrhea_ks_out[tool, "Mean obs."] <- round(mean(diarrhea_combined_overlap[, obs_name], na.rm = TRUE), 3)
+  }
+  
+  diarrhea_ks_out[, "No. sig. genera"] <- colSums(! is.na(diarrhea_outputs_binary_clean_summed))
+
+  rownames(diarrhea_ks_out) <- NULL
+  
+  diarrhea_ks_out <- arrange(diarrhea_ks_out, desc(D))
+    
+  diarrhea_ks_out %>%
+      kable(digits=5) %>%
+      kable_styling() 
+  
+  write.table(x = diarrhea_ks_out, file = "KS_result_tables/diarrhea_KS_result.tsv", col.names = TRUE, row.names = FALSE, sep="\t", quote = FALSE)
+```
+
+
+## Obesity - observed vs expected results {.tabset}
+
+### Histograms
+```{r obesity_observed_vs_expected_hist}
+  obesity_combined_overlap_melt <- melt(obesity_combined_overlap)
+  obesity_combined_overlap_melt$raw_tool <- factor(gsub("\\..*$", "", obesity_combined_overlap_melt$variable))
+  
+  ggplot(data=obesity_combined_overlap_melt, aes(y=variable, x=value, fill=raw_tool)) +
+    scale_fill_manual(values=rep(x=c("black", "grey"), 7)) +
+    geom_density_ridges(scale=4) +
+    ylab("Distribution source") +
+    xlab("Number of studies a genus is significant in") +
+    theme(legend.position = "none")
+```
+
+### KS-test results
+
+```{r obesity_observed_vs_expected_ks}
+  ### Run KS test
+  obesity_ks_out <- data.frame(matrix(NA, nrow=ncol(obesity_outputs_binary_clean_summed), ncol=6))
+  colnames(obesity_ks_out) <- c("Tool", "No. sig. genera", "Mean exp.", "Mean obs.", "D", "P")
+  rownames(obesity_ks_out) <- colnames(obesity_outputs_binary_clean_summed)
+  obesity_ks_out$Tool <- colnames(obesity_outputs_binary_clean_summed)
+  
+  for(tool in colnames(obesity_outputs_binary_clean_summed)) {
+    
+    exp_name <- paste(tool, "expected", sep=".") 
+    obs_name <- paste(tool, "observed", sep=".")
+    
+    raw_obesity_ks_out <- ks.test(obesity_combined_overlap[, exp_name], obesity_combined_overlap[, obs_name])
+    
+    obesity_ks_out[tool, c("D", "P")] <- c(round(raw_obesity_ks_out$statistic, 3), raw_obesity_ks_out$p.value)
+    
+    obesity_ks_out[tool, "Mean exp."] <- round(mean(obesity_combined_overlap[, exp_name], na.rm = TRUE), 3)
+    
+    obesity_ks_out[tool, "Mean obs."] <- round(mean(obesity_combined_overlap[, obs_name], na.rm = TRUE), 3)
+  }
+  
+  obesity_ks_out[, "No. sig. genera"] <- colSums(! is.na(obesity_outputs_binary_clean_summed))
+
+  rownames(obesity_ks_out) <- NULL
+  
+  obesity_ks_out <- arrange(obesity_ks_out, desc(D))
+    
+  obesity_ks_out %>%
+      kable(digits=5) %>%
+      kable_styling() 
+  
+  write.table(x = obesity_ks_out, file = "KS_result_tables/obesity_KS_result.tsv", col.names = TRUE, row.names = FALSE, sep="\t", quote = FALSE)
+  
+```
+
+
+# Session Info
+R session information reported here for reproducibility.
+
+```{r session_info}
+sessionInfo()
+```
+
