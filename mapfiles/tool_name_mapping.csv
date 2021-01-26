@@ -1,0 +1,15 @@
+﻿raw,clean
+aldex2,ALDEx2
+ancom,ANCOM
+corncob,corncob
+deseq2,DESeq2
+edger,edgeR
+lefse,LEfSe
+limma_voom_TMM,limma voom (TMM)
+limma_voom_TMMwsp,limma voom (TMMwsp)
+maaslin2,MaAsLin2
+maaslin2rare,MaAsLin2 (rare)
+metagenomeSeq,metagenomeSeq
+ttestrare,t-test (rare)
+wilcoxonclr,Wilcoxon (CLR)
+wilcoxonrare,Wilcoxon (rare)
