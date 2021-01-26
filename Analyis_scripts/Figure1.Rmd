@@ -57,6 +57,14 @@ Data_set_names <- c(ArcticFireSoils="Soil - Fires",
                           t1d_alkanani="Human - T1D (1)",
                          t1d_mejialeon="Human - T1D (2)",
                          wood_plastic_kesy="Marine - Plastic (3)")
+
+
+tool_names <- c(aldex2="ALDEx2", ancom="ANCOM", corncob="corncob", deseq2="DESeq2", edger="edgeR", lefse="LEfSe", 
+                limma_voom_TMM="limma voom (TMM)", limma_voom_TMMwsp="limma voom (TMMwsp)", maaslin2="MaAsLin2",
+                maaslin2rare="MaAsLin2 (rare)", metagenomeSeq="metagenomeSeq", ttestrare="t-test (rare)", 
+                wilcoxonclr="Wilcoxon (CLR)", wilcoxonrare="Wilcoxon (rare)")
+
+Metadata_renames <- c(log_N="Log Sample Size", R.squared="Aitchson's Dist. Effect Size", log_R.squared="Log Aitchson's Dist. Effect Size", Sparsity="Sparsity", Richness="Richness", log_Depth="Log Max Read Depth", log_Depth_range="Log Read Depth Range", CoV_Depth="Read Depth Variation")
 ```
 
 # Functions
@@ -540,6 +548,7 @@ unfilt_mean_percent <- print(sort(colSums(unfilt_sig_percent[, -1], na.rm = TRUE
 #### Filter
 ```{r}
 
+
 filt_sig_percent_scaled <- data.frame(scale(t(filt_sig_percent[, -1]), center = TRUE, scale = TRUE))
 
 hackathon_metadata <- read.table("/home/jacob/GitHub_Repos/Hackathon_testing/Analysis_Scripts/Metadata/2020_06_18_Datasets_Hackathon.txt", header=TRUE, sep="\t", stringsAsFactors = FALSE, quote="")
@@ -579,9 +588,15 @@ fixed_hackathon_metadata$CoV_Depth <- sort_filt_nonrare_metrics_df[,6]
 
 colnames(filt_sig_percent_scaled)
 test <- Data_set_names[colnames(filt_sig_percent_scaled)]
-
-
 colnames(filt_sig_percent_scaled) <- test
+
+colnames(filt_sig_percent_scaled)
+rownames(filt_sig_percent_scaled)
+## fix tool names now...
+tool_rename <- tool_names[rownames(filt_sig_percent_scaled)]
+rownames(filt_sig_percent_scaled) <- tool_rename
+
+### now fix metadata
 
 rownames(fixed_hackathon_metadata) 
 test2 <- Data_set_names[rownames(fixed_hackathon_metadata)]
@@ -589,14 +604,42 @@ test2
 
 rownames(fixed_hackathon_metadata) <- test2
 
+
+
+
+
 Alpha_order_filt <- filt_sig_percent_scaled[,order(colnames(filt_sig_percent_scaled))]
+
+rownames(Alpha_order_filt)
+
+
+### now fix raw count dataframe
+
+raw_count_df <- t(filt_sig_counts[,-1])
+rownames(raw_count_df)
+test <- tool_names[rownames(raw_count_df)]
+rownames(raw_count_df) <- test
+
+colnames(raw_count_df)
+test2 <- Data_set_names[colnames(raw_count_df)]
+test2
+colnames(raw_count_df) <- test2
+
+order_raw_count_df <- raw_count_df[,colnames(Alpha_order_filt)]
+
+identical(colnames(order_raw_count_df), colnames(Alpha_order_filt))
+
+test <- Metadata_renames[colnames(fixed_hackathon_metadata[30:37])]
+test
+colnames(fixed_hackathon_metadata)[30:37] <- Metadata_renames
 
 filt_ASV_nums <- pheatmap(Alpha_order_filt,
          clustering_method = "complete",
          legend=TRUE,
-         display_numbers=t(filt_sig_counts[, -1]),
-         annotation_col=fixed_hackathon_metadata[, c("log_N", "log_R.squared", "Sparsity", "Richness", "log_Depth",
-                                                     "log_Depth_range", "CoV_Depth"), drop=FALSE],
+         display_numbers=order_raw_count_df,
+         annotation_col=fixed_hackathon_metadata[, c("Log Sample Size", "Log Aitchson's Dist. Effect Size", 
+                                                     "Sparsity", "Richness", "Read Depth Variation", 
+                                                     "Log Read Depth Range" ), drop=FALSE],
          fontsize_row=14,
          legend_labels = "Percent of Significant Features",
          treeheight_col = 0,
@@ -641,22 +684,46 @@ fixed_hackathon_metadata$CoV_Depth <- sort_unfilt_nonrare_metrics_df[,6]
 test <- Data_set_names[colnames(unfilt_sig_percent_scaled)]
 colnames(unfilt_sig_percent_scaled) <- test
 
+rownames(unfilt_sig_percent_scaled)
+test2 <- tool_names[rownames(unfilt_sig_percent_scaled)]
+rownames(unfilt_sig_percent_scaled) <- test2
+
 Alpha_order_unfilt <- unfilt_sig_percent_scaled[,order(colnames(unfilt_sig_percent_scaled))]
 
 
+raw_counts_unfilt <- t(unfilt_sig_counts[,-1])
+rownames(raw_counts_unfilt)
+test2 <- tool_names[rownames(raw_counts_unfilt)]
+rownames(raw_counts_unfilt) <- test2
 
+colnames(raw_counts_unfilt)
+test <- Data_set_names[colnames(raw_counts_unfilt)]
+test
+colnames(raw_counts_unfilt) <- test
+
+fix_raw_counts_unfilt <- raw_counts_unfilt[,colnames(Alpha_order_unfilt)]
+
+
+identical(rownames(fix_raw_counts_unfilt), rownames(Alpha_order_unfilt))
+# fix metadata
 rownames(fixed_hackathon_metadata) 
 test2 <- Data_set_names[rownames(fixed_hackathon_metadata)]
 test2
 
 rownames(fixed_hackathon_metadata) <- test2
 
+
+test <- Metadata_renames[colnames(fixed_hackathon_metadata[30:37])]
+test
+colnames(fixed_hackathon_metadata)[30:37] <- Metadata_renames
+
 unfilt_ASV_nums <- pheatmap(Alpha_order_unfilt,
          clustering_method = "complete",
          legend=TRUE,
-         display_numbers=t(unfilt_sig_counts[, -1]),
-         annotation_col=fixed_hackathon_metadata[, c("log_N", "log_R.squared", "Sparsity", "Richness", "log_Depth",
-                                                     "Log_Depth_range", "CoV_Depth"), drop=FALSE],
+         display_numbers=fix_raw_counts_unfilt,
+         annotation_col=fixed_hackathon_metadata[, c("Log Sample Size", "Log Aitchson's Dist. Effect Size", 
+                                                     "Sparsity", "Richness", "Read Depth Variation", 
+                                                     "Log Read Depth Range" ), drop=FALSE],
          fontsize_row = 14,
          treeheight_col = 0,
          cluster_cols = F,
@@ -670,6 +737,6 @@ unfilt_ASV_nums <- pheatmap(Alpha_order_unfilt,
 
 ## Final Plot
 ```{r}
-final_plot <- gridExtra::grid.arrange(filt_ASV_nums[[4]], unfilt_ASV_nums[[4]], nrow=2)
+final_plot <- gridExtra::grid.arrange(unfilt_ASV_nums[[4]], filt_ASV_nums[[4]], nrow=2)
 final_plot
 ```

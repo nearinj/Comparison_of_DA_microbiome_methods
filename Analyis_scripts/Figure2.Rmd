@@ -13,6 +13,13 @@ library(ggplot2)
 library(ggridges)
 library(cowplot)
 library(pheatmap)
+
+
+
+tool_names <- c(aldex2="ALDEx2", ancom="ANCOM", corncob="corncob", deseq2="DESeq2", edger="edgeR", lefse="LEfSe", 
+                limma_voom_TMM="limma voom (TMM)", limma_voom_TMMwsp="limma voom (TMMwsp)", maaslin2="MaAsLin2",
+                maaslin2rare="MaAsLin2 (rare)", metagenomeSeq="metagenomeSeq", ttestrare="t-test (rare)", 
+                wilcoxonclr="Wilcoxon (CLR)", wilcoxonrare="Wilcoxon (rare)")
 ```
 
 
@@ -171,12 +178,9 @@ merged_no_zero_unfilt <- dplyr::inner_join(no_zero_unfilt, Tool_total_feats_foun
 colnames(merged_no_zero_unfilt)[3] <- "total_hits"
 merged_no_zero_unfilt$log_total_hits <- log(merged_no_zero_unfilt$total_hits)
 
-### change name of variables for plotting.
-tool_names <- names(table(merged_no_zero_unfilt$variable))
-tool_names <- c(aldex2="ALDEx2", ancom="ANCOM", corncob="Corncob", deseq2="DESeq2", edger="edgeR", lefse="LEfSe", 
-                limma_voom_TMM="Limma Voom TMM", limma_voom_TMMwsp="Limma Voom TMMwsp", maaslin2="MaAsLin2",
-                maaslin2rare="MaAsLin2 Rarified", metagenomeSeq="metagenomeSeq", ttestrare="T-test Rarified", 
-                wilcoxonclr="Wilcoxon CLR", wilcoxonrare="Wilcoxon Rarified")
+
+
+
 
 merged_no_zero_unfilt$clean_variable <- tool_names[merged_no_zero_unfilt$variable]
 merged_no_zero_filt$clean_variable <- tool_names[merged_no_zero_filt$variable]

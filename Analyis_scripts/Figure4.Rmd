@@ -50,6 +50,11 @@ Data_set_names <- c(ArcticFireSoils="Soil - Fires",
                           t1d_alkanani="Human - T1D (1)",
                          t1d_mejialeon="Human - T1D (2)",
                          wood_plastic_kesy="Marine - Plastic (3)")
+
+tool_names <- c(aldex2="ALDEx2", ancom="ANCOM", corncob="corncob", deseq2="DESeq2", edger="edgeR", lefse="LEfSe", 
+                limma_voom_TMM="limma voom (TMM)", limma_voom_TMMwsp="limma voom (TMMwsp)", maaslin2="MaAsLin2",
+                maaslin2rare="MaAsLin2 (rare)", metagenomeSeq="metagenomeSeq", ttestrare="t-test (rare)", 
+                wilcoxonclr="Wilcoxon (CLR)", wilcoxonrare="Wilcoxon (rare)")
 ```
 
 # Load in data
@@ -605,12 +610,20 @@ test <- Data_set_names[colnames(Mean_raw_sig)]
 test
 colnames(Mean_raw_sig) <- test
 
+test <- tool_names[rownames(Mean_filt_percent_sig)]
+test
+rownames(Mean_filt_percent_sig) <- test
+
+test <- tool_names[rownames(Mean_raw_sig)]
+test
+rownames(Mean_raw_sig) <- test
+
 final_plot <- pheatmap::pheatmap(as.matrix(Mean_filt_percent_sig),
          cluster_cols=F,
          cluster_rows = F,
          display_numbers = round(Mean_raw_sig, 3),
          number_color = "Black",
-         main = "Filtered Data")
+         main = "Filtered")
 
 
 final_plot
@@ -688,6 +701,16 @@ test <- Data_set_names[colnames(Mean_raw_nonfilt)]
 test
 colnames(Mean_raw_nonfilt) <- test
 
+rownames(Mean_nonfilt_percent_sig)
+test <- tool_names[rownames(Mean_nonfilt_percent_sig)]
+test
+rownames(Mean_nonfilt_percent_sig) <- test
+
+rownames(Mean_raw_nonfilt)
+test <- tool_names[rownames(Mean_raw_nonfilt)]
+test
+rownames(Mean_raw_nonfilt) <- test
+
 Final_heat_nonfilt <- pheatmap::pheatmap(Mean_nonfilt_percent_sig,
          cluster_cols=F,
          cluster_rows = F,
@@ -710,6 +733,6 @@ final_plot_perc <- gridExtra::grid.arrange(unfilt_perc_heat[[4]], perc_heatmap[[
 final_plot_perc
 
 
-final_final_plot <- gridExtra::grid.arrange(Final_heat_nonfilt[[4]], final_plot[[4]], nrow=2)
-
+final_final_plot <- cowplot::plot_grid(Final_heat_nonfilt[[4]], final_plot[[4]], nrow=2, labels = c("A", "B"))
+final_final_plot
 ```
