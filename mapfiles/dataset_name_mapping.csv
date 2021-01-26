@@ -1,0 +1,39 @@
+﻿raw,clean
+Chemerin,Mouse - Facilities
+Blueberry,Soil - Blueberry
+MALL,Human - ALL
+Exercise,Mouse - Exercised
+BISCUIT,Human - CD (1)
+Office,Built - Office
+art_scher,Human - RA
+asd_son,Human - ASD
+cdi_schubert,Human - C. diff (1)
+cdi_vincent,Human - C. diff (2)
+crc_baxter,Human - CC (1)
+crc_zeller,Human - CC (2)
+edd_singh,Human - Inf.
+hiv_dinh,Human - HIV (1)
+hiv_lozupone,Human - HIV (2)
+hiv_noguerajulian,Human - HIV (3)
+ibd_gevers,Human - CD (2)
+ibd_papa,Human - IBD
+ob_goodrich,Human - OB (1)
+ob_ross,Human - OB (2)
+ob_turnbaugh,Human - OB (3)
+ob_zhu,Human - OB (4)
+par_scheperjans,Human - Par.
+t1d_alkanani,Human - T1D (1)
+t1d_mejialeon,Human - T1D (2)
+GWMC_ASIA_NA,WWSR - Continents
+GWMC_HOT_COLD,WWSR - Temp.
+sw_sed_detender,Marine - Sediment
+sw_plastic_frere,Marine - Plastic (1)
+sed_plastic_hoellein,Marine - Plastic (2)
+wood_plastic_kesy,Marine - Plastic (3)
+seston_plastic_mccormick,River - Plastic
+glass_plastic_oberbeckmann,Marine - Plastic (4)
+sed_plastic_rosato,Marine - Plastic (5)
+ArcticTransects,Soil - Arctic
+ArcticFireSoils,Soil - Fires
+ArcticFreshwaters,Freshwater - Arctic
+Ji_WTP_DS,Freshwater - Treat.
