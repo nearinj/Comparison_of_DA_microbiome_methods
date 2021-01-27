@@ -48,6 +48,61 @@ obesity_combined_overlap <- readRDS(file = "/home/jacob/GitHub_Repos/Hackathon_t
 
 ```
 
+# Tool summaries {.tabset}
+
+## Diarrhea
+
+Below are basic summaries of the number of significant genera per tool across each tool along with the mean and sd genera per tool across all datasets.
+
+```{r diarrhea_tool_means}
+diarrhea_datasets <- gsub(".lefse", "", grep("lefse", colnames(diarrhea_outputs_binary_clean_combined), value=TRUE))
+diarrhea_summary <- data.frame(matrix(NA, nrow=length(diarrhea_datasets), ncol=14))
+rownames(diarrhea_summary) <- diarrhea_datasets
+colnames(diarrhea_summary) <- c("aldex2", "ancom", "corncob", "deseq2", "edger", "lefse", "limma_voom_TMM", "limma_voom_TMMwsp", "maaslin2", "maaslin2rare", "metagenomeSeq", "ttestrare", "wilcoxonclr", "wilcoxonrare")
+for(diarrhea_dataset in diarrhea_datasets) {
+  diarrhea_study_subset <- diarrhea_outputs_binary_clean_combined[, grep(diarrhea_dataset, colnames(diarrhea_outputs_binary_clean_combined))]
+  colnames(diarrhea_study_subset) <- gsub("^.+\\.", "", colnames(diarrhea_study_subset))
+  diarrhea_summary[diarrhea_dataset, colnames(diarrhea_study_subset)] <- colSums(diarrhea_study_subset)
+}
+```
+
+Mean sig. genera (and SD):
+```{r diarrhea_print_mean_and_sd}
+kable(data.frame(mean=colMeans(diarrhea_summary), sd=round(unlist(lapply(diarrhea_summary, sd)), 1)))
+```
+
+Counts of sig. genera per dataset:
+```{r diarrhea_print_summary}
+print(diarrhea_summary)
+```
+
+## Obesity
+
+Below are basic summaries of the number of significant genera per tool across each tool along with the mean and sd genera per tool across all datasets.
+
+```{r obesity_tool_means}
+obesity_datasets <- gsub(".lefse", "", grep("lefse", colnames(obesity_outputs_binary_clean_combined), value=TRUE))
+obesity_summary <- data.frame(matrix(NA, nrow=length(obesity_datasets), ncol=14))
+rownames(obesity_summary) <- obesity_datasets
+colnames(obesity_summary) <- c("aldex2", "ancom", "corncob", "deseq2", "edger", "lefse", "limma_voom_TMM", "limma_voom_TMMwsp", "maaslin2", "maaslin2rare", "metagenomeSeq", "ttestrare", "wilcoxonclr", "wilcoxonrare")
+for(obesity_dataset in obesity_datasets) {
+  obesity_study_subset <- obesity_outputs_binary_clean_combined[, grep(obesity_dataset, colnames(obesity_outputs_binary_clean_combined))]
+  colnames(obesity_study_subset) <- gsub("^.+\\.", "", colnames(obesity_study_subset))
+  obesity_summary[obesity_dataset, colnames(obesity_study_subset)] <- colSums(obesity_study_subset)
+}
+```
+
+Mean sig. genera (and SD):
+```{r obesity_print_mean_and_sd}
+kable(data.frame(mean=colMeans(obesity_summary), sd=round(unlist(lapply(obesity_summary, sd)), 1)))
+```
+
+Counts of sig. genera per dataset:
+```{r obesity_print_summary}
+print(obesity_summary)
+```
+
+
 # Pricipal Coordinates Analyses {.tabset}
 
 One basic way to compare how consistent the tools are is to create PCoAs based on the binary distance between each study/tool combination. This will tell us if the results cluster by dataset or by tool. More specifically, the PCoAs are based on the Jaccard distances between each study/tool combination where 1 is a significant genus and 0 is a non-significant (or NA) genus.
@@ -313,8 +368,8 @@ Below are the results for each set of datasets - first as barplots, which enable
   
   obesity_barplots
   
-  ggsave(filename="../Display_items/Supp_figures/Supp_obesity_consistency.pdf",
-         plot = obesity_barplots, width = 7, height=8, units="in", dpi=600)
+  # ggsave(filename="../Display_items/Supp_figures/Supp_obesity_consistency.pdf",
+  #        plot = obesity_barplots, width = 7, height=8, units="in", dpi=600)
 ```
 
 
