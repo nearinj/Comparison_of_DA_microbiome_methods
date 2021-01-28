@@ -1,5 +1,5 @@
 Tool	No. sig. genera	Mean exp.	Mean obs.	Fold diff.	W	P
-ANCOM	17	1.039	1.471	1.416	64345	1.20e-11
+ANCOM-II	17	1.039	1.471	1.416	64345	1.20e-11
 ALDEx2	57	1.146	1.561	1.362	697784	8.94e-12
 limma voom (TMM)	80	1.228	1.6	1.303	1387920	3.34e-09
 MaAsLin2 (rare)	74	1.195	1.541	1.29	1168144.5	1.16e-09
