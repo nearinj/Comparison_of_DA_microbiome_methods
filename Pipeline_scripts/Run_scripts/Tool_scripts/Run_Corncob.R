@@ -1,18 +1,29 @@
+#### Run Corncob
 
-deps = c("edgeR")
+library(corncob)
+library(phyloseq)
+
+#install corncob if its not installed.
+deps = c("corncob")
 for (dep in deps){
   if (dep %in% installed.packages()[,"Package"] == FALSE){
-    if (!requireNamespace("BiocManager", quietly = TRUE))
-      install.packages("BdepManager")
+    if(dep=="corncob"){
+      devtools::install_github("bryandmartin/corncob")
+    }
+    else
+      if (!requireNamespace("BiocManager", quietly = TRUE))
+        install.packages("BiocManager")
 
-    BiocManager::install(deps)
+    BiocManager::install("phyloseq")
   }
   library(dep, character.only = TRUE)
 }
 
 
+
+
 args <- commandArgs(trailingOnly = TRUE)
-#test if there is an argument supply
+
 if (length(args) <= 2) {
   stop("At least three arguments must be supplied", call.=FALSE)
 }
@@ -22,10 +33,10 @@ file_1_line1 <- readLines(con,n=1)
 close(con)
 
 if(grepl("Constructed from biom file", file_1_line1)){
-  ASV_table <- read.table(args[1], sep="\t", skip=1, header=T, row.names = 1,
+  ASV_table <- read.table(args[1], sep="\t", skip=1, header=T, row.names = 1, 
                           comment.char = "", quote="", check.names = F)
 }else{
-  ASV_table <- read.table(args[1], sep="\t", header=T, row.names = 1,
+  ASV_table <- read.table(args[1], sep="\t", header=T, row.names = 1, 
                           comment.char = "", quote="", check.names = F)
 }
 
@@ -57,34 +68,24 @@ if(identical(colnames(ASV_table), rownames(groupings))==T){
   }
 }
 
-DGE_LIST <- DGEList(ASV_table)
-### do normalization
-### Reference sample will be the sample with the highest read depth
+#run corncob
+#put data into phyloseq object.
+colnames(groupings)
+colnames(groupings)[1] <- "places"
 
-### check if upper quartile method works for selecting reference
-Upper_Quartile_norm_test <- calcNormFactors(DGE_LIST, method="upperquartile")
+OTU <- phyloseq::otu_table(ASV_table, taxa_are_rows = T)
+sampledata <- phyloseq::sample_data(groupings, errorIfNULL = T)
+phylo <- phyloseq::merge_phyloseq(OTU, sampledata)
 
-summary_upper_quartile <- summary(Upper_Quartile_norm_test$samples$norm.factors)[3]
-if(is.na(summary_upper_quartile) | is.infinite(summary_upper_quartile)){
-  message("Upper Quartile reference selection failed will use find sample with largest sqrt(read_depth) to use as reference")
-  Ref_col <- which.max(colSums(sqrt(ASV_table)))
-  DGE_LIST_Norm <- calcNormFactors(DGE_LIST, method = "TMM", refColumn = Ref_col)
-  fileConn<-file(args[[4]])
-  writeLines(c("Used max square root read depth to determine reference sample"), fileConn)
-  close(fileConn)
-  
-}else{
-  DGE_LIST_Norm <- calcNormFactors(DGE_LIST, method="TMM")
-}
+my_formula <- as.formula(paste("~","places",sep=" ", collapse = ""))
+my_formula
+results <- corncob::differentialTest(formula= my_formula,
+                                     phi.formula = my_formula,
+                                     phi.formula_null = my_formula,
+                                     formula_null = ~ 1,
+                                     test="Wald", data=phylo,
+                                     boot=F,
+                                     fdr_cutoff = 0.05)
 
-## make matrix for testing
-colnames(groupings) <- c("comparison")
-mm <- model.matrix(~comparison, groupings)
 
-voomvoom <- voom(DGE_LIST_Norm, mm, plot=F)
-
-fit <- lmFit(voomvoom,mm)
-fit <- eBayes(fit)
-res <- topTable(fit, coef=2, n=nrow(DGE_LIST_Norm), sort.by="none")
-write.table(res, file=args[3], quote=F, sep="\t", col.names = NA)
-
+write.table(results$p_fdr, file=args[[3]], sep="\t", col.names = NA, quote=F)

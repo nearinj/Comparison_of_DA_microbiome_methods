@@ -1,15 +1,13 @@
-
-deps = c("edgeR")
+deps = c("metagenomeSeq")
 for (dep in deps){
   if (dep %in% installed.packages()[,"Package"] == FALSE){
     if (!requireNamespace("BiocManager", quietly = TRUE))
       install.packages("BdepManager")
-
+    
     BiocManager::install(deps)
   }
   library(dep, character.only = TRUE)
 }
-
 
 args <- commandArgs(trailingOnly = TRUE)
 #test if there is an argument supply
@@ -22,10 +20,10 @@ file_1_line1 <- readLines(con,n=1)
 close(con)
 
 if(grepl("Constructed from biom file", file_1_line1)){
-  ASV_table <- read.table(args[1], sep="\t", skip=1, header=T, row.names = 1,
+  ASV_table <- read.table(args[1], sep="\t", skip=1, header=T, row.names = 1, 
                           comment.char = "", quote="", check.names = F)
 }else{
-  ASV_table <- read.table(args[1], sep="\t", header=T, row.names = 1,
+  ASV_table <- read.table(args[1], sep="\t", header=T, row.names = 1, 
                           comment.char = "", quote="", check.names = F)
 }
 
@@ -57,34 +55,31 @@ if(identical(colnames(ASV_table), rownames(groupings))==T){
   }
 }
 
-DGE_LIST <- DGEList(ASV_table)
-### do normalization
-### Reference sample will be the sample with the highest read depth
+data_list <- list()
+data_list[["counts"]] <- ASV_table
+data_list[["taxa"]] <- rownames(ASV_table)
 
-### check if upper quartile method works for selecting reference
-Upper_Quartile_norm_test <- calcNormFactors(DGE_LIST, method="upperquartile")
+pheno <- AnnotatedDataFrame(groupings)
+pheno
+counts <- AnnotatedDataFrame(ASV_table)
+feature_data <- data.frame("ASV"=rownames(ASV_table),
+                           "ASV2"=rownames(ASV_table))
+feature_data <- AnnotatedDataFrame(feature_data)
+rownames(feature_data) <- feature_data@data$ASV
 
-summary_upper_quartile <- summary(Upper_Quartile_norm_test$samples$norm.factors)[3]
-if(is.na(summary_upper_quartile) | is.infinite(summary_upper_quartile)){
-  message("Upper Quartile reference selection failed will use find sample with largest sqrt(read_depth) to use as reference")
-  Ref_col <- which.max(colSums(sqrt(ASV_table)))
-  DGE_LIST_Norm <- calcNormFactors(DGE_LIST, method = "TMM", refColumn = Ref_col)
-  fileConn<-file(args[[4]])
-  writeLines(c("Used max square root read depth to determine reference sample"), fileConn)
-  close(fileConn)
-  
-}else{
-  DGE_LIST_Norm <- calcNormFactors(DGE_LIST, method="TMM")
-}
 
-## make matrix for testing
-colnames(groupings) <- c("comparison")
-mm <- model.matrix(~comparison, groupings)
+test_obj <- newMRexperiment(counts = data_list$counts, phenoData = pheno, featureData = feature_data)
 
-voomvoom <- voom(DGE_LIST_Norm, mm, plot=F)
+p <- cumNormStat(test_obj, pFlag = T)
+p
 
-fit <- lmFit(voomvoom,mm)
-fit <- eBayes(fit)
-res <- topTable(fit, coef=2, n=nrow(DGE_LIST_Norm), sort.by="none")
-write.table(res, file=args[3], quote=F, sep="\t", col.names = NA)
+test_obj_norm <- cumNorm(test_obj, p=p)
 
+fromula <- as.formula(paste(~1, colnames(groupings)[1], sep=" + "))
+pd <- pData(test_obj_norm)
+mod <- model.matrix(fromula, data=pd)
+regres <- fitFeatureModel(test_obj_norm, mod)
+
+res_table <- MRfulltable(regres, number = length(rownames(ASV_table)))
+
+write.table(res_table, file=args[3], quote=F, sep="\t", col.names = NA)

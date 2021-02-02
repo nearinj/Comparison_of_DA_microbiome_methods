@@ -148,10 +148,12 @@ Run_t_test_rare()
 Run_limma_voom_TMM()
 
 {
-    echo "Running Limma_voom_TMM"
+    
+	echo "Running Limma_voom_TMM"
     mkdir $Output_Path/limma_voom_tmm_out
     out_file_voom=$Output_Path/limma_voom_tmm_out/limma_voom_tmm_res.tsv
-    Rscript Tool_scripts/Run_Limma_Voom_TMM.R $ASV_table_Path $Groupings_Path $out_file_voom
+    ref_file=$Output_Path/limma_voom_tmm_out/Ref_choosing.txt
+	Rscript Tool_scripts/Run_Limma_Voom_TMM.R $ASV_table_Path $Groupings_Path $out_file_voom $ref_file
     
 }
 
@@ -161,7 +163,8 @@ Run_limma_voom_TMMwsp()
     echo "Running Limma_voom_TMMwsp"
     mkdir $Output_Path/Limma_voom_TMMwsp
     outfile_voom=$Output_Path/Limma_voom_TMMwsp/limma_voom_tmmwsp_res.tsv
-    Rscript Tool_scripts/Run_Limma_Voom_TMMwsp.R $ASV_table_Path $Groupings_Path $outfile_voom
+	ref_file=$Output_Path/Limma_voom_TMMwsp/limma_voom_tmmwsp_res.tsv
+    Rscript Tool_scripts/Run_Limma_Voom_TMMwsp.R $ASV_table_Path $Groupings_Path $outfile_voom $ref_file
 
 }
 

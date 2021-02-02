@@ -65,14 +65,10 @@ DGE_LIST <- DGEList(ASV_table)
 Upper_Quartile_norm_test <- calcNormFactors(DGE_LIST, method="upperquartile")
 
 summary_upper_quartile <- summary(Upper_Quartile_norm_test$samples$norm.factors)[3]
-if(is.na(summary_upper_quartile) | is.infinite(summary_upper_quartile)){
+if(is.na(summary_upper_quartile)){
   message("Upper Quartile reference selection failed will use find sample with largest sqrt(read_depth) to use as reference")
   Ref_col <- which.max(colSums(sqrt(ASV_table)))
   DGE_LIST_Norm <- calcNormFactors(DGE_LIST, method = "TMM", refColumn = Ref_col)
-  fileConn<-file(args[[4]])
-  writeLines(c("Used max square root read depth to determine reference sample"), fileConn)
-  close(fileConn)
-  
 }else{
   DGE_LIST_Norm <- calcNormFactors(DGE_LIST, method="TMM")
 }

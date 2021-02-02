@@ -1,17 +1,23 @@
+#### Script to Run ALDEX2 differential abundance
 
-deps = c("edgeR")
+
+deps = c("ALDEx2")
 for (dep in deps){
   if (dep %in% installed.packages()[,"Package"] == FALSE){
     if (!requireNamespace("BiocManager", quietly = TRUE))
-      install.packages("BdepManager")
+      install.packages("BiocManager")
 
-    BiocManager::install(deps)
+    BiocManager::install("ALDEx2")
   }
   library(dep, character.only = TRUE)
 }
 
+library(ALDEx2)
 
 args <- commandArgs(trailingOnly = TRUE)
+
+
+
 #test if there is an argument supply
 if (length(args) <= 2) {
   stop("At least three arguments must be supplied", call.=FALSE)
@@ -22,11 +28,11 @@ file_1_line1 <- readLines(con,n=1)
 close(con)
 
 if(grepl("Constructed from biom file", file_1_line1)){
-  ASV_table <- read.table(args[1], sep="\t", skip=1, header=T, row.names = 1,
-                          comment.char = "", quote="", check.names = F)
+  ASV_table <- read.table(args[1], sep="\t", skip=1, header=T, row.names = 1, 
+                            comment.char = "", quote="", check.names = F)
 }else{
-  ASV_table <- read.table(args[1], sep="\t", header=T, row.names = 1,
-                          comment.char = "", quote="", check.names = F)
+  ASV_table <- read.table(args[1], sep="\t", header=T, row.names = 1, 
+                            comment.char = "", quote="", check.names = F)
 }
 
 groupings <- read.table(args[2], sep="\t", row.names = 1, header=T, comment.char = "", quote="", check.names = F)
@@ -57,34 +63,10 @@ if(identical(colnames(ASV_table), rownames(groupings))==T){
   }
 }
 
-DGE_LIST <- DGEList(ASV_table)
-### do normalization
-### Reference sample will be the sample with the highest read depth
+results <- aldex(reads=ASV_table, conditions = groupings[,1], mc.samples = 128, test="t", effect=TRUE,
+                 include.sample.summary = FALSE, verbose=T, denom="all")
 
-### check if upper quartile method works for selecting reference
-Upper_Quartile_norm_test <- calcNormFactors(DGE_LIST, method="upperquartile")
+write.table(results, file=args[3], quote=FALSE, sep='\t', col.names = NA)
 
-summary_upper_quartile <- summary(Upper_Quartile_norm_test$samples$norm.factors)[3]
-if(is.na(summary_upper_quartile) | is.infinite(summary_upper_quartile)){
-  message("Upper Quartile reference selection failed will use find sample with largest sqrt(read_depth) to use as reference")
-  Ref_col <- which.max(colSums(sqrt(ASV_table)))
-  DGE_LIST_Norm <- calcNormFactors(DGE_LIST, method = "TMM", refColumn = Ref_col)
-  fileConn<-file(args[[4]])
-  writeLines(c("Used max square root read depth to determine reference sample"), fileConn)
-  close(fileConn)
-  
-}else{
-  DGE_LIST_Norm <- calcNormFactors(DGE_LIST, method="TMM")
-}
 
-## make matrix for testing
-colnames(groupings) <- c("comparison")
-mm <- model.matrix(~comparison, groupings)
-
-voomvoom <- voom(DGE_LIST_Norm, mm, plot=F)
-
-fit <- lmFit(voomvoom,mm)
-fit <- eBayes(fit)
-res <- topTable(fit, coef=2, n=nrow(DGE_LIST_Norm), sort.by="none")
-write.table(res, file=args[3], quote=F, sep="\t", col.names = NA)
-
+message("Results table saved to ", args[3])

@@ -1,31 +1,32 @@
 
-deps = c("edgeR")
+deps = c("exactRankTests", "nlme", "dplyr", "ggplot2", "compositions")
 for (dep in deps){
   if (dep %in% installed.packages()[,"Package"] == FALSE){
-    if (!requireNamespace("BiocManager", quietly = TRUE))
-      install.packages("BdepManager")
-
-    BiocManager::install(deps)
+    install.packages(dep)
   }
   library(dep, character.only = TRUE)
 }
 
+#args[4] will contain path for the ancom code
+
 
 args <- commandArgs(trailingOnly = TRUE)
-#test if there is an argument supply
-if (length(args) <= 2) {
+
+if (length(args) <= 3) {
   stop("At least three arguments must be supplied", call.=FALSE)
 }
+
+source(args[[4]])
 
 con <- file(args[1])
 file_1_line1 <- readLines(con,n=1)
 close(con)
 
 if(grepl("Constructed from biom file", file_1_line1)){
-  ASV_table <- read.table(args[1], sep="\t", skip=1, header=T, row.names = 1,
+  ASV_table <- read.table(args[1], sep="\t", skip=1, header=T, row.names = 1, 
                           comment.char = "", quote="", check.names = F)
 }else{
-  ASV_table <- read.table(args[1], sep="\t", header=T, row.names = 1,
+  ASV_table <- read.table(args[1], sep="\t", header=T, row.names = 1, 
                           comment.char = "", quote="", check.names = F)
 }
 
@@ -35,13 +36,11 @@ groupings <- read.table(args[2], sep="\t", row.names = 1, header=T, comment.char
 sample_num <- length(colnames(ASV_table))
 grouping_num <- length(rownames(groupings))
 
-#check if the same number of samples are being input.
 if(sample_num != grouping_num){
   message("The number of samples in the ASV table and the groupings table are unequal")
   message("Will remove any samples that are not found in either the ASV table or the groupings table")
 }
 
-#check if order of samples match up.
 if(identical(colnames(ASV_table), rownames(groupings))==T){
   message("Groupings and ASV table are in the same order")
 }else{
@@ -57,34 +56,24 @@ if(identical(colnames(ASV_table), rownames(groupings))==T){
   }
 }
 
-DGE_LIST <- DGEList(ASV_table)
-### do normalization
-### Reference sample will be the sample with the highest read depth
+groupings$Sample <- rownames(groupings)
 
-### check if upper quartile method works for selecting reference
-Upper_Quartile_norm_test <- calcNormFactors(DGE_LIST, method="upperquartile")
+prepro <- feature_table_pre_process(feature_table = ASV_table, meta_data = groupings, sample_var = 'Sample', 
+                                    group_var = NULL, out_cut = 0.05, zero_cut = 0.90,
+                                    lib_cut = 1000, neg_lb=FALSE)
 
-summary_upper_quartile <- summary(Upper_Quartile_norm_test$samples$norm.factors)[3]
-if(is.na(summary_upper_quartile) | is.infinite(summary_upper_quartile)){
-  message("Upper Quartile reference selection failed will use find sample with largest sqrt(read_depth) to use as reference")
-  Ref_col <- which.max(colSums(sqrt(ASV_table)))
-  DGE_LIST_Norm <- calcNormFactors(DGE_LIST, method = "TMM", refColumn = Ref_col)
-  fileConn<-file(args[[4]])
-  writeLines(c("Used max square root read depth to determine reference sample"), fileConn)
-  close(fileConn)
-  
-}else{
-  DGE_LIST_Norm <- calcNormFactors(DGE_LIST, method="TMM")
-}
+feature_table <- prepro$feature_table
+metadata <- prepro$meta_data
+struc_zero <- prepro$structure_zeros
 
-## make matrix for testing
-colnames(groupings) <- c("comparison")
-mm <- model.matrix(~comparison, groupings)
+#run ancom
+main_var <- colnames(groupings)[1]
+p_adj_method = "BH"
+alpha=0.1
+adj_formula=NULL
+rand_formula=NULL
+res <- ANCOM(feature_table = feature_table, meta_data = metadata, struc_zero = struc_zero, main_var = main_var, p_adj_method = p_adj_method,
+             alpha=alpha, adj_formula = adj_formula, rand_formula = rand_formula)
 
-voomvoom <- voom(DGE_LIST_Norm, mm, plot=F)
 
-fit <- lmFit(voomvoom,mm)
-fit <- eBayes(fit)
-res <- topTable(fit, coef=2, n=nrow(DGE_LIST_Norm), sort.by="none")
-write.table(res, file=args[3], quote=F, sep="\t", col.names = NA)
-
+write.table(res$out, file=args[3], quote=FALSE, sep="\t", col.names = NA)
