@@ -1,14 +1,5 @@
+#### Format_Lefse
 
-deps = c("edgeR")
-for (dep in deps){
-  if (dep %in% installed.packages()[,"Package"] == FALSE){
-    if (!requireNamespace("BiocManager", quietly = TRUE))
-      install.packages("BdepManager")
-
-    BiocManager::install(deps)
-  }
-  library(dep, character.only = TRUE)
-}
 
 
 args <- commandArgs(trailingOnly = TRUE)
@@ -17,15 +8,16 @@ if (length(args) <= 2) {
   stop("At least three arguments must be supplied", call.=FALSE)
 }
 
+
 con <- file(args[1])
 file_1_line1 <- readLines(con,n=1)
 close(con)
 
 if(grepl("Constructed from biom file", file_1_line1)){
-  ASV_table <- read.table(args[1], sep="\t", skip=1, header=T, row.names = 1,
+  ASV_table <- read.table(args[1], sep="\t", skip=1, header=T, row.names = 1, 
                           comment.char = "", quote="", check.names = F)
 }else{
-  ASV_table <- read.table(args[1], sep="\t", header=T, row.names = 1,
+  ASV_table <- read.table(args[1], sep="\t", header=T, row.names = 1, 
                           comment.char = "", quote="", check.names = F)
 }
 
@@ -57,34 +49,19 @@ if(identical(colnames(ASV_table), rownames(groupings))==T){
   }
 }
 
-DGE_LIST <- DGEList(ASV_table)
-### do normalization
-### Reference sample will be the sample with the highest read depth
 
-### check if upper quartile method works for selecting reference
-Upper_Quartile_norm_test <- calcNormFactors(DGE_LIST, method="upperquartile")
+flip_ASV_table <- data.frame(t(ASV_table), check.names = F)
 
-summary_upper_quartile <- summary(Upper_Quartile_norm_test$samples$norm.factors)[3]
-if(is.na(summary_upper_quartile) | is.infinite(summary_upper_quartile)){
-  message("Upper Quartile reference selection failed will use find sample with largest sqrt(read_depth) to use as reference")
-  Ref_col <- which.max(colSums(sqrt(ASV_table)))
-  DGE_LIST_Norm <- calcNormFactors(DGE_LIST, method = "TMM", refColumn = Ref_col)
-  fileConn<-file(args[[4]])
-  writeLines(c("Used max square root read depth to determine reference sample"), fileConn)
-  close(fileConn)
-  
-}else{
-  DGE_LIST_Norm <- calcNormFactors(DGE_LIST, method="TMM")
+if(all.equal(rownames(flip_ASV_table), rownames(groupings)) == F){
+  stop("Error: Samples do not match up!!! at merging of metadata and ASV table")
 }
 
-## make matrix for testing
-colnames(groupings) <- c("comparison")
-mm <- model.matrix(~comparison, groupings)
 
-voomvoom <- voom(DGE_LIST_Norm, mm, plot=F)
 
-fit <- lmFit(voomvoom,mm)
-fit <- eBayes(fit)
-res <- topTable(fit, coef=2, n=nrow(DGE_LIST_Norm), sort.by="none")
-write.table(res, file=args[3], quote=F, sep="\t", col.names = NA)
+flip_ASV_table <- cbind(groupings[,1], flip_ASV_table)
+colnames(flip_ASV_table)[1] <- "Groupings"
+ret_tab <- data.frame(t(flip_ASV_table), check.names = F)
 
+write.table(ret_tab, file=args[3], quote=FALSE, sep="\t", col.names = NA)
+
+message("Lefse formatted table written")
