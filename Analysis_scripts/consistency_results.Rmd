@@ -26,6 +26,7 @@ library(cowplot)
 library(ggplot2)
 library(knitr)
 library(kableExtra)
+library(Matching)
 library(reshape2)
 library(rowr)
 library(tidyverse)
@@ -38,9 +39,9 @@ theme_set(theme_classic())
 ```
 
 ```{r read_RDS}
-diarrhea_outputs_binary_clean_combined <- readRDS(file =                                           "/home/jacob/GitHub_Repos/Hackathon_testing/Data/diarrhea_outputs_binary_clean_combined.rds")
+diarrhea_outputs_binary_clean_combined <- readRDS(file =                                           "/home/gavin/projects/hackathon/consistency_analysis/RDS_out/diarrhea_outputs_binary_clean_combined.rds")
 
-diarrhea_combined_overlap <- readRDS(file ="/home/jacob/GitHub_Repos/Hackathon_testing/Data/diarrhea_combined_overlap.rds")
+diarrhea_combined_overlap <- readRDS(file ="/home/gavin/projects/hackathon/consistency_analysis/RDS_out/diarrhea_combined_overlap.rds")
 
 obesity_outputs_binary_clean_combined <- readRDS(file = "/home/jacob/GitHub_Repos/Hackathon_testing/Data/obesity_outputs_binary_clean_combined.rds")
 
@@ -216,7 +217,7 @@ The raw consistency plots aren't very useful because the tools vary a lot in ter
 
 As mentioned above, the per-tool consistencies need to be to the null expectation for each tool. These null expectations were generated based on distributions of how many features would be expected to overlap if they were randomly sampled. The probability of sampling for each dataset / tool was given by the (# of significant genera) / (# total genera) for that dataset and tool.
 
-Below are the results for each set of datasets - first as barplots, which enable the observed and expected consistency for each tool to be compared, followed by Wilcoxon test results based on comparing the observed and expected distributions for each tool.
+Below are the results for each set of datasets - first as barplots, which enable the observed and expected consistency for each tool to be compared, followed by ks test results based on comparing the observed and expected distributions for each tool.
 
 
 
@@ -271,52 +272,65 @@ Below are the results for each set of datasets - first as barplots, which enable
   
   ggsave(filename="../Display_items/Main_figures/Figure5.pdf",
          plot = diarrhea_barplots, width = 7, height=8, units="in", dpi=600)
+  
+  ggsave(filename="../Display_items/Main_figures/Figure5.png",
+         plot = diarrhea_barplots, width = 7, height=8, units="in", dpi=600)
+    
 ```
 
-### Wilcoxon test results
-```{r diarrhea_observed_vs_expected_wilcoxon}
+### ks test results
+```{r diarrhea_observed_vs_expected_ks}
 
-  diarrhea_wilcoxon_out <- data.frame(matrix(NA, nrow=ncol(diarrhea_outputs_binary_clean_summed), ncol=7))
-  colnames(diarrhea_wilcoxon_out) <- c("Tool", "No. sig. genera", "Mean exp.", "Mean obs.", "fold.change", "W", "P")
-  rownames(diarrhea_wilcoxon_out) <- colnames(diarrhea_outputs_binary_clean_summed)
-  diarrhea_wilcoxon_out$Tool <- tool_mapfile[colnames(diarrhea_outputs_binary_clean_summed), "clean"]
+ diarrhea_ks_out <- data.frame(matrix(NA, nrow=ncol(diarrhea_outputs_binary_clean_summed), ncol=8))
+  colnames(diarrhea_ks_out) <- c("Tool", "No. sig. genera", "Max overlap", "Mean exp.", "Mean obs.", "fold.change", "D", "P")
+  rownames(diarrhea_ks_out) <- colnames(diarrhea_outputs_binary_clean_summed)
+  diarrhea_ks_out$Tool <- tool_mapfile[colnames(diarrhea_outputs_binary_clean_summed), "clean"]
   
   for(tool in colnames(diarrhea_outputs_binary_clean_summed)) {
     
     exp_name <- paste(tool, "expected", sep=".") 
     obs_name <- paste(tool, "observed", sep=".")
   
-    raw_diarrhea_wilcoxon_out <- wilcox.test(diarrhea_combined_overlap[, exp_name], diarrhea_combined_overlap[, obs_name])
+    raw_diarrhea_ks_out <- ks.boot(Co = diarrhea_combined_overlap[, exp_name],
+                                   Tr = diarrhea_combined_overlap[, obs_name],
+                                   nboots = 1000,
+                                   alternative = "two.sided")
     
-    diarrhea_wilcoxon_out[tool, "W"] <- round(raw_diarrhea_wilcoxon_out$statistic, 3)
+    diarrhea_ks_out[tool, "D"] <- round(raw_diarrhea_ks_out$ks$statistic, 3)
     
-    if(raw_diarrhea_wilcoxon_out$p.value < 0.001) {
-        diarrhea_wilcoxon_out[tool, "P"] <- formatC(raw_diarrhea_wilcoxon_out$p.value, format = "e", digits = 2)
+    if(raw_diarrhea_ks_out$ks.boot.pvalue < 0.001) {
+        diarrhea_ks_out[tool, "P"] <- formatC(raw_diarrhea_ks_out$ks.boot.pvalue, format = "e", digits = 2)
     } else {
-      diarrhea_wilcoxon_out[tool, "P"] <- round(raw_diarrhea_wilcoxon_out$p.value, 3)
+      diarrhea_ks_out[tool, "P"] <- round(raw_diarrhea_ks_out$ks.boot.pvalue, 3)
     }
     
-    diarrhea_wilcoxon_out[tool, "Mean exp."] <- round(mean(diarrhea_combined_overlap[, exp_name], na.rm = TRUE), 3)
+    diarrhea_ks_out[tool, "Mean exp."] <- round(mean(diarrhea_combined_overlap[, exp_name], na.rm = TRUE), 3)
     
-    diarrhea_wilcoxon_out[tool, "Mean obs."] <- round(mean(diarrhea_combined_overlap[, obs_name], na.rm = TRUE), 3)
+    diarrhea_ks_out[tool, "Mean obs."] <- round(mean(diarrhea_combined_overlap[, obs_name], na.rm = TRUE), 3)
     
-    diarrhea_wilcoxon_out[tool, "fold.change"] <- round(diarrhea_wilcoxon_out[tool, "Mean obs."] / diarrhea_wilcoxon_out[tool, "Mean exp."], 3)
+    diarrhea_ks_out[tool, "fold.change"] <- round(diarrhea_ks_out[tool, "Mean obs."] / diarrhea_ks_out[tool, "Mean exp."], 3)
+    
+    diarrhea_ks_out[tool, "Max overlap"] <- max(diarrhea_combined_overlap[, obs_name], na.rm = TRUE)
     
   }
   
-  diarrhea_wilcoxon_out[, "No. sig. genera"] <- colSums(diarrhea_outputs_binary_clean_summed > 0, na.rm = TRUE)
+  if(length(which(diarrhea_ks_out[, "P"] < 0.000000000000001)) > 0) {
+    diarrhea_ks_out[which(diarrhea_ks_out[, "P"] < 0.000000000000001), "P"] <- "< 1e-4"
+  }
+  
+  diarrhea_ks_out[, "No. sig. genera"] <- colSums(diarrhea_outputs_binary_clean_summed > 0, na.rm = TRUE)
 
-  rownames(diarrhea_wilcoxon_out) <- NULL
+  rownames(diarrhea_ks_out) <- NULL
   
-  diarrhea_wilcoxon_out <- arrange(diarrhea_wilcoxon_out, desc(fold.change))
+  diarrhea_ks_out <- arrange(diarrhea_ks_out, desc(fold.change))
     
-  colnames(diarrhea_wilcoxon_out)[which(colnames(diarrhea_wilcoxon_out) == "fold.change")] <- "Fold diff."
+  colnames(diarrhea_ks_out)[which(colnames(diarrhea_ks_out) == "fold.change")] <- "Fold diff."
   
-  diarrhea_wilcoxon_out %>%
+  diarrhea_ks_out %>%
       kable(digits=5) %>%
       kable_styling() 
   
-  write.table(x = diarrhea_wilcoxon_out, file = "../Display_items/Tables/Table2_diarrhea_consistency.tsv", col.names = TRUE, row.names = FALSE, sep="\t", quote = FALSE)
+  write.table(x = diarrhea_ks_out, file = "../Display_items/Tables/Table2_diarrhea_consistency.tsv", col.names = TRUE, row.names = FALSE, sep="\t", quote = FALSE)
 ```
 
 
@@ -367,64 +381,63 @@ Below are the results for each set of datasets - first as barplots, which enable
                                         panel.border = element_rect(colour = "black", fill = NA))
   
   obesity_barplots
-  
-  # ggsave(filename="../Display_items/Supp_figures/Supp_obesity_consistency.pdf",
-  #        plot = obesity_barplots, width = 7, height=8, units="in", dpi=600)
 ```
 
 
-### Wilcoxon test results
+### ks test results
 
-```{r obesity_observed_vs_expected_wilcoxon}
+```{r obesity_observed_vs_expected_ks}
 
-  obesity_wilcoxon_out <- data.frame(matrix(NA, nrow=ncol(obesity_outputs_binary_clean_summed), ncol=7))
-  colnames(obesity_wilcoxon_out) <- c("Tool", "No. sig. genera", "Mean exp.", "Mean obs.", "fold.change", "W", "P")
-  rownames(obesity_wilcoxon_out) <- colnames(obesity_outputs_binary_clean_summed)
-  obesity_wilcoxon_out$Tool <- tool_mapfile[colnames(obesity_outputs_binary_clean_summed), "clean"]
+obesity_ks_out <- data.frame(matrix(NA, nrow=ncol(obesity_outputs_binary_clean_summed), ncol=8))
+  colnames(obesity_ks_out) <- c("Tool", "No. sig. genera", "Max overlap", "Mean exp.", "Mean obs.", "fold.change", "D", "P")
+  rownames(obesity_ks_out) <- colnames(obesity_outputs_binary_clean_summed)
+  obesity_ks_out$Tool <- tool_mapfile[colnames(obesity_outputs_binary_clean_summed), "clean"]
   
   for(tool in colnames(obesity_outputs_binary_clean_summed)) {
     
     exp_name <- paste(tool, "expected", sep=".") 
     obs_name <- paste(tool, "observed", sep=".")
+  
+    raw_obesity_ks_out <- ks.boot(Co = obesity_combined_overlap[, exp_name],
+                                   Tr = obesity_combined_overlap[, obs_name],
+                                   nboots = 1000,
+                                   alternative = "two.sided")
     
-    raw_obesity_wilcoxon_out <- wilcox.test(obesity_combined_overlap[, exp_name], obesity_combined_overlap[, obs_name])
+    obesity_ks_out[tool, "D"] <- round(raw_obesity_ks_out$ks$statistic, 3)
     
-    obesity_wilcoxon_out[tool, "W"] <- round(raw_obesity_wilcoxon_out$statistic, 3)
-    
-    if(raw_obesity_wilcoxon_out$p.value < 0.001) {
-        obesity_wilcoxon_out[tool, "P"] <- formatC(raw_obesity_wilcoxon_out$p.value, format = "e", digits = 2)
+    if(raw_obesity_ks_out$ks.boot.pvalue < 0.001) {
+        obesity_ks_out[tool, "P"] <- formatC(raw_obesity_ks_out$ks.boot.pvalue, format = "e", digits = 2)
     } else {
-      obesity_wilcoxon_out[tool, "P"] <- round(raw_obesity_wilcoxon_out$p.value, 3)
+      obesity_ks_out[tool, "P"] <- round(raw_obesity_ks_out$ks.boot.pvalue, 3)
     }
     
-    obesity_wilcoxon_out[tool, "Mean exp."] <- round(mean(obesity_combined_overlap[, exp_name], na.rm = TRUE), 3)
+    obesity_ks_out[tool, "Mean exp."] <- round(mean(obesity_combined_overlap[, exp_name], na.rm = TRUE), 3)
     
-    obesity_wilcoxon_out[tool, "Mean obs."] <- round(mean(obesity_combined_overlap[, obs_name], na.rm = TRUE), 3)
+    obesity_ks_out[tool, "Mean obs."] <- round(mean(obesity_combined_overlap[, obs_name], na.rm = TRUE), 3)
     
-    obesity_wilcoxon_out[tool, "fold.change"] <- round(obesity_wilcoxon_out[tool, "Mean obs."] / obesity_wilcoxon_out[tool, "Mean exp."], 3)
-
+    obesity_ks_out[tool, "fold.change"] <- round(obesity_ks_out[tool, "Mean obs."] / obesity_ks_out[tool, "Mean exp."], 3)
+    
+    obesity_ks_out[tool, "Max overlap"] <- max(obesity_combined_overlap[, obs_name], na.rm = TRUE)
+    
   }
   
-  obesity_wilcoxon_out[, "No. sig. genera"] <- colSums(obesity_outputs_binary_clean_summed > 0, na.rm = TRUE)
+  if(length(which(obesity_ks_out[, "P"] == 0)) > 0) {
+    obesity_ks_out[which(obesity_ks_out[, "P"] == 0), "P"] <- "< 1e-4"
+  }
+  
+  obesity_ks_out[, "No. sig. genera"] <- colSums(obesity_outputs_binary_clean_summed > 0, na.rm = TRUE)
 
-  rownames(obesity_wilcoxon_out) <- NULL
+  rownames(obesity_ks_out) <- NULL
   
-  obesity_wilcoxon_out <- arrange(obesity_wilcoxon_out, desc(fold.change))
+  obesity_ks_out <- arrange(obesity_ks_out, desc(fold.change))
     
-  # Make sure non-significant rows are at the bottom even if the fold-change is high.
-  nonsig_rows <- which(obesity_wilcoxon_out$P >= 0.05)
-  sig_rows <- which(! 1:nrow(obesity_wilcoxon_out) %in% nonsig_rows)
-  obesity_wilcoxon_out <- obesity_wilcoxon_out[c(sig_rows, nonsig_rows), ]
+  colnames(obesity_ks_out)[which(colnames(obesity_ks_out) == "fold.change")] <- "Fold diff."
   
-  rownames(obesity_wilcoxon_out) <- NULL
-  
-  colnames(obesity_wilcoxon_out)[which(colnames(obesity_wilcoxon_out) == "fold.change")] <- "Fold diff."
-  
-  obesity_wilcoxon_out %>%
+    obesity_ks_out %>%
       kable(digits=5) %>%
       kable_styling() 
   
-  write.table(x = obesity_wilcoxon_out, file = "../Display_items/Tables/Supp_obesity_consistency.tsv", col.names = TRUE, row.names = FALSE, sep="\t", quote = FALSE)
+  write.table(x = obesity_ks_out, file = "../Display_items/Tables/Supp_obesity_consistency.tsv", col.names = TRUE, row.names = FALSE, sep="\t", quote = FALSE)
 ```
 
 
