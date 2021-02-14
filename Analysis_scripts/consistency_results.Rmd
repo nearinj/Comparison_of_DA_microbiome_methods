@@ -293,7 +293,7 @@ Below are the results for each set of datasets - first as barplots, which enable
   
     raw_diarrhea_ks_out <- ks.boot(Co = diarrhea_combined_overlap[, exp_name],
                                    Tr = diarrhea_combined_overlap[, obs_name],
-                                   nboots = 1000,
+                                   nboots = 10000,
                                    alternative = "two.sided")
     
     diarrhea_ks_out[tool, "D"] <- round(raw_diarrhea_ks_out$ks$statistic, 3)
