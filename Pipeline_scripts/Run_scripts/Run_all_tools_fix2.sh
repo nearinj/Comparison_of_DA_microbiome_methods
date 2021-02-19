@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 RIGHT_NOW=$(date +"%x %r %Z")
 TIME_STAMP="Updated on $RIGHT_NOW by $USER"
 
@@ -28,7 +27,7 @@ Run_ALDEX2()
     
     mkdir $Output_Path/Aldex_out
     out_file=$Output_Path/Aldex_out/Aldex_res.tsv
-    Rscript Tool_scripts/Run_Aldex2.R $ASV_table_Path $Groupings_Path $out_file
+    Rscript $TOOL_DIR/Run_Aldex2.R $ASV_table_Path $Groupings_Path $out_file
     
 }
 
@@ -40,7 +39,7 @@ Run_DeSeq2()
 
     mkdir $Output_Path/Deseq2_out
     out_file_deseq=$Output_Path/Deseq2_out/Deseq2_results.tsv
-    Rscript Tool_scripts/Run_DESeq2.R $ASV_table_Path $Groupings_Path $out_file_deseq
+    Rscript $TOOL_DIR/Run_DESeq2.R $ASV_table_Path $Groupings_Path $out_file_deseq
 }
 
 Run_Ancom2()
@@ -49,7 +48,7 @@ Run_Ancom2()
     echo "Running ANCOM"
     mkdir $Output_Path/ANCOM_out
     out_file_ancom=$Output_Path/ANCOM_out/Ancom_res.tsv
-    Rscript Tool_scripts/Run_ANCOM.R $ASV_table_Path $Groupings_Path $out_file_ancom $PWD/Ancom2_Script/ancom_v2.1.R
+    Rscript $TOOL_DIR/Run_ANCOM.R $ASV_table_Path $Groupings_Path $out_file_ancom $ANCOM_DIR/ancom_v2.1.R
 }
 
 
@@ -61,7 +60,7 @@ Run_Lefse()
     mkdir $Output_Path/Lefse_out
     out_file_lefse=$Output_Path/Lefse_out/lefse_format_file.tsv
      
-    Rscript Tool_scripts/Format_lefse.R $Rar_ASV_table_PATH $Groupings_Path $out_file_lefse
+    Rscript $TOOL_DIR/Format_lefse.R $Rar_ASV_table_PATH $Groupings_Path $out_file_lefse
     formated_out_file_lefse=$Output_Path/Lefse_out/lefse_formatted.lefse
 
     
@@ -79,7 +78,7 @@ Run_Corncob()
 
     mkdir $Output_Path/Corncob_out
     out_file_corncob=$Output_Path/Corncob_out/Corncob_results.tsv
-    Rscript Tool_scripts/Run_Corncob.R $ASV_table_Path $Groupings_Path $out_file_corncob
+    Rscript $TOOL_DIR/Run_Corncob.R $ASV_table_Path $Groupings_Path $out_file_corncob
 
 }
 
@@ -88,7 +87,7 @@ Run_Wilcoxin_rare()
 
     mkdir $Output_Path/Wilcoxon_rare_out
     out_file_wil_rare=$Output_Path/Wilcoxon_rare_out/Wil_rare_results.tsv
-    Rscript Tool_scripts/Run_Wilcox_rare.R $Rar_ASV_table_PATH $Groupings_Path $out_file_wil_rare
+    Rscript $TOOL_DIR/Run_Wilcox_rare.R $Rar_ASV_table_PATH $Groupings_Path $out_file_wil_rare
 
 }
 
@@ -96,7 +95,7 @@ Run_Wilcoxin_CLR()
 {
     mkdir $Output_Path/Wilcoxon_CLR_out
     out_file_wil_CLR=$Output_Path/Wilcoxon_CLR_out/Wil_CLR_results.tsv
-    Rscript Tool_scripts/Run_Wilcox_CLR.R $ASV_table_Path $Groupings_Path $out_file_wil_CLR
+    Rscript $TOOL_DIR/Run_Wilcox_CLR.R $ASV_table_Path $Groupings_Path $out_file_wil_CLR
 
     
 }
@@ -106,7 +105,7 @@ Run_Maaslin2_rare()
     echo "Running Maaslin2 with rarified table"
     mkdir $Output_Path/Maaslin2_rare_out
     out_file_maas_rare=$Output_Path/Maaslin2_rare_out
-    Rscript Tool_scripts/Run_Maaslin2.R $Rar_ASV_table_PATH $Groupings_Path $out_file_maas_rare
+    Rscript $TOOL_DIR/Run_Maaslin2.R $Rar_ASV_table_PATH $Groupings_Path $out_file_maas_rare
 }
 
 Run_Maaslin2()
@@ -114,7 +113,7 @@ Run_Maaslin2()
     echo "Running Maaslin2 on non-rarified table"
     mkdir $Output_Path/Maaslin2_out
     out_file_maas=$Output_Path/Maaslin2_out
-    Rscript Tool_scripts/Run_Maaslin2.R $ASV_table_Path $Groupings_Path $out_file_maas
+    Rscript $TOOL_DIR/Run_Maaslin2.R $ASV_table_Path $Groupings_Path $out_file_maas
 }
 
 Run_metagenomeSeq()
@@ -123,7 +122,7 @@ Run_metagenomeSeq()
     echo "Running metagenomeSeq using fitFeatureModel"
     mkdir $Output_Path/metagenomeSeq_out
     out_file_mgSeq=$Output_Path/metagenomeSeq_out/mgSeq_res.tsv
-    Rscript Tool_scripts/Run_metagenomeSeq.R $ASV_table_Path $Groupings_Path $out_file_mgSeq
+    Rscript $TOOL_DIR/Run_metagenomeSeq.R $ASV_table_Path $Groupings_Path $out_file_mgSeq
 }
 
 Run_edgeR()
@@ -131,7 +130,7 @@ Run_edgeR()
     echo "Running edgeR"
     mkdir $Output_Path/edgeR_out
     out_file_edgeR=$Output_Path/edgeR_out/edgeR_res.tsv
-    Rscript Tool_scripts/Run_edgeR.R $ASV_table_Path $Groupings_Path $out_file_edgeR
+    Rscript $TOOL_DIR/Run_edgeR.R $ASV_table_Path $Groupings_Path $out_file_edgeR
     
 }
 
@@ -141,7 +140,7 @@ Run_t_test_rare()
     echo "Running T test"
     mkdir $Output_Path/t_test_rare_out
     out_file_t_rare=$Output_Path/t_test_rare_out/t_test_res.tsv
-    Rscript Tool_scripts/Run_t_test_rare.R $Rar_ASV_table_PATH $Groupings_Path $out_file_t_rare
+    Rscript $TOOL_DIR/Run_t_test_rare.R $Rar_ASV_table_PATH $Groupings_Path $out_file_t_rare
     
 }
 
@@ -153,7 +152,7 @@ Run_limma_voom_TMM()
     mkdir $Output_Path/limma_voom_tmm_out
     out_file_voom=$Output_Path/limma_voom_tmm_out/limma_voom_tmm_res.tsv
     ref_file=$Output_Path/limma_voom_tmm_out/Ref_choosing.txt
-	Rscript Tool_scripts/Run_Limma_Voom_TMM.R $ASV_table_Path $Groupings_Path $out_file_voom $ref_file
+	Rscript $TOOL_DIR/Run_Limma_Voom_TMM.R $ASV_table_Path $Groupings_Path $out_file_voom $ref_file
     
 }
 
@@ -164,10 +163,9 @@ Run_limma_voom_TMMwsp()
     mkdir $Output_Path/Limma_voom_TMMwsp
     outfile_voom=$Output_Path/Limma_voom_TMMwsp/limma_voom_tmmwsp_res.tsv
 	ref_file=$Output_Path/Limma_voom_TMMwsp/limma_voom_tmmwsp_res.tsv
-    Rscript Tool_scripts/Run_Limma_Voom_TMMwsp.R $ASV_table_Path $Groupings_Path $outfile_voom $ref_file
+    Rscript $TOOL_DIR/Run_Limma_Voom_TMMwsp.R $ASV_table_Path $Groupings_Path $outfile_voom $ref_file
 
 }
-
 
 
 Groupings_Path=
@@ -218,7 +216,9 @@ while [ "$1" != "" ]; do
     shift
 done
 
-
+source ../../Config.sh
+TOOL_DIR=$TOOL_DIR
+ANCOM_DIR=$ANCOM_DIR
 # Test code to verify command line processing
 
 time_file=$Output_Path/time_file.txt
@@ -239,7 +239,7 @@ out_file_new_tab_rar_ASV=$Output_Path/fixed_rare_tables/$table_name
 ### Run script that checks if rare table has the same samples as the non-rar table and then filters the non-rare tab
 if [ $Filt_level == 0 ]; then
 	echo "No Filtering was selected. Due to this we expect that a rarified table has also been provided. This will be fixed in future update"
-	Rscript Tool_scripts/Filter_samples_of_non_rare_table.R $ASV_table_Path $Rar_ASV_table_PATH $out_file_new_tab_ASV
+	Rscript $TOOL_DIR/Filter_samples_of_non_rare_table.R $ASV_table_Path $Rar_ASV_table_PATH $out_file_new_tab_ASV
 	ASV_table_Path=$out_file_new_tab_ASV
 else
 	#### Run script that checks if non-rare table has the same samples as rare table
@@ -248,7 +248,7 @@ else
 		echo "Please Enter the rarification depth you would like to us"
 		exit 1
 	else	
-		Rscript Tool_scripts/Filter_samples_and_features.R $ASV_table_Path $Filt_level $out_file_new_tab_ASV $out_file_new_tab_rar_ASV $depth
+		Rscript $TOOL_DIR/Filter_samples_and_features.R $ASV_table_Path $Filt_level $out_file_new_tab_ASV $out_file_new_tab_rar_ASV $depth
 		ASV_table_Path=$out_file_new_tab_ASV
 		Rar_ASV_table_PATH=$out_file_new_tab_rar_ASV
 	fi
