@@ -197,7 +197,7 @@ read_hackathon_results <- function(study) {
 ```{r}
 Filtered_FD_data <- list()
 
-setwd("~/projects/Hackathon/Studies/Office/False_Discovery_testing/results_filt/")
+setwd("~/projects/TEST_DA_TEST2/Hackathon/Studies/Office/False_Discovery_Testing/results_filt/")
 
 
 Office_filt_results <- lapply(c(1:10), read_hackathon_results)
@@ -218,7 +218,7 @@ Filtered_FD_data[["Office"]] <- Office_filt_p_tabs
 
 #### ArcticFreshWaters
 ```{r}
-setwd("~/projects/Hackathon/Studies/ArcticFreshwaters/False_Discovery_Testing/results_filt/")
+setwd("~/projects/TEST_DA_TEST2/Hackathon/Studies/ArcticFreshwaters/False_Discovery_Testing/results_filt/")
 
 Arctic_results_filt <- lapply(c(1:10), read_hackathon_results)
 
@@ -236,7 +236,7 @@ Filtered_FD_data[["ArcticFreshWaters"]] <- Arctic_filt_p_tabs
 
 #### Blueberry
 ```{r}
-setwd("~/projects/Hackathon/Studies/Blueberry/False_Discovery_Testing/results_filt/")
+setwd("~/projects/TEST_DA_TEST2/Hackathon/Studies/Blueberry/False_Discovery_Testing/results_filt/")
 
 
 Blueb_filt_results <- lapply(c(1:10), read_hackathon_results)
@@ -254,7 +254,7 @@ Filtered_FD_data[["Blueberry"]] <- Blueb_filt_p_tabs
 
 #### Goodrich
 ```{r}
-setwd("~/projects/Hackathon/Studies/ob_goodrich/False_Discovery_Testing/results_filt/")
+setwd("~/projects/TEST_DA_TEST2/Hackathon/Studies/ob_goodrich/False_Discovery_Testing/results_filt/")
 
 goodrich_filt_results <- lapply(c(1:10), read_hackathon_results)
 
@@ -272,7 +272,7 @@ Filtered_FD_data[["ob_goodrich"]] <- goodrich_filt_p_tabs
 #### hiv_noguerajulian
 
 ```{r}
-setwd("~/projects/Hackathon/Studies/hiv_noguerajulian/False_Discovery_Testing/results_filt/")
+setwd("~/projects/TEST_DA_TEST2/Hackathon/Studies/hiv_noguerajulian/False_Discovery_Testing/results_filt/")
 
 hiv_nog_filt_results <- lapply(c(1:10), read_hackathon_results)
 
@@ -289,7 +289,7 @@ Filtered_FD_data[["hiv_noguerajulian"]] <- hiv_nog_filt_p_tabs
 
 #### Ji_WTP_DS
 ```{r}
-setwd("~/projects/Hackathon/Studies/Ji_WTP_DS/False_Discovery_Testing/results_filt/")
+setwd("~/projects/TEST_DA_TEST2/Hackathon/Studies/Ji_WTP_DS/False_Discovery_Testing/results_filt/")
 
 JI_WTP_filt_results <- lapply(c(1:10), read_hackathon_results)
 
@@ -306,7 +306,7 @@ Filtered_FD_data[["Ji_WTP_DS"]] <- JI_WTP_filt_p_tabs
 
 #### Schubert
 ```{r}
-setwd("~/projects/Hackathon/Studies/cdi_schubert/False_Discovery_Testing/results_filt/")
+setwd("~/projects/TEST_DA_TEST2/Hackathon/Studies/cdi_schubert/False_Discovery_Testing/results_filt/")
 
 schubert_filt_results <- lapply(c(1:10), read_hackathon_results)
 
@@ -323,7 +323,7 @@ Filtered_FD_data[["cdi_schubert"]] <- schubert_filt_p_tabs
 
 #### sw_sed_detender
 ```{r}
-setwd("~/projects/Hackathon/Studies/sw_sed_detender/False_Discovery_Testing/results_filt/")
+setwd("~/projects/TEST_DA_TEST2/Hackathon/Studies/sw_sed_detender/False_Discovery_Testing/results_filt/")
 
 sw_sed_filt_results <- lapply(c(1:10), read_hackathon_results)
 
@@ -338,7 +338,7 @@ Filtered_FD_data[["sw_sed_detender"]] <- sw_sed_filt_p_tabs
 
 #### Save list
 ```{r}
-saveRDS(Filtered_FD_data, "~/GitHub_Repos/Hackathon_testing/Data/FD_data_filt.RDS")
+saveRDS(Filtered_FD_data, "~/GitHub_Repos/Hackathon_testing/Data/FD_data_filt_TEST_DA_TEST2.RDS")
 ```
 
 ### Unfiltered
@@ -544,7 +544,7 @@ get_percent_sig <- function(df_list, total_feats, total_rar_feats){
 
 #### Filtered
 ```{r}
-Filtered_FD_data <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/FD_data_filt.RDS")
+Filtered_FD_data <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/FD_data_filt_TEST_DA_TEST2.RDS")
 
 names(Filtered_FD_data)
 

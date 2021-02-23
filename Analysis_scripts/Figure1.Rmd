@@ -12,8 +12,11 @@ knitr::opts_chunk$set(echo = TRUE)
 library(pheatmap)
 library(gridExtra)
 # Set WD
-opts_knit$set(root.dir = '/home/jacob/projects/Hackathon/Studies/')
-setwd("/home/jacob/projects/Hackathon/Studies/")
+
+
+### SET DIRECTORY WITH DATA HERE
+opts_knit$set(root.dir = '/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/')
+setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/")
 
 
 
@@ -250,8 +253,8 @@ names(filt_results) <- hackathon_study_ids
 unfilt_results <- lapply(hackathon_study_ids, read_hackathon_results, results_folder = "No_filt_Results")
 names(unfilt_results) <- hackathon_study_ids
 
-saveRDS(filt_results, "~/GitHub_Repos/Hackathon_testing/Data/Filt_results.RDS")
-saveRDS(unfilt_results, "~/GitHub_Repos/Hackathon_testing/Data/Unfilt_results.RDS")
+saveRDS(filt_results, "~/GitHub_Repos/Hackathon_testing/Data/Filt_results_TEST_DA_TEST2.RDS")
+saveRDS(unfilt_results, "~/GitHub_Repos/Hackathon_testing/Data/Unfilt_results_TEST_DA_TEST2.RDS")
 
 ```
 
@@ -321,19 +324,19 @@ for (study in hackathon_study_ids){
   }
 }
 
-saveRDS(unfilt_study_tab, "~/GitHub_Repos/Hackathon_testing/Data/unfilt_study_tab.RDS")
-saveRDS(filt_study_tab, "~/GitHub_Repos/Hackathon_testing/Data/filt_study_tab.RDS")
+saveRDS(unfilt_study_tab, "~/GitHub_Repos/Hackathon_testing/Data/unfilt_study_tab_TEST_DA_TEST2.RDS")
+saveRDS(filt_study_tab, "~/GitHub_Repos/Hackathon_testing/Data/filt_study_tab_TEST_DA_TEST2.RDS")
 ```
 
 # Figure 1 Analysis
 
 ## Read in data
 ```{r}
-filt_results <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/Filt_results.RDS")
-unfilt_results <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/Unfilt_results.RDS")
+filt_results <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/Filt_results_TEST_DA_TEST2.RDS")
+unfilt_results <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/Unfilt_results_TEST_DA_TEST2.RDS")
 
-unfilt_study_tab  <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/unfilt_study_tab.RDS")
-filt_study_tab <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/filt_study_tab.RDS")
+unfilt_study_tab  <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/unfilt_study_tab_TEST_DA_TEST2.RDS")
+filt_study_tab <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/filt_study_tab_TEST_DA_TEST2.RDS")
 
 ```
 
@@ -732,6 +735,7 @@ unfilt_ASV_nums <- pheatmap(Alpha_order_unfilt,
 
 
 ```
+
 
 
 
