@@ -735,3 +735,24 @@ Figure4_plot <- cowplot::plot_grid(ggplotify::as.ggplot(Final_heat_nonfilt), ggp
 ggsave(filename=paste(display_items_out, "Main_figures", "Figure4.pdf", sep="/"),
        plot = Figure4_plot, width = 7, height=7, units="in", dpi=600)
 ```
+
+
+### Text summary stats
+
+```{r}
+print("edgeR filtered")
+print("mean")
+print(mean(as.numeric(Mean_filt_percent_sig["edgeR", ])))
+print("sd")
+print(sd(as.numeric(Mean_filt_percent_sig["edgeR", ])))
+
+print("========")
+
+print("LEfSe filtered")
+print("mean")
+print(mean(as.numeric(Mean_filt_percent_sig["LEfSe", ])))
+print("sd")
+print(sd(as.numeric(Mean_filt_percent_sig["LEfSe", ])))
+
+
+```
