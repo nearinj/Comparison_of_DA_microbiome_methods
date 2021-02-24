@@ -1,12 +1,16 @@
 ---
 title: "Figure2"
 author: "Jacob T. Nearing"
-date: "1/7/2021"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+### Folders where final figures are written
+### Make sure this is pointed to your home directory
+display_items_out <- "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Display_items/"
 
 #libraries
 library(ggplot2)
@@ -16,7 +20,7 @@ library(pheatmap)
 
 
 
-tool_names <- c(aldex2="ALDEx2", ancom="ANCOM", corncob="corncob", deseq2="DESeq2", edger="edgeR", lefse="LEfSe", 
+tool_names <- c(aldex2="ALDEx2", ancom="ANCOM-II", corncob="corncob", deseq2="DESeq2", edger="edgeR", lefse="LEfSe", 
                 limma_voom_TMM="limma voom (TMM)", limma_voom_TMMwsp="limma voom (TMMwsp)", maaslin2="MaAsLin2",
                 maaslin2rare="MaAsLin2 (rare)", metagenomeSeq="metagenomeSeq", ttestrare="t-test (rare)", 
                 wilcoxonclr="Wilcoxon (CLR)", wilcoxonrare="Wilcoxon (rare)")
@@ -25,11 +29,11 @@ tool_names <- c(aldex2="ALDEx2", ancom="ANCOM", corncob="corncob", deseq2="DESeq
 
 #Load in data
 ```{r}
-filt_results <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/Filt_results_TEST_DA_TEST2.RDS")
-unfilt_results <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/Unfilt_results_TEST_DA_TEST2.RDS")
+filt_results <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Filt_results_TEST_DA_TEST2.RDS")
+unfilt_results <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Unfilt_results_TEST_DA_TEST2.RDS")
 
-unfilt_study_tab  <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/unfilt_study_tab_TEST_DA_TEST2.RDS")
-filt_study_tab <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/filt_study_tab_TEST_DA_TEST2.RDS")
+unfilt_study_tab  <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/unfilt_study_tab_TEST_DA_TEST2.RDS")
+filt_study_tab <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/filt_study_tab_TEST_DA_TEST2.RDS")
 
 ```
 
@@ -112,7 +116,7 @@ for(row_num in 1:length(rownames(Feature_count_tab_filt))){
 }
   
 saveRDS(Feature_count_tab_filt, "~/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_filt_TEST_DA_TEST2.RDS")
-Feature_count_tab_filt <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_filt_TEST_DA_TEST2.RDS")
+Feature_count_tab_filt <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_filt_TEST_DA_TEST2.RDS")
 
 
 ### get in ggplot format.
@@ -163,7 +167,7 @@ for(row_num in 1:length(rownames(Feature_count_tab_unfilt))){
 }
 
 saveRDS(Feature_count_tab_unfilt, file="~/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_unfilt_TEST_DA_TEST2.RDS")
-Feature_count_tab_unfilt <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_unfilt_TEST_DA_TEST2.RDS")
+Feature_count_tab_unfilt <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_unfilt_TEST_DA_TEST2.RDS")
 plot_info_barplot_unfilt <- reshape2::melt(Feature_count_tab_unfilt, na.rm=T)
 remove_row <- which(plot_info_barplot_unfilt$value==0)
 no_zero_unfilt <- plot_info_barplot_unfilt[-remove_row,]
@@ -204,9 +208,10 @@ colnames(test_join)[5] <- "Total_Hits"
 Filt_bars <- ggplot(test_join, aes(x=as.numeric(Score), y=value, width=1, fill=Total_Hits)) + geom_bar(stat="identity") +
   xlab("Consistency Score") + ylab("") + ggtitle("Filtered") + 
   facet_grid(rows=vars(Method_clean), switch='y') + theme_classic() + 
-  scale_y_continuous(position = "right") + 
+  scale_y_continuous(position = "right", breaks=c(0, 20, 40, 60), labels=c("0", "", "40", "")) +
   theme(strip.text.y.left = element_text(angle=0), strip.background = element_blank()) +scale_x_continuous(breaks=c(1:14), expand=c(0,0)) +
-  theme(text=element_text(size=16)) + guides(fill=guide_legend(title="Total Hits"))
+  theme(text=element_text(size=16)) + guides(fill=guide_legend(title="Total Hits")) +
+    scale_fill_continuous(high = "#132B43", low = "#56B1F7")
 
 Filt_bars
 
@@ -224,9 +229,10 @@ colnames(unfilt_bars_data_join)[5] <- "Total_Hits"
 Unfilt_bars <- ggplot(unfilt_bars_data_join, aes(x=as.numeric(Score), y=value, width=1, fill=Total_Hits)) + geom_bar(stat="identity") +
   xlab("Consistency Score") + ylab("") + ggtitle("Unfiltered") + 
   facet_grid(rows=vars(Method_clean), switch='y') + theme_classic() + 
-  scale_y_continuous(position = "right") + 
+  scale_y_continuous(position = "right", breaks=c(0, 20, 40, 60), labels=c("0", "", "40", "")) + 
   theme(strip.text.y.left = element_text(angle=0), strip.background = element_blank()) +scale_x_continuous(breaks=c(1:14), expand=c(0,0)) +
-  theme(text=element_text(size=16)) + guides(fill=guide_legend(title="Total Hits"))
+  theme(text=element_text(size=16)) + guides(fill=guide_legend(title="Total Hits")) +
+    scale_fill_continuous(high = "#132B43", low = "#56B1F7")
 
 Unfilt_bars
 
@@ -234,6 +240,29 @@ Unfilt_bars
 ## new figure2
 
 Figure2 <- plot_grid(Unfilt_bars, Filt_bars, labels=c("A", "B"), nrow=1)
-Figure2
+ggsave(filename=paste(display_items_out, "Main_figures", "Figure2.pdf", sep="/"),
+       plot = Figure2, width = 15, height=6, units="in", dpi=600)
 
 ```
+
+## Get proportion of scores > 12
+```{r}
+print("unfilt")
+unfilt_bars_high <- unfilt_bars_data_join[which(as.numeric(unfilt_bars_data_join$Score) > 12), ]
+unfilt_bars_high_summed <- aggregate(value ~ variable, FUN=sum, data=unfilt_bars_high[, c("variable", "value")])
+
+print(c("mean:", mean(unfilt_bars_high_summed$value)))
+print(c("sd:", sd(unfilt_bars_high_summed$value)))
+
+print("=======")
+
+print("filt")
+filt_bars_high <- test_join[which(as.numeric(test_join$Score) > 12), ]
+filt_bars_high_summed <- aggregate(value ~ variable, FUN=sum, data=filt_bars_high[, c("variable", "value")])
+
+print(c("mean:", mean(filt_bars_high_summed$value)))
+print(c("sd:", sd(filt_bars_high_summed$value)))
+
+```
+
+
