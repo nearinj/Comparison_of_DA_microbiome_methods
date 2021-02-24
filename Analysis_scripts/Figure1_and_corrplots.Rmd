@@ -846,3 +846,15 @@ colnames(unfilt_pvals_df) <- colnames(fixed_hackathon_metadata_unfilt)[30:37]
 corrplot(as.matrix(unfilt_rhos_df[,-3]), full_col = FALSE, p.mat = unfilt_pvals_df[,-3], sig.level = 0.05, insig = "blank")
 # Saved manually as 8.5x11 inches as Supp_figures/Supp_Corrplot_Unfilt.pdf
 ```
+
+## Rho values to report in main text
+```{r}
+print("Filtered")
+sort(filt_rhos_df[, "Aitchson's Dist. Effect Size"])
+
+print("========================")
+
+print("Unfiltered")
+sort(unfilt_rhos_df[, "Aitchson's Dist. Effect Size"])
+
+```
