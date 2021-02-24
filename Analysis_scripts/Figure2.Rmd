@@ -20,7 +20,7 @@ library(pheatmap)
 
 
 
-tool_names <- c(aldex2="ALDEx2", ancom="ANCOM", corncob="corncob", deseq2="DESeq2", edger="edgeR", lefse="LEfSe", 
+tool_names <- c(aldex2="ALDEx2", ancom="ANCOM-II", corncob="corncob", deseq2="DESeq2", edger="edgeR", lefse="LEfSe", 
                 limma_voom_TMM="limma voom (TMM)", limma_voom_TMMwsp="limma voom (TMMwsp)", maaslin2="MaAsLin2",
                 maaslin2rare="MaAsLin2 (rare)", metagenomeSeq="metagenomeSeq", ttestrare="t-test (rare)", 
                 wilcoxonclr="Wilcoxon (CLR)", wilcoxonrare="Wilcoxon (rare)")
@@ -210,7 +210,8 @@ Filt_bars <- ggplot(test_join, aes(x=as.numeric(Score), y=value, width=1, fill=T
   facet_grid(rows=vars(Method_clean), switch='y') + theme_classic() + 
   scale_y_continuous(position = "right", breaks=c(0, 20, 40, 60), labels=c("0", "", "40", "")) +
   theme(strip.text.y.left = element_text(angle=0), strip.background = element_blank()) +scale_x_continuous(breaks=c(1:14), expand=c(0,0)) +
-  theme(text=element_text(size=16)) + guides(fill=guide_legend(title="Total Hits"))
+  theme(text=element_text(size=16)) + guides(fill=guide_legend(title="Total Hits")) +
+    scale_fill_continuous(high = "#132B43", low = "#56B1F7")
 
 Filt_bars
 
@@ -230,7 +231,8 @@ Unfilt_bars <- ggplot(unfilt_bars_data_join, aes(x=as.numeric(Score), y=value, w
   facet_grid(rows=vars(Method_clean), switch='y') + theme_classic() + 
   scale_y_continuous(position = "right", breaks=c(0, 20, 40, 60), labels=c("0", "", "40", "")) + 
   theme(strip.text.y.left = element_text(angle=0), strip.background = element_blank()) +scale_x_continuous(breaks=c(1:14), expand=c(0,0)) +
-  theme(text=element_text(size=16)) + guides(fill=guide_legend(title="Total Hits"))
+  theme(text=element_text(size=16)) + guides(fill=guide_legend(title="Total Hits")) +
+    scale_fill_continuous(high = "#132B43", low = "#56B1F7")
 
 Unfilt_bars
 
