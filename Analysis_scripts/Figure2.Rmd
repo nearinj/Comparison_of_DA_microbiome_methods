@@ -244,3 +244,25 @@ ggsave(filename=paste(display_items_out, "Main_figures", "Figure2.pdf", sep="/")
        plot = Figure2, width = 15, height=6, units="in", dpi=600)
 
 ```
+
+## Get proportion of scores > 12
+```{r}
+print("unfilt")
+unfilt_bars_high <- unfilt_bars_data_join[which(as.numeric(unfilt_bars_data_join$Score) > 12), ]
+unfilt_bars_high_summed <- aggregate(value ~ variable, FUN=sum, data=unfilt_bars_high[, c("variable", "value")])
+
+print(c("mean:", mean(unfilt_bars_high_summed$value)))
+print(c("sd:", sd(unfilt_bars_high_summed$value)))
+
+print("=======")
+
+print("filt")
+filt_bars_high <- test_join[which(as.numeric(test_join$Score) > 12), ]
+filt_bars_high_summed <- aggregate(value ~ variable, FUN=sum, data=filt_bars_high[, c("variable", "value")])
+
+print(c("mean:", mean(filt_bars_high_summed$value)))
+print(c("sd:", sd(filt_bars_high_summed$value)))
+
+```
+
+
