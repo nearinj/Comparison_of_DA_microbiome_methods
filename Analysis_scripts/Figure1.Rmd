@@ -15,9 +15,12 @@ library(gridExtra)
 
 
 ### SET DIRECTORY WITH DATA HERE
-opts_knit$set(root.dir = '/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/')
+knitr::opts_knit$set(root.dir = '/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/')
 setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/")
 
+### Folders where final figures are written
+### Make sure this is pointed to your home directory
+display_items_out <- "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Display_items/"
 
 
 ###updated dataset names
@@ -62,7 +65,7 @@ Data_set_names <- c(ArcticFireSoils="Soil - Fires",
                          wood_plastic_kesy="Marine - Plastic (3)")
 
 
-tool_names <- c(aldex2="ALDEx2", ancom="ANCOM", corncob="corncob", deseq2="DESeq2", edger="edgeR", lefse="LEfSe", 
+tool_names <- c(aldex2="ALDEx2", ancom="ANCOM-II", corncob="corncob", deseq2="DESeq2", edger="edgeR", lefse="LEfSe", 
                 limma_voom_TMM="limma voom (TMM)", limma_voom_TMMwsp="limma voom (TMMwsp)", maaslin2="MaAsLin2",
                 maaslin2rare="MaAsLin2 (rare)", metagenomeSeq="metagenomeSeq", ttestrare="t-test (rare)", 
                 wilcoxonclr="Wilcoxon (CLR)", wilcoxonrare="Wilcoxon (rare)")
@@ -253,8 +256,8 @@ names(filt_results) <- hackathon_study_ids
 unfilt_results <- lapply(hackathon_study_ids, read_hackathon_results, results_folder = "No_filt_Results")
 names(unfilt_results) <- hackathon_study_ids
 
-saveRDS(filt_results, "~/GitHub_Repos/Hackathon_testing/Data/Filt_results_TEST_DA_TEST2.RDS")
-saveRDS(unfilt_results, "~/GitHub_Repos/Hackathon_testing/Data/Unfilt_results_TEST_DA_TEST2.RDS")
+saveRDS(filt_results, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/Filt_results_TEST_DA_TEST2.RDS")
+saveRDS(unfilt_results, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/Unfilt_results_TEST_DA_TEST2.RDS")
 
 ```
 
@@ -324,19 +327,19 @@ for (study in hackathon_study_ids){
   }
 }
 
-saveRDS(unfilt_study_tab, "~/GitHub_Repos/Hackathon_testing/Data/unfilt_study_tab_TEST_DA_TEST2.RDS")
-saveRDS(filt_study_tab, "~/GitHub_Repos/Hackathon_testing/Data/filt_study_tab_TEST_DA_TEST2.RDS")
+saveRDS(unfilt_study_tab, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/unfilt_study_tab_TEST_DA_TEST2.RDS")
+saveRDS(filt_study_tab, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/filt_study_tab_TEST_DA_TEST2.RDS")
 ```
 
 # Figure 1 Analysis
 
 ## Read in data
 ```{r}
-filt_results <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/Filt_results_TEST_DA_TEST2.RDS")
-unfilt_results <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/Unfilt_results_TEST_DA_TEST2.RDS")
+filt_results <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Filt_results_TEST_DA_TEST2.RDS")
+unfilt_results <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Unfilt_results_TEST_DA_TEST2.RDS")
 
-unfilt_study_tab  <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/unfilt_study_tab_TEST_DA_TEST2.RDS")
-filt_study_tab <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/filt_study_tab_TEST_DA_TEST2.RDS")
+unfilt_study_tab  <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/unfilt_study_tab_TEST_DA_TEST2.RDS")
+filt_study_tab <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/filt_study_tab_TEST_DA_TEST2.RDS")
 
 ```
 
@@ -643,6 +646,7 @@ filt_ASV_nums <- pheatmap(Alpha_order_filt,
          annotation_col=fixed_hackathon_metadata[, c("Log Sample Size", "Log Aitchson's Dist. Effect Size", 
                                                      "Sparsity", "Richness", "Read Depth Variation", 
                                                      "Log Read Depth Range" ), drop=FALSE],
+         annotation_legend=FALSE,
          fontsize_row=14,
          legend_labels = "Percent of Significant Features",
          treeheight_col = 0,
@@ -727,6 +731,7 @@ unfilt_ASV_nums <- pheatmap(Alpha_order_unfilt,
          annotation_col=fixed_hackathon_metadata[, c("Log Sample Size", "Log Aitchson's Dist. Effect Size", 
                                                      "Sparsity", "Richness", "Read Depth Variation", 
                                                      "Log Read Depth Range" ), drop=FALSE],
+         annotation_legend=FALSE,
          fontsize_row = 14,
          treeheight_col = 0,
          cluster_cols = F,
@@ -741,8 +746,11 @@ unfilt_ASV_nums <- pheatmap(Alpha_order_unfilt,
 
 ## Final Plot
 ```{r}
-final_plot <- gridExtra::grid.arrange(unfilt_ASV_nums[[4]], filt_ASV_nums[[4]], nrow=2)
-final_plot
+figure1_plot <- cowplot::plot_grid(unfilt_ASV_nums[[4]], filt_ASV_nums[[4]], nrow=2, labels=c('A', 'B'))
+
+ggsave(filename=paste(display_items_out, "Main_figures", "Figure1.pdf", sep="/"),
+       plot = figure1_plot, width = 15, height=12, units="in", dpi=600)
+```
 ```
 
 
