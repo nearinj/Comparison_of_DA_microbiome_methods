@@ -751,7 +751,6 @@ figure1_plot <- cowplot::plot_grid(unfilt_ASV_nums[[4]], filt_ASV_nums[[4]], nro
 ggsave(filename=paste(display_items_out, "Main_figures", "Figure1.pdf", sep="/"),
        plot = figure1_plot, width = 15, height=12, units="in", dpi=600)
 ```
-```
 
 
 
