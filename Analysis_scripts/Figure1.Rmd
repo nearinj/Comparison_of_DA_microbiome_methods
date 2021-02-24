@@ -744,3 +744,98 @@ unfilt_ASV_nums <- pheatmap(Alpha_order_unfilt,
 final_plot <- gridExtra::grid.arrange(unfilt_ASV_nums[[4]], filt_ASV_nums[[4]], nrow=2)
 final_plot
 ```
+
+
+
+## Supplemental Correlation Figure
+```{r}
+
+library(corrplot)
+
+# Filter
+filt_sig_percent_fix <- filt_sig_percent[,-1]
+
+#fix dataset names
+rownames(filt_sig_percent_fix) <- Data_set_names[rownames(filt_sig_percent_fix)]
+
+fixed_hackathon_metadata_filt <- fixed_hackathon_metadata[rownames(filt_sig_percent_fix),]
+
+
+filt_rhos <- list()
+filt_ps <- list()
+
+for(i in 1:length(colnames(filt_sig_percent_fix))){
+  ##go through each Tool
+  temp_pvals <- vector()
+  temp_rhos <- vector()
+  
+  for(j in 1:8){
+    message(j)
+    # run correlation of column
+    temp_pvals[[j]] <- cor.test(filt_sig_percent_fix[,i], fixed_hackathon_metadata_filt[,(j+29)], method="spearman", exact=F)$p.value
+    temp_rhos[[j]] <- cor.test(filt_sig_percent_fix[,i], fixed_hackathon_metadata_filt[,(j+29)], method="spearman", exact=F)$estimate
+  }
+  
+  filt_rhos[[i]] <- temp_rhos
+  filt_ps[[i]] <- temp_pvals
+}
+
+filt_rhos_df <- do.call(rbind, filt_rhos)
+filt_pvals_df <- do.call(rbind, filt_ps)
+
+rownames(filt_rhos_df) <- colnames(filt_sig_percent_fix)
+
+rownames(filt_rhos_df) <- tool_rename[rownames(filt_rhos_df)]
+
+rownames(filt_pvals_df) <- colnames(filt_sig_percent_fix)
+
+colnames(filt_rhos_df) <- colnames(fixed_hackathon_metadata_filt)[30:37]
+colnames(filt_pvals_df) <- colnames(fixed_hackathon_metadata_filt)[30:37]
+
+corrplot(filt_rhos_df[,-3], p.mat = filt_pvals_df[,-3], sig.level = 0.05, insig = "blank", full_col = FALSE)
+
+
+
+### unfilt
+unfilt_sig_percent_fix <- unfilt_sig_percent[,-1]
+
+#fix dataset names
+rownames(unfilt_sig_percent_fix) <- Data_set_names[rownames(unfilt_sig_percent_fix)]
+
+fixed_hackathon_metadata_unfilt <- fixed_hackathon_metadata[rownames(unfilt_sig_percent_fix),]
+
+
+unfilt_rhos <- list()
+unfilt_ps <- list()
+
+for(i in 1:length(colnames(unfilt_sig_percent_fix))){
+  ##go through each Tool
+  temp_pvals <- vector()
+  temp_rhos <- vector()
+  
+  for(j in 1:8){
+    message(j+29)
+    # run correlation of column
+    temp_pvals[[j]] <- cor.test(unfilt_sig_percent_fix[,i], fixed_hackathon_metadata_unfilt[,(j+29)], method="spearman", exact=F)$p.value
+    temp_rhos[[j]] <- cor.test(unfilt_sig_percent_fix[,i], fixed_hackathon_metadata_unfilt[,(j+29)], method="spearman", exact=F)$estimate
+  }
+  
+  unfilt_rhos[[i]] <- temp_rhos
+  unfilt_ps[[i]] <- temp_pvals
+}
+
+unfilt_rhos_df <- do.call(rbind, unfilt_rhos)
+unfilt_pvals_df <- do.call(rbind, unfilt_ps)
+
+rownames(unfilt_rhos_df) <- colnames(unfilt_sig_percent_fix)
+
+rownames(unfilt_rhos_df) <- tool_rename[rownames(unfilt_rhos_df)]
+
+rownames(unfilt_pvals_df) <- colnames(unfilt_sig_percent_fix)
+
+colnames(unfilt_rhos_df) <- colnames(fixed_hackathon_metadata_unfilt)[30:37]
+colnames(unfilt_pvals_df) <- colnames(fixed_hackathon_metadata_unfilt)[30:37]
+
+corrplot(as.matrix(unfilt_rhos_df[,-3]), full_col = FALSE, p.mat = unfilt_pvals_df[,-3], sig.level = 0.05, insig = "blank")
+
+```
