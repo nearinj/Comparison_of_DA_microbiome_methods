@@ -332,11 +332,11 @@ saveRDS(filt_study_tab, "~/GitHub_Repos/Hackathon_testing/Data/filt_study_tab_TE
 
 ## Read in data
 ```{r}
-filt_results <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/Filt_results_TEST_DA_TEST2.RDS")
-unfilt_results <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/Unfilt_results_TEST_DA_TEST2.RDS")
+filt_results <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/Filt_results.RDS")
+unfilt_results <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/Unfilt_results.RDS")
 
-unfilt_study_tab  <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/unfilt_study_tab_TEST_DA_TEST2.RDS")
-filt_study_tab <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/filt_study_tab_TEST_DA_TEST2.RDS")
+unfilt_study_tab  <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/unfilt_study_tab.RDS")
+filt_study_tab <- readRDS("~/GitHub_Repos/Hackathon_testing/Data/filt_study_tab.RDS")
 
 ```
 
@@ -749,7 +749,7 @@ final_plot
 
 ## Supplemental Correlation Figure
 ```{r}
-
+setwd("~/GitHub_Repos/Clean_Hackathon/Display_items/Supp_figures/")
 library(corrplot)
 
 # Filter
@@ -792,8 +792,11 @@ rownames(filt_pvals_df) <- colnames(filt_sig_percent_fix)
 colnames(filt_rhos_df) <- colnames(fixed_hackathon_metadata_filt)[30:37]
 colnames(filt_pvals_df) <- colnames(fixed_hackathon_metadata_filt)[30:37]
 
+
+pdf("Filtered_Corrplot2.pdf", height=16, width=20)
 corrplot(filt_rhos_df[,-3], p.mat = filt_pvals_df[,-3], sig.level = 0.05, insig = "blank", full_col = FALSE)
 
+graphics.off()
 
 
 ### unfilt
@@ -836,6 +839,9 @@ rownames(unfilt_pvals_df) <- colnames(unfilt_sig_percent_fix)
 colnames(unfilt_rhos_df) <- colnames(fixed_hackathon_metadata_unfilt)[30:37]
 colnames(unfilt_pvals_df) <- colnames(fixed_hackathon_metadata_unfilt)[30:37]
 
+pdf("UnFiltered_Corrplot2.pdf", height=16, width=20)
 corrplot(as.matrix(unfilt_rhos_df[,-3]), full_col = FALSE, p.mat = unfilt_pvals_df[,-3], sig.level = 0.05, insig = "blank")
 
+graphics.off()
 ```
+
