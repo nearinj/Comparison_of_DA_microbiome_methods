@@ -13,7 +13,7 @@ library(pheatmap)
 
 ### Folders where final figures are written
 ### Make sure this is pointed to your home directory
-display_items_out <- "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Display_items/"
+display_items_out <- "/home/jacob/GitHub_Repos/Clean_Hackathon/Display_items/"
 
 Data_set_names <- c(ArcticFireSoils="Soil - Fires",
                          ArcticFreshWater="Freshwater - Arctic",
@@ -353,7 +353,7 @@ Unfiltered_FD_data <- list()
 #### ArcticFreshWaters
 
 ```{r}
-setwd("/home/jacob/projects/Hackathon/Studies/ArcticFreshwaters/False_Discovery_Testing/results_nonfilt/")
+setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/ArcticFreshwaters/False_Discovery_Testing/results_nonfilt/")
 
 arcticfresh_nonfilt <- lapply(c(1:10), read_hackathon_results)
 
@@ -371,7 +371,7 @@ Unfiltered_FD_data[["ArcticFreshWaters"]] <- arcticfresh_nonfilt_p_tabs
 
 #### Blueberry
 ```{r}
-setwd("/home/jacob/projects/Hackathon/Studies/Blueberry/False_Discovery_Testing/results_nonfilt/")
+setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/Blueberry/False_Discovery_Testing/results_nonfilt/")
 
 Blueberry_nonfilt <- lapply(c(1:10), read_hackathon_results)
 
@@ -388,7 +388,7 @@ Unfiltered_FD_data[["Blueberry"]] <- Blueberry_nonfilt_p_tabs
 
 #### ob_goodrich
 ```{r}
-setwd("/home/jacob/projects/Hackathon/Studies/ob_goodrich/False_Discovery_Testing/results_nonfilt/")
+setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/ob_goodrich/False_Discovery_Testing/results_nonfilt/")
 
 goodrich_nonfilt <- lapply(c(1:10), read_hackathon_results)
 
@@ -407,7 +407,7 @@ Unfiltered_FD_data[["ob_goodrich"]] <- goodrich_nonfilt_p_tabs
 #### hiv_noguerajulian
 
 ```{r}
-setwd("/home/jacob/projects/Hackathon/Studies/hiv_noguerajulian/False_Discovery_Testing/results_nonfilt/")
+setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/hiv_noguerajulian/False_Discovery_Testing/results_nonfilt/")
 
 hiv_nog_nonfilt <- lapply(c(1:10), read_hackathon_results)
 
@@ -425,7 +425,7 @@ Unfiltered_FD_data[["hiv_noguerajulian"]] <- hiv_nog_nonfilt_p_tabs
 #### Ji_WTP_DS
 
 ```{r}
-setwd("/home/jacob/projects/Hackathon/Studies/Ji_WTP_DS/False_Discovery_Testing/results_nonfilt/")
+setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/Ji_WTP_DS/False_Discovery_Testing/results_nonfilt/")
 
 JI_WTP_nonfilt <- lapply(c(1:10), read_hackathon_results)
 
@@ -442,14 +442,14 @@ Unfiltered_FD_data[["Ji_WTP_DS"]] <- JI_WTP_nonfilt_p_tabs
 
 #### Office
 ```{r}
-setwd("/home/jacob/projects/Hackathon/Studies/Office/False_Discovery_testing/results_nonfilt/")
+setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/Office/False_Discovery_Testing/results_nonfilt/")
 
 ## have to skip 5 as aldex2 didn't finish due to memory issues with other stuff being run..
-Office_nonfilt <- lapply(c(1:4, 6:10), read_hackathon_results)
+Office_nonfilt <- lapply(c(1:10), read_hackathon_results)
 
 Office_nonfilt_p_tabs <- list()
 
-for(i in 1:9){
+for(i in 1:10){
   message(i)
   Office_nonfilt_p_tabs[[i]] <- Office_nonfilt[[i]]$adjP_table
 }
@@ -460,7 +460,7 @@ Unfiltered_FD_data[["Office"]] <- Office_nonfilt_p_tabs
 
 #### cdi_schubert
 ```{r}
-setwd("/home/jacob/projects/Hackathon/Studies/cdi_schubert/False_Discovery_Testing/results_nonfilt/")
+setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/cdi_schubert/False_Discovery_Testing/results_nonfilt/")
 
 schubert_nonfilt <- lapply(c(1:10), read_hackathon_results)
 
@@ -477,7 +477,7 @@ Unfiltered_FD_data[["cdi_schubert"]] <- schubert_nonfilt_p_tabs
 
 #### sw_sed_detender
 ```{r}
-setwd("/home/jacob/projects/Hackathon/Studies/sw_sed_detender/False_Discovery_Testing/results_nonfilt/")
+setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/sw_sed_detender/False_Discovery_Testing/results_nonfilt/")
 
 sw_sed_nonfilt <- lapply(c(1:10), read_hackathon_results)
 
@@ -729,6 +729,8 @@ Final_heat_nonfilt
 
 ### Final Plot
 ```{r}
+library(cowplot)
+library(ggplotify)
 Figure4_plot <- cowplot::plot_grid(ggplotify::as.ggplot(Final_heat_nonfilt), ggplotify::as.ggplot(final_plot), nrow=2, labels = c("A", "B"))
 
 

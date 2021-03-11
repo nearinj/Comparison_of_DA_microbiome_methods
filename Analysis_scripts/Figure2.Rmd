@@ -10,14 +10,14 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Folders where final figures are written
 ### Make sure this is pointed to your home directory
-display_items_out <- "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Display_items/"
+display_items_out <- "/home/jacob/GitHub_Repos/Clean_Hackathon/Display_items/"
 
 #libraries
 library(ggplot2)
 library(ggridges)
 library(cowplot)
 library(pheatmap)
-
+options(scipen = 999)
 
 
 tool_names <- c(aldex2="ALDEx2", ancom="ANCOM-II", corncob="corncob", deseq2="DESeq2", edger="edgeR", lefse="LEfSe", 
@@ -71,6 +71,8 @@ for(study in names(unfilt_results)){
   
 }
 
+
+
 ### remove dataset that Aldex2 didn't work on
 ### Either that or just set that column to NA... HMMMM
 ### I think for now we will just remove that dataset
@@ -100,22 +102,22 @@ row_to_remove <- which(rowSums(Feature_count_tab_filt)==0)
 Feature_count_tab_filt <- Feature_count_tab_filt[-row_to_remove, ]
 
 
-### next we need go through ASV and set its score in the column if it was found by that tool.
-for(row_num in 1:length(rownames(Feature_count_tab_filt))){
-  
-  row_name <- rownames(Feature_count_tab_filt)[row_num]
-  Score_for_that_row <- Feature_sig_count_filt[row_name]
-  
-  for(j in 1:length(colnames(Feature_count_tab_filt))){
-    if(is.na(Feature_count_tab_filt[row_num, j])){
-      
-    }else if(Feature_count_tab_filt[row_num, j] == 1){
-      Feature_count_tab_filt[row_num, j] <- Score_for_that_row
-    }
-  }
-}
-  
-saveRDS(Feature_count_tab_filt, "~/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_filt_TEST_DA_TEST2.RDS")
+# ### next we need go through ASV and set its score in the column if it was found by that tool.
+# for(row_num in 1:length(rownames(Feature_count_tab_filt))){
+# 
+#   row_name <- rownames(Feature_count_tab_filt)[row_num]
+#   Score_for_that_row <- Feature_sig_count_filt[row_name]
+# 
+#   for(j in 1:length(colnames(Feature_count_tab_filt))){
+#     if(is.na(Feature_count_tab_filt[row_num, j])){
+# 
+#     }else if(Feature_count_tab_filt[row_num, j] == 1){
+#       Feature_count_tab_filt[row_num, j] <- Score_for_that_row
+#     }
+#   }
+# }
+# 
+# saveRDS(Feature_count_tab_filt, "~/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_filt_TEST_DA_TEST2.RDS")
 Feature_count_tab_filt <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_filt_TEST_DA_TEST2.RDS")
 
 
@@ -151,22 +153,23 @@ remove_rows <- which(rowSums(Feature_count_tab_unfilt)==0)
 
 Feature_count_tab_unfilt <- Feature_count_tab_unfilt[-remove_rows,]
 
+# 
+# for(row_num in 1:length(rownames(Feature_count_tab_unfilt))){
+# 
+#   row_name <- rownames(Feature_count_tab_unfilt)[row_num]
+#   Score_for_that_row <- Feature_sig_count_unfilt[row_name]
+# 
+#   for(j in 1:length(colnames(Feature_count_tab_unfilt))){
+#     if(is.na(Feature_count_tab_unfilt[row_num, j])){
+# 
+#     }else if(Feature_count_tab_unfilt[row_num, j] == 1){
+#       Feature_count_tab_unfilt[row_num, j] <- Score_for_that_row
+#     }
+#   }
+# }
+# 
+# saveRDS(Feature_count_tab_unfilt, file="~/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_unfilt_TEST_DA_TEST2.RDS")
 
-for(row_num in 1:length(rownames(Feature_count_tab_unfilt))){
-  
-  row_name <- rownames(Feature_count_tab_unfilt)[row_num]
-  Score_for_that_row <- Feature_sig_count_unfilt[row_name]
-  
-  for(j in 1:length(colnames(Feature_count_tab_unfilt))){
-    if(is.na(Feature_count_tab_unfilt[row_num, j])){
-      
-    }else if(Feature_count_tab_unfilt[row_num, j] == 1){
-      Feature_count_tab_unfilt[row_num, j] <- Score_for_that_row
-    }
-  }
-}
-
-saveRDS(Feature_count_tab_unfilt, file="~/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_unfilt_TEST_DA_TEST2.RDS")
 Feature_count_tab_unfilt <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_unfilt_TEST_DA_TEST2.RDS")
 plot_info_barplot_unfilt <- reshape2::melt(Feature_count_tab_unfilt, na.rm=T)
 remove_row <- which(plot_info_barplot_unfilt$value==0)
@@ -265,4 +268,262 @@ print(c("sd:", sd(filt_bars_high_summed$value)))
 
 ```
 
+## Get Average R.A. of significantly identified features for each tool
 
+```{r}
+### go through each nonrarifed table and convert them into RA 
+
+filt_study_tab_RA <- lapply(filt_study_tab[["nonrare"]], function(x) sweep(x, 2, colSums(x), '/'))
+
+## now we need to get the average value for each row
+
+filt_study_tab_mean_RA <- lapply(filt_study_tab_RA, function(x) rowMeans(x))
+
+
+### combined them
+filt_study_tab_all_mean <- do.call(c, filt_study_tab_mean_RA)
+
+## alright now we just go through the Adj_p_all_filt table and replace any 1 values with the correspond value in the vector
+
+filt_sig_abundance <- Adj_p_all_filt
+
+
+
+### replace Na with 0s for now
+filt_sig_abundance[is.na(filt_sig_abundance)] <- 0
+filt_sig_abundance <- as.matrix(filt_sig_abundance)
+
+library(doParallel)
+library(doMC)
+
+# registerDoMC(cores=14)
+# getDoParWorkers()
+# 
+# identical(rownames(filt_sig_abundance), names(filt_study_tab_all_mean))
+# 
+# #we can rearrange the filt_study_tab_all_mean to match the same order as filt_sig_abundance
+# ordered_filt_study_tab_all_mean <- filt_study_tab_all_mean[rownames(filt_sig_abundance)]
+# 
+# identical(rownames(filt_sig_abundance), names(ordered_filt_study_tab_all_mean))
+# ### now they are in the same order
+# 
+# 
+# filt_sig_abundance_final <- foreach(ITER=iter(filt_sig_abundance, by="col"), .combine=cbind) %dopar% {
+#    for(i in 1:length(ITER)){
+# 
+#      if(ITER[i]==1){
+#        ITER[i] <- ordered_filt_study_tab_all_mean[i]
+#      }
+#    }
+#   ITER
+# }
+# saveRDS(filt_sig_abundance_final, "~/GitHub_Repos/Clean_Hackathon/Data/filt_sig_abundance.RDS")
+filt_sig_abundance <- data.frame(readRDS("~/GitHub_Repos/Clean_Hackathon/Data/filt_sig_abundance.RDS"))
+
+
+filt_sig_abundance[filt_sig_abundance==0] <- NA
+
+length(which(filt_sig_abundance$aldex2 != 0))
+length(which(Feature_count_tab_filt$aldex2 != 0))
+
+## these are the same so this is good.
+
+boxplot(filt_sig_abundance*100, outline = F)
+
+
+Total_sum_filt <- colSums(filt_sig_abundance, na.rm = T)
+
+divisor_sum_filt <- apply(filt_sig_abundance, 2, function(x) x <- length(which(x!=0)))
+
+Mean_RA_filt <- Total_sum_filt/divisor_sum_filt
+Mean_RA_filt*100
+
+
+### Make a nice ggplot
+
+mean_RA_sig_data_filt <- reshape2::melt(filt_sig_abundance)
+mean_RA_sig_data_filt$value <- mean_RA_sig_data_filt$value*100
+
+mean_RA_sig_data_filt$variable <- as.character(mean_RA_sig_data_filt$variable)
+tool_name_vec_filt <- tool_names[mean_RA_sig_data_filt$variable]
+mean_RA_sig_data_filt$tool_name <- tool_name_vec_filt
+
+library(ggplot2)
+
+mean_RA_filt_plot <- ggplot(mean_RA_sig_data_filt, aes(x=tool_name, y=percent)) + geom_boxplot(outlier.shape = NA) +
+  theme_classic() + ylab("Relative abundance %") +xlab("Method") + 
+  theme(axis.text = element_text(size=12, color="black"), axis.text.x = element_text(angle=90)) +
+  theme(axis.title = element_text(size=16, color="black")) + ylim(c(0,0.25))
+
+
+mean_RA_filt_plot
+
+
+
+### Unfiltered data
+
+#convert to relative abundances
+
+### Skip over Freshwater b/c ALDEx2 didn't finish it.
+total <- 0
+for(i in 1:length(unfilt_study_tab[["nonrare"]])){
+  if(i != 2){
+      total <- dim(unfilt_study_tab[["nonrare"]][[i]])[1] + total
+  }
+
+  
+}
+total
+
+
+unfilt_study_tab_RA <- lapply(unfilt_study_tab[["nonrare"]][-2], function(x) sweep(x, 2, colSums(x), '/'))
+
+## get mean for each row
+unfilt_study_tab_mean_RA <- lapply(unfilt_study_tab_RA, function(x) rowMeans(x))
+
+
+### combined data
+unfilt_study_tab_all_mean <- do.call(c, unfilt_study_tab_mean_RA)
+
+## convert to %
+unfilt_study_tab_all_mean <- unfilt_study_tab_all_mean*100
+
+
+## alright now we just go through the Adj_p_all_filt table and replace any 1 values with the correspond value in the vector
+
+unfilt_sig_abundance <- Adj_p_all_unfilt
+
+### replace Na with 0s for now
+unfilt_sig_abundance[is.na(unfilt_sig_abundance)] <- 0
+
+unfilt_sig_abundance <- as.matrix(unfilt_sig_abundance)
+
+### hmmm this was very slow
+
+# library(doParallel)
+# library(doMC)
+# 
+# 
+# registerDoMC(cores=14)
+# getDoParWorkers()
+# 
+# identical(rownames(unfilt_sig_abundance), rownames(unfilt_study_tab_all_mean))
+# 
+# #we can rearrange the filt_study_tab_all_mean to match the same order as filt_sig_abundance
+# ordered_unfilt_study_tab_all_mean <- unfilt_study_tab_all_mean[rownames(unfilt_sig_abundance)]
+#  
+# identical(rownames(unfilt_sig_abundance), names(ordered_unfilt_study_tab_all_mean))
+# 
+# 
+# unfilt_sig_abundance_final <- foreach(ITER=iter(unfilt_sig_abundance, by="col"), .combine=cbind) %dopar% {
+#    for(i in 1:length(ITER)){
+# 
+#      if(ITER[i]==1){
+#        ITER[i] <- ordered_unfilt_study_tab_all_mean[i]
+#      }
+#    }
+#   ITER
+# }
+# saveRDS(unfilt_sig_abundance_final, file="~/GitHub_Repos/Clean_Hackathon/Data/unfilt_sig_abundance.RDS")
+
+
+unfilt_sig_abundance <- data.frame(readRDS("~/GitHub_Repos/Clean_Hackathon/Data/unfilt_sig_abundance.RDS"))
+
+## set non-sig abundances to NA
+unfilt_sig_abundance[unfilt_sig_abundance==0] <- NA
+
+
+boxplot(unfilt_sig_abundance, outline = F)
+
+Total_sum_unfilt <- colSums(unfilt_sig_abundance, na.rm = T)
+colMeans(unfilt_sig_abundance, na.rm=T)
+
+median(unfilt_sig_abundance$aldex2, na.rm=T)
+median(unfilt_sig_abundance$ancom, na.rm=T)
+
+
+divisor_sum_unfilt <- apply(unfilt_sig_abundance, 2, function(x) x <- length(which(x!=0)))
+
+divisor_sum_unfilt
+
+Mean_RA_unfilt <- Total_sum_unfilt/divisor_sum_unfilt
+Mean_RA_unfilt
+
+
+### convert to ggplot format to make a pretty graph (:
+
+mean_RA_sig_data_unfilt <- reshape2::melt(unfilt_sig_abundance)
+
+
+mean_RA_sig_data_unfilt$variable <- as.character(mean_RA_sig_data_unfilt$variable)
+tool_name_vec_unfilt <- tool_names[mean_RA_sig_data_unfilt$variable]
+mean_RA_sig_data_unfilt$tool_name <- tool_name_vec_unfilt
+
+mean_RA_unfilt_plot <- ggplot(mean_RA_sig_data_unfilt, aes(x=tool_name, y=value)) + geom_boxplot(outlier.shape = NA) +
+  theme_classic() + ylab("Relative abundance %") +xlab("Method") + 
+  theme(axis.text = element_text(size=12, color="black"), axis.text.x = element_text(angle=90)) +
+  theme(axis.title = element_text(size=16, color="black")) + ylim(c(0,0.25))
+
+mean_RA_unfilt_plot
+## lost many features due to them being outliers... 
+
+
+### odd behaviour from cowplot here :/ 
+
+### plot with both of them
+
+mean_RA_sig_data_unfilt$Filt <- "Unfiltered"
+mean_RA_sig_data_filt$Filt <- "Filtered"
+
+mean_RA_sig_data_comb <- rbind(mean_RA_sig_data_unfilt, mean_RA_sig_data_filt)
+
+mean_RA_plot <- ggplot(mean_RA_sig_data_comb, aes(x=tool_name, y=value)) + geom_boxplot(outlier.shape = NA) +
+  theme_cowplot() + ylab("Relative abundance %") +xlab("Method") + 
+  theme(axis.text = element_text(size=12, color="black"), axis.text.x = element_text(angle=90)) +
+  theme(axis.title = element_text(size=16, color="black")) + ylim(c(0,0.25)) + facet_grid(~ Filt) +
+  theme(strip.background = element_blank())
+
+mean_RA_plot
+
+ggsave(filename=paste(display_items_out, "Supp_figures", "Significant_Feats_Abundance.pdf", sep="/"),
+       plot = Total_bars, width = 15, height=6, units="in", dpi=600)
+```
+
+
+
+### Barplot showing the number of significant features found for each tool
+
+```{r}
+Tool_total_feats_found_filt <- as.data.frame(colSums(feat_sum_filt))
+Tool_total_feats_found_unfilt <- as.data.frame(colSums(feat_sum_unfilt))
+colnames(Tool_total_feats_found_filt)[1] <- "value"
+colnames(Tool_total_feats_found_unfilt)[1] <- "value"
+
+Tool_total_feats_found_filt$Tool <- rownames(Tool_total_feats_found_filt)
+Tool_total_feats_found_unfilt$Tool <- rownames(Tool_total_feats_found_unfilt)
+
+Tool_total_feats_found_filt$Tool_rename <- tool_names[Tool_total_feats_found_filt$Tool]
+
+Tool_total_feats_found_unfilt$Tool_rename <- tool_names[Tool_total_feats_found_unfilt$Tool]
+
+Tool_total_feats_found_filt$Filt <- "Filtered"
+Tool_total_feats_found_unfilt$Filt <- "Unfiltered"
+
+Tool_total_feats_found_comb <- rbind(Tool_total_feats_found_filt, Tool_total_feats_found_unfilt)
+
+
+
+Total_bars <- ggplot(Tool_total_feats_found_comb, aes(x=Tool_rename, y=value)) + geom_bar(stat="identity") +ylim(c(0,535000)) +
+  theme_cowplot() + theme(axis.text.x = element_text(angle=90)) + ylab("Total Significant Features") + xlab("Method") + facet_grid(~ Filt) +
+  theme(strip.background = element_blank())
+Total_bars
+
+
+
+
+ggsave(filename=paste(display_items_out, "Supp_figures", "Total_Number_Significant_hits.pdf", sep="/"),
+       plot = Total_bars, width = 15, height=6, units="in", dpi=600)
+
+
+
+```
