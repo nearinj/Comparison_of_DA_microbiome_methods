@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Folders where final figures are written
 ### Make sure this is pointed to your home directory
-display_items_out <- "/home/jacob/GitHub_Repos/Clean_Hackathon/Display_items/"
+display_items_out <- "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Display_items/"
 
 #libraries
 library(ggplot2)
@@ -209,11 +209,11 @@ test_join <- dplyr::inner_join(test_melt, Tool_total_feats_found)
 colnames(test_join)[5] <- "Total_Hits"
 
 Filt_bars <- ggplot(test_join, aes(x=as.numeric(Score), y=value, width=1, fill=Total_Hits)) + geom_bar(stat="identity") +
-  xlab("Consistency Score") + ylab("") + ggtitle("Filtered") + 
+  xlab("No. tools that called feature significant") + ylab("") + ggtitle("Filtered") + 
   facet_grid(rows=vars(Method_clean), switch='y') + theme_classic() + 
   scale_y_continuous(position = "right", breaks=c(0, 20, 40, 60), labels=c("0", "", "40", "")) +
   theme(strip.text.y.left = element_text(angle=0), strip.background = element_blank()) +scale_x_continuous(breaks=c(1:14), expand=c(0,0)) +
-  theme(text=element_text(size=16)) + guides(fill=guide_legend(title="Total Hits")) +
+  theme(text=element_text(size=16)) + guides(fill=guide_legend(title="Total hits")) +
     scale_fill_continuous(high = "#132B43", low = "#56B1F7")
 
 Filt_bars
@@ -230,11 +230,11 @@ unfilt_bars_data_join <- dplyr::inner_join(unfilt_bars_data_melt, Tool_total_fea
 colnames(unfilt_bars_data_join)[5] <- "Total_Hits"
 
 Unfilt_bars <- ggplot(unfilt_bars_data_join, aes(x=as.numeric(Score), y=value, width=1, fill=Total_Hits)) + geom_bar(stat="identity") +
-  xlab("Consistency Score") + ylab("") + ggtitle("Unfiltered") + 
+  xlab("No. tools that called feature significant") + ylab("") + ggtitle("Unfiltered") + 
   facet_grid(rows=vars(Method_clean), switch='y') + theme_classic() + 
   scale_y_continuous(position = "right", breaks=c(0, 20, 40, 60), labels=c("0", "", "40", "")) + 
   theme(strip.text.y.left = element_text(angle=0), strip.background = element_blank()) +scale_x_continuous(breaks=c(1:14), expand=c(0,0)) +
-  theme(text=element_text(size=16)) + guides(fill=guide_legend(title="Total Hits")) +
+  theme(text=element_text(size=16)) + guides(fill=guide_legend(title="Total hits")) +
     scale_fill_continuous(high = "#132B43", low = "#56B1F7")
 
 Unfilt_bars
@@ -244,8 +244,9 @@ Unfilt_bars
 
 Figure2 <- plot_grid(Unfilt_bars, Filt_bars, labels=c("A", "B"), nrow=1)
 ggsave(filename=paste(display_items_out, "Main_figures", "Figure2.pdf", sep="/"),
-       plot = Figure2, width = 15, height=6, units="in", dpi=600)
-
+       plot = Figure2, width = 15, height=7, units="in", dpi=600)
+ggsave(filename=paste(display_items_out, "Main_figures", "Figure2.png", sep="/"),
+       plot = Figure2, width = 15, height=7, units="in", dpi=100)
 ```
 
 ## Get proportion of scores > 12
