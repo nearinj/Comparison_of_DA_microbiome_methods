@@ -1,0 +1,760 @@
+---
+title: "Figure4"
+author: "Jacob T. Nearing"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(reshape2)
+library(pheatmap)
+
+### Folders where final figures are written
+### Make sure this is pointed to your home directory
+display_items_out <- "/home/jacob/GitHub_Repos/Clean_Hackathon/Display_items/"
+
+Data_set_names <- c(ArcticFireSoils="Soil - Fires",
+                         ArcticFreshWater="Freshwater - Arctic",
+                         ArcticTransects="Soil - Arctic",
+                         art_scher="Human - RA",
+                         asd_son= "Human - ASD",
+                         BISCUIT= "Human - CD (1)",
+                         Blueberry= "Soil - Blueberry",
+                         Schubert="Human - C. diff (1)",
+                         cdi_vincent="Human - C. diff (2)",
+                         Chemerin="Mouse Facilities",
+                         crc_baxter="Human - CC (1)",
+                         crc_zeller="Human - CC (2)",
+                         edd_singh="Human - Inf.",
+                         Exercise="Mouse - Exercised",
+                         glass_plastic_oberbeckmann="Marine - Plastic (4)",
+                         GWMC_ASIA_NA="WWSR - Continents",
+                         GWMC_HOT_COLD="WWSR - Temp.",
+                         hiv_dinh="Human - HIV (1)",
+                         hiv_lozupone="Human - HIV (2)",
+                         Hiv_noguerajulian="Human - HIV (3)",
+                         ibd_gevers="Human - CD (2)",
+                         ibd_papa="Human - IBD",
+                         Ji_WTP_DS="Freshwater - Treat.",
+                         MALL="Human - ALL",
+                         Goodrich="Human - OB (1)",
+                         ob_ross="Human - OB (2)",
+                         ob_turnbaugh="Human - OB (3)",
+                         ob_zhu="Human - OB (4)",
+                         ###"ob_zupancic",
+                         Office="Built - Office",
+                         par_scheperjans="Human - Par.",
+                         sed_plastic_hoellein="Marine - Plastic (2)",
+                         sed_plastic_rosato="Marine - Plastic (5)",
+                         seston_plastic_mccormick="River - Plastic",
+                         sw_plastic_frere="Marine - Plastic (1)",
+                         Sw_sed_detender="Marine - Sediment",
+                          t1d_alkanani="Human - T1D (1)",
+                         t1d_mejialeon="Human - T1D (2)",
+                         wood_plastic_kesy="Marine - Plastic (3)")
+
+tool_names <- c(aldex2="ALDEx2", ancom="ANCOM-II", corncob="corncob", deseq2="DESeq2", edger="edgeR", lefse="LEfSe", 
+                limma_voom_TMM="limma voom (TMM)", limma_voom_TMMwsp="limma voom (TMMwsp)", maaslin2="MaAsLin2",
+                maaslin2rare="MaAsLin2 (rare)", metagenomeSeq="metagenomeSeq", ttestrare="t-test (rare)", 
+                wilcoxonclr="Wilcoxon (CLR)", wilcoxonrare="Wilcoxon (rare)")
+```
+
+# Load in data
+
+## Load in data functions
+```{r}
+read_table_and_check_line_count <- function(filepath, ...) {
+  # Function to read in table and to check whether the row count equals the expected line count of the file.
+  
+  exp_count <- as.numeric(sub(pattern = " .*$", "", system(command = paste("wc -l", filepath, sep=" "), intern = TRUE)))
+  
+  df <- read.table(filepath, ...)
+  
+  if(length(grep("^V", colnames(df))) != ncol(df)) {
+    exp_count <- exp_count - 1
+  }
+  
+  if(exp_count != nrow(df)) {
+    stop(paste("Expected ", as.character(exp_count), " lines, but found ", as.character(nrow(df))))
+  } else {
+    return(df) 
+  }
+}
+
+
+read_hackathon_results <- function(study) {
+  
+  da_tool_filepath <- list()
+  da_tool_filepath[["aldex2"]] <- paste(study, "Aldex_out/Aldex_res.tsv", sep = "/")
+  da_tool_filepath[["ancom"]] <- paste(study, "ANCOM_out/Ancom_res.tsv", sep = "/")
+  da_tool_filepath[["corncob"]] <- paste(study, "Corncob_out/Corncob_results.tsv", sep = "/")
+  da_tool_filepath[["deseq2"]] <- paste(study, "Deseq2_out/Deseq2_results.tsv", sep = "/")
+  da_tool_filepath[["edger"]] <- paste(study, "edgeR_out/edgeR_res.tsv", sep = "/")
+  da_tool_filepath[["lefse"]] <- paste(study,"Lefse_out/Lefse_results.tsv", sep = "/")
+  da_tool_filepath[["maaslin2"]] <- paste(study, "Maaslin2_out/all_results.tsv", sep = "/")
+  da_tool_filepath[["maaslin2rare"]] <- paste(study, "Maaslin2_rare_out/all_results.tsv", sep = "/")
+  da_tool_filepath[["metagenomeSeq"]] <- paste(study, "metagenomeSeq_out/mgSeq_res.tsv", sep = "/")
+  da_tool_filepath[["ttestrare"]] <- paste(study, "t_test_rare_out/t_test_res.tsv", sep = "/")
+  da_tool_filepath[["wilcoxonclr"]] <- paste(study, "Wilcoxon_CLR_out/Wil_CLR_results.tsv", sep = "/")
+  da_tool_filepath[["wilcoxonrare"]] <- paste(study, "Wilcoxon_rare_out/Wil_rare_results.tsv", sep = "/")
+  da_tool_filepath[["limma_voom_TMM"]] <- paste(study, "limma_voom_tmm_out/limma_voom_tmm_res.tsv", sep="/")
+  da_tool_filepath[["limma_voom_TMMwsp"]] <- paste(study, "Limma_voom_TMMwsp/limma_voom_tmmwsp_res.tsv", sep="/")
+  
+  adjP_colname <- list()
+  adjP_colname[["aldex2"]] <- "wi.eBH"
+  adjP_colname[["ancom"]] <- "detected_0.9"
+  adjP_colname[["corncob"]] <- "x"
+  adjP_colname[["deseq2"]] <- "padj"
+  adjP_colname[["edger"]] <- "FDR"
+  adjP_colname[["lefse"]] <- "V5"
+  adjP_colname[["maaslin2"]] <- "qval"
+  adjP_colname[["maaslin2rare"]] <- "qval"
+  adjP_colname[["metagenomeSeq"]] <- "adjPvalues"
+  adjP_colname[["ttestrare"]] <- "x"
+  adjP_colname[["wilcoxonclr"]] <- "x"
+  adjP_colname[["wilcoxonrare"]] <- "x"
+  adjP_colname[["limma_voom_TMM"]] <- "adj.P.Val"
+  adjP_colname[["limma_voom_TMMwsp"]] <- "adj.P.Val"
+  # Read in results files and run sanity check that results files have expected number of lines
+  da_tool_results <- list()
+  
+  missing_tools <- c()
+  
+  for(da_tool in names(da_tool_filepath)) {
+    
+    if(! (file.exists(da_tool_filepath[[da_tool]]))) {
+       missing_tools <- c(missing_tools, da_tool)
+       message(paste("File ", da_tool_filepath[[da_tool]], " not found. Skipping.", sep=""))
+       next
+    }
+    
+    if(da_tool %in% c("ancom", "maaslin2", "maaslin2rare")) {
+      da_tool_results[[da_tool]] <- read_table_and_check_line_count(da_tool_filepath[[da_tool]], sep="\t", row.names=2, header=TRUE)
+    } else if(da_tool == "lefse") {
+      da_tool_results[[da_tool]] <- read_table_and_check_line_count(da_tool_filepath[[da_tool]], sep="\t", row.names=1, header=FALSE, stringsAsFactors=FALSE)
+      rownames(da_tool_results[[da_tool]]) <- gsub("^f_", "", rownames(da_tool_results[[da_tool]]))
+    } else {
+      da_tool_results[[da_tool]] <- read_table_and_check_line_count(da_tool_filepath[[da_tool]], sep="\t", row.names=1, header=TRUE)
+    }
+  }
+  
+  # Combine corrected P-values into same table.
+  all_rows <- c()
+  
+   for(da_tool in names(adjP_colname)) {
+     all_rows <- c(all_rows, rownames(da_tool_results[[da_tool]]))
+   }
+  all_rows <- all_rows[-which(duplicated(all_rows))]
+
+  adjP_table <- data.frame(matrix(NA, ncol=length(names(da_tool_results)), nrow=length(all_rows)))
+  colnames(adjP_table) <- names(da_tool_results)
+  rownames(adjP_table) <- all_rows
+  
+  for(da_tool in colnames(adjP_table)) {
+ 
+    if(da_tool %in% missing_tools) {
+       next
+    }
+    
+    if(da_tool == "lefse") {
+     
+        tmp_lefse <- da_tool_results[[da_tool]][, adjP_colname[[da_tool]]]
+        tmp_lefse[which(tmp_lefse == "-")] <- NA
+        adjP_table[rownames(da_tool_results[[da_tool]]), da_tool] <- as.numeric(tmp_lefse)
+
+        lefse_tested_asvs <- rownames(da_tool_results$wilcoxonrare)[which(! is.na(da_tool_results$wilcoxonrare))]
+        lefse_NA_asvs <- rownames(da_tool_results$lefse)[which(is.na(tmp_lefse))]
+  
+        adjP_table[lefse_NA_asvs[which(lefse_NA_asvs %in% lefse_tested_asvs)], da_tool] <- 1
+        
+    } else if(da_tool == "ancom") {
+      
+      sig_ancom_hits <- which(da_tool_results[[da_tool]][, adjP_colname[[da_tool]]])
+      ancom_results <- rep(1, length(da_tool_results[[da_tool]][, adjP_colname[[da_tool]]]))
+      ancom_results[sig_ancom_hits] <- 0
+      adjP_table[rownames(da_tool_results[[da_tool]]), da_tool] <- ancom_results
+    
+    } else if(da_tool %in% c("wilcoxonclr", "wilcoxonrare", "ttestrare")) {
+      
+      # Need to perform FDR-correction on these outputs.
+      adjP_table[rownames(da_tool_results[[da_tool]]), da_tool] <- p.adjust(da_tool_results[[da_tool]][, adjP_colname[[da_tool]]], "fdr")
+    
+    } else {
+      adjP_table[rownames(da_tool_results[[da_tool]]), da_tool] <- da_tool_results[[da_tool]][, adjP_colname[[da_tool]]]
+    }
+  }
+
+  return(list(raw_tables=da_tool_results,
+              adjP_table=adjP_table))
+  
+}
+
+```
+
+## Data loading
+
+### Filtered
+
+#### Office
+```{r}
+Filtered_FD_data <- list()
+
+setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/Office/False_Discovery_Testing/results_filt/")
+
+
+Office_filt_results <- lapply(c(1:10), read_hackathon_results)
+
+#get adj_p for each table run
+
+Office_filt_p_tabs <- list()
+for(i in 1:10){
+ Office_filt_p_tabs[[i]] <- Office_filt_results[[i]]$adjP_table
+  
+}
+
+
+Filtered_FD_data[["Office"]] <- Office_filt_p_tabs
+
+
+```
+
+#### ArcticFreshWaters
+```{r}
+setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/ArcticFreshwaters/False_Discovery_Testing/results_filt/")
+
+Arctic_results_filt <- lapply(c(1:10), read_hackathon_results)
+
+Arctic_filt_p_tabs <- list()
+
+for(i in 1:10){
+  
+  Arctic_filt_p_tabs[[i]] <- Arctic_results_filt[[i]]$adjP_table
+}
+
+
+Filtered_FD_data[["ArcticFreshWaters"]] <- Arctic_filt_p_tabs
+
+```
+
+#### Blueberry
+```{r}
+setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/Blueberry/False_Discovery_Testing/results_filt/")
+
+
+Blueb_filt_results <- lapply(c(1:10), read_hackathon_results)
+
+Blueb_filt_p_tabs <- list()
+
+for(i in 1:10){
+  
+  Blueb_filt_p_tabs[[i]] <- Blueb_filt_results[[1]]$adjP_table
+}
+
+
+Filtered_FD_data[["Blueberry"]] <- Blueb_filt_p_tabs
+```
+
+#### Goodrich
+```{r}
+setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/ob_goodrich/False_Discovery_Testing/results_filt/")
+
+goodrich_filt_results <- lapply(c(1:10), read_hackathon_results)
+
+goodrich_filt_p_tabs <- list()
+
+for(i in 1:10){
+  
+  goodrich_filt_p_tabs[[i]] <- goodrich_filt_results[[i]]$adjP_table
+  
+}
+
+Filtered_FD_data[["ob_goodrich"]] <- goodrich_filt_p_tabs
+```
+
+#### hiv_noguerajulian
+
+```{r}
+setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/hiv_noguerajulian/False_Discovery_Testing/results_filt/")
+
+hiv_nog_filt_results <- lapply(c(1:10), read_hackathon_results)
+
+hiv_nog_filt_p_tabs <- list()
+
+for(i in 1:10){
+  
+  hiv_nog_filt_p_tabs[[i]] <- hiv_nog_filt_results[[i]]$adjP_table
+  
+}
+
+Filtered_FD_data[["hiv_noguerajulian"]] <- hiv_nog_filt_p_tabs
+```
+
+#### Ji_WTP_DS
+```{r}
+setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/Ji_WTP_DS/False_Discovery_Testing/results_filt/")
+
+JI_WTP_filt_results <- lapply(c(1:10), read_hackathon_results)
+
+JI_WTP_filt_p_tabs <- list()
+
+for(i in 1:10){
+  
+  JI_WTP_filt_p_tabs[[i]] <- JI_WTP_filt_results[[i]]$adjP_table
+  
+}
+
+Filtered_FD_data[["Ji_WTP_DS"]] <- JI_WTP_filt_p_tabs
+```
+
+#### Schubert
+```{r}
+setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/cdi_schubert/False_Discovery_Testing/results_filt/")
+
+schubert_filt_results <- lapply(c(1:10), read_hackathon_results)
+
+schubert_filt_p_tabs <- list()
+
+for(i in 1:10){
+  
+  schubert_filt_p_tabs[[i]] <- schubert_filt_results[[i]]$adjP_table
+  
+}
+
+Filtered_FD_data[["cdi_schubert"]] <- schubert_filt_p_tabs
+```
+
+#### sw_sed_detender
+```{r}
+setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/sw_sed_detender/False_Discovery_Testing/results_filt/")
+
+sw_sed_filt_results <- lapply(c(1:10), read_hackathon_results)
+
+sw_sed_filt_p_tabs <- list()
+
+for(i in 1:10){
+  
+  sw_sed_filt_p_tabs[[i]] <- sw_sed_filt_results[[i]]$adjP_table
+}
+Filtered_FD_data[["sw_sed_detender"]] <- sw_sed_filt_p_tabs
+```
+
+#### Save list
+```{r}
+saveRDS(Filtered_FD_data, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_filt_TEST_DA_TEST2.RDS")
+```
+
+### Unfiltered
+```{r}
+Unfiltered_FD_data <- list()
+```
+
+#### ArcticFreshWaters
+
+```{r}
+setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/ArcticFreshwaters/False_Discovery_Testing/results_nonfilt/")
+
+arcticfresh_nonfilt <- lapply(c(1:10), read_hackathon_results)
+
+
+arcticfresh_nonfilt_p_tabs <- list()
+
+for(i in 1:10){
+  
+  arcticfresh_nonfilt_p_tabs[[i]] <- arcticfresh_nonfilt[[i]]$adjP_table
+  
+}
+
+Unfiltered_FD_data[["ArcticFreshWaters"]] <- arcticfresh_nonfilt_p_tabs
+```
+
+#### Blueberry
+```{r}
+setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/Blueberry/False_Discovery_Testing/results_nonfilt/")
+
+Blueberry_nonfilt <- lapply(c(1:10), read_hackathon_results)
+
+Blueberry_nonfilt_p_tabs <- list()
+
+for(i in 1:10){
+  
+  Blueberry_nonfilt_p_tabs[[i]] <- Blueberry_nonfilt[[i]]$adjP_table
+  
+}
+
+Unfiltered_FD_data[["Blueberry"]] <- Blueberry_nonfilt_p_tabs
+```
+
+#### ob_goodrich
+```{r}
+setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/ob_goodrich/False_Discovery_Testing/results_nonfilt/")
+
+goodrich_nonfilt <- lapply(c(1:10), read_hackathon_results)
+
+goodrich_nonfilt_p_tabs <- list()
+
+
+for(i in 1:10){
+  
+  goodrich_nonfilt_p_tabs[[i]] <- goodrich_nonfilt[[i]]$adjP_table
+  
+}
+
+Unfiltered_FD_data[["ob_goodrich"]] <- goodrich_nonfilt_p_tabs
+```
+
+#### hiv_noguerajulian
+
+```{r}
+setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/hiv_noguerajulian/False_Discovery_Testing/results_nonfilt/")
+
+hiv_nog_nonfilt <- lapply(c(1:10), read_hackathon_results)
+
+hiv_nog_nonfilt_p_tabs <- list()
+
+
+for(i in 1:10){
+  
+  hiv_nog_nonfilt_p_tabs[[i]] <- hiv_nog_nonfilt[[i]]$adjP_table
+}
+
+Unfiltered_FD_data[["hiv_noguerajulian"]] <- hiv_nog_nonfilt_p_tabs
+```
+
+#### Ji_WTP_DS
+
+```{r}
+setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/Ji_WTP_DS/False_Discovery_Testing/results_nonfilt/")
+
+JI_WTP_nonfilt <- lapply(c(1:10), read_hackathon_results)
+
+JI_WTP_nonfilt_p_tabs <- list()
+
+for(i in 1:10){
+  
+  JI_WTP_nonfilt_p_tabs[[i]] <- JI_WTP_nonfilt[[i]]$adjP_table
+  
+}
+
+Unfiltered_FD_data[["Ji_WTP_DS"]] <- JI_WTP_nonfilt_p_tabs
+```
+
+#### Office
+```{r}
+setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/Office/False_Discovery_Testing/results_nonfilt/")
+
+## have to skip 5 as aldex2 didn't finish due to memory issues with other stuff being run..
+Office_nonfilt <- lapply(c(1:10), read_hackathon_results)
+
+Office_nonfilt_p_tabs <- list()
+
+for(i in 1:10){
+  message(i)
+  Office_nonfilt_p_tabs[[i]] <- Office_nonfilt[[i]]$adjP_table
+}
+
+
+Unfiltered_FD_data[["Office"]] <- Office_nonfilt_p_tabs
+```
+
+#### cdi_schubert
+```{r}
+setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/cdi_schubert/False_Discovery_Testing/results_nonfilt/")
+
+schubert_nonfilt <- lapply(c(1:10), read_hackathon_results)
+
+schubert_nonfilt_p_tabs <- list()
+
+for(i in 1:10){
+  
+  schubert_nonfilt_p_tabs[[i]] <- schubert_nonfilt[[i]]$adjP_table
+    
+}
+
+Unfiltered_FD_data[["cdi_schubert"]] <- schubert_nonfilt_p_tabs
+```
+
+#### sw_sed_detender
+```{r}
+setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/sw_sed_detender/False_Discovery_Testing/results_nonfilt/")
+
+sw_sed_nonfilt <- lapply(c(1:10), read_hackathon_results)
+
+sw_sed_nonfilt_p_tabs <- list()
+
+for(i in 1:10){
+  
+  sw_sed_nonfilt_p_tabs[[i]] <- sw_sed_nonfilt[[i]]$adjP_table
+  
+}
+
+Unfiltered_FD_data[["sw_sed_detender"]] <- sw_sed_nonfilt_p_tabs
+```
+
+#### Save data
+```{r}
+saveRDS(Unfiltered_FD_data, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_unfilt.RDS")
+```
+
+
+## Data Analysis
+
+### Functions
+```{r}
+### get percent significant for each tool
+get_percent_sig <- function(df_list, total_feats, total_rar_feats){
+  
+  ### first convert DF to binary 1 and 0 representing sig and nonsig features.
+  temp_sig_list <- list()
+  for(i in 1:length(df_list)){
+    temp_tab <- df_list[[i]]
+    temp_tab[temp_tab < 0.05] <- 2
+    temp_tab[temp_tab != 2] <- 0
+    temp_tab[temp_tab == 2] <- 1
+    temp_sig_list[[i]] <- temp_tab
+  }
+  
+  ### now we need to go through these and convert to % significant found for each tool
+  temp_per_sig <- list()
+  temp_raw_count <- list()
+  for(i in 1:length(temp_sig_list)){
+    
+    #get # of significant features for each tool
+    num_hits <- colSums(temp_sig_list[[i]], na.rm = T)
+    temp_raw_count[[i]] <- num_hits 
+    ### now this part is tricky b/c some tools use rarified data and some do not...
+    ## this will be the # representing total features tested
+    ## the problem is to get this data we would need to load in the large list so we will manually
+    num_hits[c(1:5, 7, 9, 11, 13,14)] <- num_hits[c(1:5, 7, 9, 11, 13,14)]/total_feats
+    num_hits[c(6,8,10,12)] <- num_hits[c(6,8,10,12)]/total_rar_feats
+    num_hits <- num_hits*100
+    temp_per_sig[[i]] <- num_hits
+      
+  }
+  
+  temp_per_sig_df <- do.call(rbind, temp_per_sig)
+  temp_raw_count_df <- do.call(rbind, temp_raw_count)
+  ret_data <- list()
+  ret_data[['raw_count']] <- temp_raw_count_df
+  ret_data[['per_sig']] <- temp_per_sig_df
+  return(ret_data)
+  
+}
+
+```
+
+### Generate per_sig_DFs
+
+#### Filtered
+```{r}
+Filtered_FD_data <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_filt_TEST_DA_TEST2.RDS")
+
+names(Filtered_FD_data)
+
+
+Office_per_sig <- get_percent_sig(Filtered_FD_data[[1]], 185, 185)
+
+ArcticFreshWaters_per_sig <- get_percent_sig(Filtered_FD_data[[2]], 344, 344)
+
+Blueberry_per_sig <- get_percent_sig(Filtered_FD_data[[3]], 3254, 3254)
+
+ob_goodrich_per_sig <- get_percent_sig(Filtered_FD_data[[4]], 4287, 4287)
+
+hiv_noguerajulian_per_sig <- get_percent_sig(Filtered_FD_data[[5]], 3092, 2951)
+
+Ji_WTP_DS_per_sig <- get_percent_sig(Filtered_FD_data[[6]], 256, 256)
+
+cdi_schubert_per_sig <- get_percent_sig(Filtered_FD_data[[7]], 599, 599)
+
+sw_sed_detender_per_sig <- get_percent_sig(Filtered_FD_data[[8]], 2246, 2218)
+
+## generete dataframe to create DF
+Mean_filt_percent_sig <- data.frame(ArcticFreshWater = colMeans(ArcticFreshWaters_per_sig[[2]]),
+                                    Office = colMeans(Office_per_sig[[2]]),
+                                    Blueberry = colMeans(Blueberry_per_sig[[2]]),
+                                    Goodrich = colMeans(ob_goodrich_per_sig[[2]]),
+                                    Hiv_noguerajulian = colMeans(hiv_noguerajulian_per_sig[[2]]),
+                                    Ji_WTP_DS = colMeans(Ji_WTP_DS_per_sig[[2]]),
+                                    Schubert = colMeans(cdi_schubert_per_sig[[2]]),
+                                    Sw_sed_detender = colMeans(sw_sed_detender_per_sig[[2]]))
+
+
+perc_heatmap <- pheatmap::pheatmap(as.matrix(Mean_filt_percent_sig),
+         cluster_cols=F,
+         cluster_rows = F,
+         display_numbers = round(Mean_filt_percent_sig, 3),
+         number_color = "Black",
+         main = "Filtered Percent")
+
+
+Mean_raw_sig <- data.frame(ArcticFreshWater = colMeans(ArcticFreshWaters_per_sig[[1]]),
+                                    Office = colMeans(Office_per_sig[[1]]),
+                                    Blueberry = colMeans(Blueberry_per_sig[[1]]),
+                                    Goodrich = colMeans(ob_goodrich_per_sig[[1]]),
+                                    Hiv_noguerajulian = colMeans(hiv_noguerajulian_per_sig[[1]]),
+                                    Ji_WTP_DS = colMeans(Ji_WTP_DS_per_sig[[1]]),
+                                    Schubert = colMeans(cdi_schubert_per_sig[[1]]),
+                                    Sw_sed_detender = colMeans(sw_sed_detender_per_sig[[1]]))
+
+raw_heatmap <- pheatmap::pheatmap(as.matrix(Mean_raw_sig),
+         cluster_cols=F,
+         cluster_rows = F,
+         display_numbers = round(Mean_raw_sig, 3),
+         number_color = "Black",
+         main = "Filtered")
+
+raw_heatmap
+
+test <- Data_set_names[colnames(Mean_filt_percent_sig)]
+test
+colnames(Mean_filt_percent_sig) <- test
+
+test <- Data_set_names[colnames(Mean_raw_sig)]
+test
+colnames(Mean_raw_sig) <- test
+
+test <- tool_names[rownames(Mean_filt_percent_sig)]
+test
+rownames(Mean_filt_percent_sig) <- test
+
+test <- tool_names[rownames(Mean_raw_sig)]
+test
+rownames(Mean_raw_sig) <- test
+
+final_plot <- pheatmap::pheatmap(as.matrix(Mean_filt_percent_sig),
+         cluster_cols=F,
+         cluster_rows = F,
+         display_numbers = round(Mean_raw_sig, 3),
+         number_color = "Black",
+         main = "Filtered")
+
+
+final_plot
+
+```
+
+
+#### Unfiltered
+```{r}
+Unfiltered_FD_data <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_unfilt.RDS")
+
+names(Unfiltered_FD_data)
+
+ArcticFreshWaters_per_sig_un <- get_percent_sig(Unfiltered_FD_data[[1]], 178927, 98923)
+
+Blueberry_per_sig_un <- get_percent_sig(Unfiltered_FD_data[[2]], 8245, 8228)
+
+ob_goodrich_per_sig_un <- get_percent_sig(Unfiltered_FD_data[[3]], 55964, 47153)
+
+hiv_noguerajulian_per_sig_un <- get_percent_sig(Unfiltered_FD_data[[4]], 14597, 9738)
+
+Ji_WTP_DS_per_sig_un <- get_percent_sig(Unfiltered_FD_data[[5]], 3764, 2976)
+
+Office_per_sig_un <- get_percent_sig(Unfiltered_FD_data[[6]], 147251, 91295)
+
+cdi_schubert_per_sig_un <- get_percent_sig(Unfiltered_FD_data[[7]], 3346, 3316)
+
+sw_sed_detender_per_sig_un <- get_percent_sig(Unfiltered_FD_data[[8]], 10749, 7112)
+
+
+Mean_nonfilt_percent_sig <- data.frame(ArcticFreshWater = colMeans(ArcticFreshWaters_per_sig_un[[2]]),
+                                       Office = colMeans(Office_per_sig_un[[2]]),
+                                       Blueberry = colMeans(Blueberry_per_sig_un[[2]]),
+                                       Goodrich = colMeans(ob_goodrich_per_sig_un[[2]]),
+                                       Hiv_noguerajulian = colMeans(hiv_noguerajulian_per_sig_un[[2]]),
+                                       Ji_WTP_DS = colMeans(Ji_WTP_DS_per_sig_un[[2]]),
+                                       Schubert = colMeans(cdi_schubert_per_sig_un[[2]]),
+                                       Sw_sed_detender = colMeans(sw_sed_detender_per_sig_un[[2]]))
+
+unfilt_perc_heat <- pheatmap::pheatmap(Mean_nonfilt_percent_sig,
+         cluster_cols=F,
+         cluster_rows = F,
+         display_numbers = round(Mean_nonfilt_percent_sig, 3),
+         number_color="Black",
+         main="Unfiltered Percent")
+
+unfilt_perc_heat
+
+Mean_raw_nonfilt <- data.frame(ArcticFreshWater = colMeans(ArcticFreshWaters_per_sig_un[[1]]),
+                               Office = colMeans(Office_per_sig_un[[1]]),
+                                       Blueberry = colMeans(Blueberry_per_sig_un[[1]]),
+                                       Goodrich = colMeans(ob_goodrich_per_sig_un[[1]]),
+                                       Hiv_noguerajulian = colMeans(hiv_noguerajulian_per_sig_un[[1]]),
+                                       Ji_WTP_DS = colMeans(Ji_WTP_DS_per_sig_un[[1]]),
+                                       Schubert = colMeans(cdi_schubert_per_sig_un[[1]]),
+                                       Sw_sed_detender = colMeans(sw_sed_detender_per_sig_un[[1]]))
+
+raw_heat_nonfilt <- pheatmap::pheatmap(Mean_raw_nonfilt,
+         cluster_cols=F,
+         cluster_rows = F,
+         display_numbers = round(Mean_raw_nonfilt, 3),
+         number_color="Black",
+         main="Unfiltered")
+raw_heat_nonfilt
+
+
+colnames(Mean_nonfilt_percent_sig)
+
+test <- Data_set_names[colnames(Mean_nonfilt_percent_sig)]
+test
+colnames(Mean_nonfilt_percent_sig) <- test
+
+colnames(Mean_raw_nonfilt)
+test <- Data_set_names[colnames(Mean_raw_nonfilt)]
+test
+colnames(Mean_raw_nonfilt) <- test
+
+rownames(Mean_nonfilt_percent_sig)
+test <- tool_names[rownames(Mean_nonfilt_percent_sig)]
+test
+rownames(Mean_nonfilt_percent_sig) <- test
+
+rownames(Mean_raw_nonfilt)
+test <- tool_names[rownames(Mean_raw_nonfilt)]
+test
+rownames(Mean_raw_nonfilt) <- test
+
+Final_heat_nonfilt <- pheatmap::pheatmap(Mean_nonfilt_percent_sig,
+         cluster_cols=F,
+         cluster_rows = F,
+         display_numbers = round(Mean_raw_nonfilt, 3),
+         number_color="Black",
+         main="Unfiltered")
+
+Final_heat_nonfilt
+
+```
+
+
+### Final Plot
+```{r}
+library(cowplot)
+library(ggplotify)
+Figure4_plot <- cowplot::plot_grid(ggplotify::as.ggplot(Final_heat_nonfilt), ggplotify::as.ggplot(final_plot), nrow=2, labels = c("A", "B"))
+
+
+ggsave(filename=paste(display_items_out, "Main_figures", "Figure4.pdf", sep="/"),
+       plot = Figure4_plot, width = 7, height=7, units="in", dpi=600)
+```
+
+
+### Text summary stats
+
+```{r}
+print("edgeR filtered")
+print("mean")
+print(mean(as.numeric(Mean_filt_percent_sig["edgeR", ])))
+print("sd")
+print(sd(as.numeric(Mean_filt_percent_sig["edgeR", ])))
+
+print("========")
+
+print("LEfSe filtered")
+print("mean")
+print(mean(as.numeric(Mean_filt_percent_sig["LEfSe", ])))
+print("sd")
+print(sd(as.numeric(Mean_filt_percent_sig["LEfSe", ])))
+
+
+```
