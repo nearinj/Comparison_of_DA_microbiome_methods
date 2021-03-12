@@ -641,6 +641,7 @@ colnames(fixed_hackathon_metadata)[30:37] <- Metadata_renames
 
 colnames(fixed_hackathon_metadata)[which(colnames(fixed_hackathon_metadata) == "Log Aitchson's Dist. Effect Size")] <- "log(Aitch. dist. effect size)"
 colnames(fixed_hackathon_metadata)[which(colnames(fixed_hackathon_metadata) == "Log Read Depth Range")] <- "log(Read depth range)"
+colnames(fixed_hackathon_metadata)[which(colnames(fixed_hackathon_metadata) == "Log Max Read Depth")] <- "log(Max read depth)"
 colnames(fixed_hackathon_metadata)[which(colnames(fixed_hackathon_metadata) == "Read Depth Variation")] <- "Read depth variation"
 colnames(fixed_hackathon_metadata)[which(colnames(fixed_hackathon_metadata) == "Log Sample Size")] <- "log(Sample size)"
 
@@ -652,7 +653,7 @@ filt_ASV_nums <- pheatmap(t(Alpha_order_filt),
                                                      "Sparsity", "Richness", "Read depth variation", 
                                                      "log(Read depth range)"), drop=FALSE],
          annotation_legend=FALSE,
-         legend_labels = "Percent of Significant Features",
+         legend_labels = "% sig. features",
          treeheight_col = 0,
          cluster_cols = F,
          cluster_rows = F,
@@ -731,6 +732,7 @@ colnames(fixed_hackathon_metadata)[30:37] <- Metadata_renames
 
 colnames(fixed_hackathon_metadata)[which(colnames(fixed_hackathon_metadata) == "Log Aitchson's Dist. Effect Size")] <- "log(Aitch. dist. effect size)"
 colnames(fixed_hackathon_metadata)[which(colnames(fixed_hackathon_metadata) == "Log Read Depth Range")] <- "log(Read depth range)"
+colnames(fixed_hackathon_metadata)[which(colnames(fixed_hackathon_metadata) == "Log Max Read Depth")] <- "log(Max read depth)"
 colnames(fixed_hackathon_metadata)[which(colnames(fixed_hackathon_metadata) == "Read Depth Variation")] <- "Read depth variation"
 colnames(fixed_hackathon_metadata)[which(colnames(fixed_hackathon_metadata) == "Log Sample Size")] <- "log(Sample size)"
 
@@ -811,8 +813,8 @@ rownames(filt_pvals_df) <- colnames(filt_sig_percent_fix)
 colnames(filt_rhos_df) <- colnames(fixed_hackathon_metadata_filt)[30:37]
 colnames(filt_pvals_df) <- colnames(fixed_hackathon_metadata_filt)[30:37]
 
-corrplot(filt_rhos_df[,-3], p.mat = filt_pvals_df[,-3], sig.level = 0.05, insig = "blank", full_col = FALSE)
-# Saved manually as 8.5x11 inches as Supp_figures/Supp_Corrplot_Filt.pdf
+corrplot(filt_rhos_df[,-3], p.mat = filt_pvals_df[,-3], sig.level = 0.05, insig = "blank")
+# Saved manually as 8.5x11 inches as Main_figures/Figure2B_Corrplot_Filt_raw.pdf
 
 
 ### unfilt
@@ -855,8 +857,8 @@ rownames(unfilt_pvals_df) <- colnames(unfilt_sig_percent_fix)
 colnames(unfilt_rhos_df) <- colnames(fixed_hackathon_metadata_unfilt)[30:37]
 colnames(unfilt_pvals_df) <- colnames(fixed_hackathon_metadata_unfilt)[30:37]
 
-corrplot(as.matrix(unfilt_rhos_df[,-3]), full_col = FALSE, p.mat = unfilt_pvals_df[,-3], sig.level = 0.05, insig = "blank")
-# Saved manually as 8.5x11 inches as Supp_figures/Supp_Corrplot_Unfilt.pdf
+corrplot(as.matrix(unfilt_rhos_df[,-3]), p.mat = unfilt_pvals_df[,-3], sig.level = 0.05, insig = "blank")
+# Saved manually as 8.5x11 inches as Main_figures/Figure2A_Corrplot_Unfilt_raw.pdf
 ```
 
 ## Rho values to report in main text
