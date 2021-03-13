@@ -69,7 +69,7 @@ struc_zero <- prepro$structure_zeros
 #run ancom
 main_var <- colnames(groupings)[1]
 p_adj_method = "BH"
-alpha=0.1
+alpha=0.05
 adj_formula=NULL
 rand_formula=NULL
 res <- ANCOM(feature_table = feature_table, meta_data = metadata, struc_zero = struc_zero, main_var = main_var, p_adj_method = p_adj_method,

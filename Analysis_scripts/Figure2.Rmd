@@ -333,6 +333,10 @@ boxplot(filt_sig_abundance*100, outline = F)
 
 Total_sum_filt <- colSums(filt_sig_abundance, na.rm = T)
 
+matrixStats::colMedians(as.matrix(filt_sig_abundance), na.rm=T)*100
+
+
+
 divisor_sum_filt <- apply(filt_sig_abundance, 2, function(x) x <- length(which(x!=0)))
 
 Mean_RA_filt <- Total_sum_filt/divisor_sum_filt
@@ -441,6 +445,8 @@ colMeans(unfilt_sig_abundance, na.rm=T)
 median(unfilt_sig_abundance$aldex2, na.rm=T)
 median(unfilt_sig_abundance$ancom, na.rm=T)
 
+matrixStats::colMedians(as.matrix(unfilt_sig_abundance), na.rm=T)
+
 
 divisor_sum_unfilt <- apply(unfilt_sig_abundance, 2, function(x) x <- length(which(x!=0)))
 
@@ -486,7 +492,7 @@ mean_RA_plot <- ggplot(mean_RA_sig_data_comb, aes(x=tool_name, y=value)) + geom_
 mean_RA_plot
 
 ggsave(filename=paste(display_items_out, "Supp_figures", "Significant_Feats_Abundance.pdf", sep="/"),
-       plot = Total_bars, width = 15, height=6, units="in", dpi=600)
+       plot = mean_RA_plot, width = 15, height=6, units="in", dpi=600)
 ```
 
 
