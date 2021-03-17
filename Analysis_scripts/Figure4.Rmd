@@ -13,7 +13,7 @@ library(pheatmap)
 
 ### Folders where final figures are written
 ### Make sure this is pointed to your home directory
-display_items_out <- "/home/jacob/GitHub_Repos/Clean_Hackathon/Display_items/"
+display_items_out <- "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Display_items/"
 
 Data_set_names <- c(ArcticFireSoils="Soil - Fires",
                          ArcticFreshWater="Freshwater - Arctic",
@@ -627,7 +627,8 @@ final_plot <- pheatmap::pheatmap(as.matrix(Mean_filt_percent_sig),
          cluster_rows = F,
          display_numbers = round(Mean_raw_sig, 3),
          number_color = "Black",
-         main = "Filtered")
+         main = "Filtered",
+         angle_col=315)
 
 
 final_plot
@@ -720,7 +721,8 @@ Final_heat_nonfilt <- pheatmap::pheatmap(Mean_nonfilt_percent_sig,
          cluster_rows = F,
          display_numbers = round(Mean_raw_nonfilt, 3),
          number_color="Black",
-         main="Unfiltered")
+         main="Unfiltered",
+         angle_col=315)
 
 Final_heat_nonfilt
 
@@ -735,7 +737,11 @@ Figure4_plot <- cowplot::plot_grid(ggplotify::as.ggplot(Final_heat_nonfilt), ggp
 
 
 ggsave(filename=paste(display_items_out, "Main_figures", "Figure4.pdf", sep="/"),
-       plot = Figure4_plot, width = 7, height=7, units="in", dpi=600)
+       plot = Figure4_plot, width = 6, height=7, units="in", dpi=600)
+
+ggsave(filename=paste(display_items_out, "Main_figures", "Figure4.png", sep="/"),
+       plot = Figure4_plot, width = 6, height=7, units="in", dpi=100)
+
 ```
 
 
