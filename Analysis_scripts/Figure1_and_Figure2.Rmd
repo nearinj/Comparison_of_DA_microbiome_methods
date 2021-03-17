@@ -20,7 +20,7 @@ setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/")
 
 ### Folders where final figures are written
 ### Make sure this is pointed to your home directory
-display_items_out <- "/home/jacob/GitHub_Repos/Clean_Hackatho/Display_items/"
+display_items_out <- "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Display_items/"
 
 
 ###updated dataset names
@@ -70,7 +70,7 @@ tool_names <- c(aldex2="ALDEx2", ancom="ANCOM-II", corncob="corncob", deseq2="DE
                 maaslin2rare="MaAsLin2 (rare)", metagenomeSeq="metagenomeSeq", ttestrare="t-test (rare)", 
                 wilcoxonclr="Wilcoxon (CLR)", wilcoxonrare="Wilcoxon (rare)")
 
-Metadata_renames <- c(log_N="Log Sample Size", R.squared="Aitchson's Dist. Effect Size", log_R.squared="Log Aitchson's Dist. Effect Size", Sparsity="Sparsity", Richness="Median Richness", log_Depth="Log Median Read Depth", log_Depth_range="Log Read Depth Range", CoV_Depth="Read Depth Variation")
+Metadata_renames <- c(log_N="Log Sample Size", R.squared="Aitchson's Dist. Effect Size", log_R.squared="Log Aitchson's Dist. Effect Size", Sparsity="Sparsity", Richness="Richness", log_Depth="Log Max Read Depth", log_Depth_range="Log Read Depth Range", CoV_Depth="Read Depth Variation")
 ```
 
 # Functions
@@ -606,7 +606,7 @@ rownames(filt_sig_percent_scaled) <- tool_rename
 
 rownames(fixed_hackathon_metadata) 
 test2 <- Data_set_names[rownames(fixed_hackathon_metadata)]
-test2
+
 
 rownames(fixed_hackathon_metadata) <- test2
 
@@ -628,7 +628,7 @@ rownames(raw_count_df) <- test
 
 colnames(raw_count_df)
 test2 <- Data_set_names[colnames(raw_count_df)]
-test2
+
 colnames(raw_count_df) <- test2
 
 order_raw_count_df <- raw_count_df[,colnames(Alpha_order_filt)]
@@ -636,23 +636,29 @@ order_raw_count_df <- raw_count_df[,colnames(Alpha_order_filt)]
 identical(colnames(order_raw_count_df), colnames(Alpha_order_filt))
 
 test <- Metadata_renames[colnames(fixed_hackathon_metadata[30:37])]
-test
+
 colnames(fixed_hackathon_metadata)[30:37] <- Metadata_renames
 
-filt_ASV_nums <- pheatmap(Alpha_order_filt,
+colnames(fixed_hackathon_metadata)[which(colnames(fixed_hackathon_metadata) == "Log Aitchson's Dist. Effect Size")] <- "log(Aitch. dist. effect size)"
+colnames(fixed_hackathon_metadata)[which(colnames(fixed_hackathon_metadata) == "Log Read Depth Range")] <- "log(Read depth range)"
+colnames(fixed_hackathon_metadata)[which(colnames(fixed_hackathon_metadata) == "Log Max Read Depth")] <- "log(Max read depth)"
+colnames(fixed_hackathon_metadata)[which(colnames(fixed_hackathon_metadata) == "Read Depth Variation")] <- "Read depth variation"
+colnames(fixed_hackathon_metadata)[which(colnames(fixed_hackathon_metadata) == "Log Sample Size")] <- "log(Sample size)"
+
+filt_ASV_nums <- pheatmap(t(Alpha_order_filt),
          clustering_method = "complete",
          legend=TRUE,
-         display_numbers=order_raw_count_df,
-         annotation_col=fixed_hackathon_metadata[, c("Log Sample Size", "Log Aitchson's Dist. Effect Size", 
-                                                     "Sparsity", "Richness", "Read Depth Variation", 
-                                                     "Log Read Depth Range" ), drop=FALSE],
+         display_numbers=t(order_raw_count_df),
+         annotation_row=fixed_hackathon_metadata[, c("log(Sample size)", "log(Aitch. dist. effect size)", 
+                                                     "Sparsity", "Richness", "Read depth variation", 
+                                                     "log(Read depth range)"), drop=FALSE],
          annotation_legend=FALSE,
-         fontsize_row=14,
-         legend_labels = "Percent of Significant Features",
+         legend_labels = "% sig. features",
          treeheight_col = 0,
          cluster_cols = F,
          cluster_rows = F,
-         main="Filtered")
+         main="Filtered",
+         angle_col=315)
 ```
 
 #### UnFilter
@@ -705,7 +711,7 @@ rownames(raw_counts_unfilt) <- test2
 
 colnames(raw_counts_unfilt)
 test <- Data_set_names[colnames(raw_counts_unfilt)]
-test
+
 colnames(raw_counts_unfilt) <- test
 
 fix_raw_counts_unfilt <- raw_counts_unfilt[,colnames(Alpha_order_unfilt)]
@@ -713,32 +719,37 @@ fix_raw_counts_unfilt <- raw_counts_unfilt[,colnames(Alpha_order_unfilt)]
 
 identical(rownames(fix_raw_counts_unfilt), rownames(Alpha_order_unfilt))
 # fix metadata
-rownames(fixed_hackathon_metadata) 
+
 test2 <- Data_set_names[rownames(fixed_hackathon_metadata)]
-test2
+
 
 rownames(fixed_hackathon_metadata) <- test2
 
 
 test <- Metadata_renames[colnames(fixed_hackathon_metadata[30:37])]
-test
+
 colnames(fixed_hackathon_metadata)[30:37] <- Metadata_renames
 
-unfilt_ASV_nums <- pheatmap(Alpha_order_unfilt,
+colnames(fixed_hackathon_metadata)[which(colnames(fixed_hackathon_metadata) == "Log Aitchson's Dist. Effect Size")] <- "log(Aitch. dist. effect size)"
+colnames(fixed_hackathon_metadata)[which(colnames(fixed_hackathon_metadata) == "Log Read Depth Range")] <- "log(Read depth range)"
+colnames(fixed_hackathon_metadata)[which(colnames(fixed_hackathon_metadata) == "Log Max Read Depth")] <- "log(Max read depth)"
+colnames(fixed_hackathon_metadata)[which(colnames(fixed_hackathon_metadata) == "Read Depth Variation")] <- "Read depth variation"
+colnames(fixed_hackathon_metadata)[which(colnames(fixed_hackathon_metadata) == "Log Sample Size")] <- "log(Sample size)"
+
+
+unfilt_ASV_nums <- pheatmap(t(Alpha_order_unfilt),
          clustering_method = "complete",
          legend=TRUE,
-         display_numbers=fix_raw_counts_unfilt,
-         annotation_col=fixed_hackathon_metadata[, c("Log Sample Size", "Log Aitchson's Dist. Effect Size", 
-                                                     "Sparsity", "Richness", "Read Depth Variation", 
-                                                     "Log Read Depth Range" ), drop=FALSE],
+         display_numbers=t(fix_raw_counts_unfilt),
+         annotation_row=fixed_hackathon_metadata[, c("log(Sample size)", "log(Aitch. dist. effect size)", 
+                                                     "Sparsity", "Richness", "Read depth variation", 
+                                                     "log(Read depth range)"), drop=FALSE],
          annotation_legend=FALSE,
-         fontsize_row = 14,
          treeheight_col = 0,
          cluster_cols = F,
          cluster_rows = F,
-         main="Unfiltered")
-
-
+         main="Unfiltered",
+         angle_col=315)
 ```
 
 
@@ -749,7 +760,10 @@ unfilt_ASV_nums <- pheatmap(Alpha_order_unfilt,
 figure1_plot <- cowplot::plot_grid(unfilt_ASV_nums[[4]], filt_ASV_nums[[4]], nrow=2, labels=c('A', 'B'))
 
 ggsave(filename=paste(display_items_out, "Main_figures", "Figure1.pdf", sep="/"),
-       plot = figure1_plot, width = 15, height=12, units="in", dpi=600)
+       plot = figure1_plot, width = 9, height=13, units="in", dpi=600)
+
+ggsave(filename=paste(display_items_out, "Main_figures", "Figure1.png", sep="/"),
+       plot = figure1_plot, width = 9, height=13, units="in", dpi=150)
 ```
 
 
@@ -799,8 +813,8 @@ rownames(filt_pvals_df) <- colnames(filt_sig_percent_fix)
 colnames(filt_rhos_df) <- colnames(fixed_hackathon_metadata_filt)[30:37]
 colnames(filt_pvals_df) <- colnames(fixed_hackathon_metadata_filt)[30:37]
 
-corrplot(filt_rhos_df[,-3], p.mat = filt_pvals_df[,-3], sig.level = 0.05, insig = "blank", full_col = FALSE)
-# Saved manually as 8.5x11 inches as Supp_figures/Supp_Corrplot_Filt.pdf
+corrplot(filt_rhos_df[,-3], p.mat = filt_pvals_df[,-3], sig.level = 0.05, insig = "blank")
+# Saved manually as 8.5x11 inches as Main_figures/Figure2B_Corrplot_Filt_raw.pdf
 
 
 ### unfilt
@@ -843,8 +857,8 @@ rownames(unfilt_pvals_df) <- colnames(unfilt_sig_percent_fix)
 colnames(unfilt_rhos_df) <- colnames(fixed_hackathon_metadata_unfilt)[30:37]
 colnames(unfilt_pvals_df) <- colnames(fixed_hackathon_metadata_unfilt)[30:37]
 
-corrplot(as.matrix(unfilt_rhos_df[,-3]), full_col = FALSE, p.mat = unfilt_pvals_df[,-3], sig.level = 0.05, insig = "blank")
-# Saved manually as 8.5x11 inches as Supp_figures/Supp_Corrplot_Unfilt.pdf
+corrplot(as.matrix(unfilt_rhos_df[,-3]), p.mat = unfilt_pvals_df[,-3], sig.level = 0.05, insig = "blank")
+# Saved manually as 8.5x11 inches as Main_figures/Figure2A_Corrplot_Unfilt_raw.pdf
 ```
 
 ## Rho values to report in main text
