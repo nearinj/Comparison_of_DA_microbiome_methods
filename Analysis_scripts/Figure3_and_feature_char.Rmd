@@ -10,13 +10,14 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Folders where final figures are written
 ### Make sure this is pointed to your home directory
-display_items_out <- "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Display_items/"
+display_items_out <- "/home/jacob/GitHub_Repos/Clean_Hackathon/Display_items/"
 
 #libraries
 library(ggplot2)
 library(ggridges)
 library(cowplot)
 library(pheatmap)
+library(ggrepel)
 options(scipen = 999)
 
 
@@ -29,11 +30,11 @@ tool_names <- c(aldex2="ALDEx2", ancom="ANCOM-II", corncob="corncob", deseq2="DE
 
 #Load in data
 ```{r}
-filt_results <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Filt_results_TEST_DA_TEST2.RDS")
-unfilt_results <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Unfilt_results_TEST_DA_TEST2.RDS")
+filt_results <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Filt_results_21_04_07.RDS")
+unfilt_results <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Unfilt_results_21_04_07.RDS")
 
-unfilt_study_tab  <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/unfilt_study_tab_TEST_DA_TEST2.RDS")
-filt_study_tab <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/filt_study_tab_TEST_DA_TEST2.RDS")
+unfilt_study_tab  <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/unfilt_study_tab_21_04_07.RDS")
+filt_study_tab <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/filt_study_tab_21_04_07.RDS")
 
 ```
 
@@ -102,23 +103,24 @@ row_to_remove <- which(rowSums(Feature_count_tab_filt)==0)
 Feature_count_tab_filt <- Feature_count_tab_filt[-row_to_remove, ]
 
 
-# ### next we need go through ASV and set its score in the column if it was found by that tool.
-# for(row_num in 1:length(rownames(Feature_count_tab_filt))){
-# 
-#   row_name <- rownames(Feature_count_tab_filt)[row_num]
-#   Score_for_that_row <- Feature_sig_count_filt[row_name]
-# 
-#   for(j in 1:length(colnames(Feature_count_tab_filt))){
-#     if(is.na(Feature_count_tab_filt[row_num, j])){
-# 
-#     }else if(Feature_count_tab_filt[row_num, j] == 1){
-#       Feature_count_tab_filt[row_num, j] <- Score_for_that_row
-#     }
-#   }
-# }
-# 
-# saveRDS(Feature_count_tab_filt, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_filt_TEST_DA_TEST2.RDS")
-Feature_count_tab_filt <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_filt_TEST_DA_TEST2.RDS")
+## next we need go through ASV and set its score in the column if it was found by that tool.
+for(row_num in 1:length(rownames(Feature_count_tab_filt))){
+
+  row_name <- rownames(Feature_count_tab_filt)[row_num]
+  Score_for_that_row <- Feature_sig_count_filt[row_name]
+
+  for(j in 1:length(colnames(Feature_count_tab_filt))){
+    if(is.na(Feature_count_tab_filt[row_num, j])){
+
+    }else if(Feature_count_tab_filt[row_num, j] == 1){
+      Feature_count_tab_filt[row_num, j] <- Score_for_that_row
+    }
+  }
+}
+
+saveRDS(Feature_count_tab_filt, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_21_04_07.RDS")
+
+Feature_count_tab_filt <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_21_04_07.RDS")
 
 
 ### get in ggplot format.
@@ -168,9 +170,9 @@ Feature_count_tab_unfilt <- Feature_count_tab_unfilt[-remove_rows,]
 #   }
 # }
 # 
-# saveRDS(Feature_count_tab_unfilt, file="/home/jacob/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_unfilt_TEST_DA_TEST2.RDS")
+# saveRDS(Feature_count_tab_unfilt, file="/home/jacob/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_unfilt_21_04_07.RDS")
 
-Feature_count_tab_unfilt <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_unfilt_TEST_DA_TEST2.RDS")
+Feature_count_tab_unfilt <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_unfilt_21_04_07.RDS")
 plot_info_barplot_unfilt <- reshape2::melt(Feature_count_tab_unfilt, na.rm=T)
 remove_row <- which(plot_info_barplot_unfilt$value==0)
 no_zero_unfilt <- plot_info_barplot_unfilt[-remove_row,]
@@ -191,6 +193,7 @@ merged_no_zero_unfilt$log_total_hits <- log(merged_no_zero_unfilt$total_hits)
 
 merged_no_zero_unfilt$clean_variable <- tool_names[merged_no_zero_unfilt$variable]
 merged_no_zero_filt$clean_variable <- tool_names[merged_no_zero_filt$variable]
+
 
 
 ### need to make a new data.frame that has the total counts for each tool and each value
@@ -214,7 +217,7 @@ Filt_bars <- ggplot(test_join, aes(x=as.numeric(Score), y=value, width=1, fill=T
   scale_y_continuous(position = "right", breaks=c(0, 20, 40, 60), labels=c("0", "", "40", "")) +
   theme(strip.text.y.left = element_text(angle=0), strip.background = element_blank()) +scale_x_continuous(breaks=c(1:14), expand=c(0,0)) +
   theme(text=element_text(size=16)) + guides(fill=guide_legend(title="Total hits")) +
-    scale_fill_continuous(high = "#132B43", low = "#56B1F7")
+    scale_fill_continuous(high = "#132B43", low = "#56B1F7", breaks=seq(5000, 25000, by=5000))
 
 Filt_bars
 
@@ -235,7 +238,7 @@ Unfilt_bars <- ggplot(unfilt_bars_data_join, aes(x=as.numeric(Score), y=value, w
   scale_y_continuous(position = "right", breaks=c(0, 20, 40, 60), labels=c("0", "", "40", "")) + 
   theme(strip.text.y.left = element_text(angle=0), strip.background = element_blank()) +scale_x_continuous(breaks=c(1:14), expand=c(0,0)) +
   theme(text=element_text(size=16)) + guides(fill=guide_legend(title="Total hits")) +
-    scale_fill_continuous(high = "#132B43", low = "#56B1F7")
+    scale_fill_continuous(high = "#132B43", low = "#56B1F7", breaks=seq(100000,500000, by=100000))
 
 Unfilt_bars
 
@@ -499,8 +502,9 @@ library(doMC)
 #    }
 #   ITER
 # }
-# saveRDS(filt_sig_abundance_final, "/home/jacob/GitHub_Repos/Clean_Hackathon/Data/filt_sig_abundance.RDS")
-filt_sig_abundance <- data.frame(readRDS("/home/jacob/GitHub_Repos/Clean_Hackathon/Data/filt_sig_abundance.RDS"))
+# saveRDS(filt_sig_abundance_final, "/home/jacob/GitHub_Repos/Clean_Hackathon/Data/filt_sig_abundance_21_04_08.RDS")
+
+filt_sig_abundance <- data.frame(readRDS("/home/jacob/GitHub_Repos/Clean_Hackathon/Data/filt_sig_abundance_21_04_08.RDS"))
 
 
 filt_sig_abundance[filt_sig_abundance==0] <- NA
@@ -598,7 +602,7 @@ unfilt_sig_abundance <- as.matrix(unfilt_sig_abundance)
 # 
 # #we can rearrange the filt_study_tab_all_mean to match the same order as filt_sig_abundance
 # ordered_unfilt_study_tab_all_mean <- unfilt_study_tab_all_mean[rownames(unfilt_sig_abundance)]
-#  
+# 
 # identical(rownames(unfilt_sig_abundance), names(ordered_unfilt_study_tab_all_mean))
 # 
 # 
@@ -611,10 +615,10 @@ unfilt_sig_abundance <- as.matrix(unfilt_sig_abundance)
 #    }
 #   ITER
 # }
-# saveRDS(unfilt_sig_abundance_final, file="/home/jacob/GitHub_Repos/Clean_Hackathon/Data/unfilt_sig_abundance.RDS")
+# saveRDS(unfilt_sig_abundance_final, file="/home/jacob/GitHub_Repos/Clean_Hackathon/Data/unfilt_sig_abundance_21_04_08.RDS")
 
 
-unfilt_sig_abundance <- data.frame(readRDS("/home/jacob/GitHub_Repos/Clean_Hackathon/Data/unfilt_sig_abundance.RDS"))
+unfilt_sig_abundance <- data.frame(readRDS("/home/jacob/GitHub_Repos/Clean_Hackathon/Data/unfilt_sig_abundance_21_04_08.RDS"))
 
 ## set non-sig abundances to NA
 unfilt_sig_abundance[unfilt_sig_abundance==0] <- NA
@@ -675,11 +679,10 @@ mean_RA_plot <- ggplot(mean_RA_sig_data_comb, aes(x=tool_name, y=value)) + geom_
 
 mean_RA_plot
 
-<<<<<<< HEAD:Analysis_scripts/Figure2.Rmd
+
 ggsave(filename=paste(display_items_out, "Supp_figures", "Significant_Feats_Abundance.pdf", sep="/"),
        plot = mean_RA_plot, width = 15, height=6, units="in", dpi=600)
-=======
->>>>>>> 5c73594a6cfa9349d942642282f352b06e1844f7:Analysis_scripts/Figure3_and_feature_char.Rmd
+
 ```
 
 

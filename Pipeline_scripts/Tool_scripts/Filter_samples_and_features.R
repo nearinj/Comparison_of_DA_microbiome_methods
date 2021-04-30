@@ -41,6 +41,7 @@ if("taxonomy" %in% colnames(ASV_table_1)){
 }
 
 
+
 ### loaded in the tables now we need to filter the ASVS that are found in less than X filter level
 ASV_table_1 <- remove_rare_features(ASV_table_1, as.numeric(args[[2]]))
 
@@ -49,9 +50,15 @@ ASV_table_1 <- remove_rare_features(ASV_table_1, as.numeric(args[[2]]))
 ASV_table_2 <- data.frame(t(GUniFrac::Rarefy(t(ASV_table_1), depth=as.numeric(args[[5]]))$otu.tab.rff), check.rows = F,
                           check.names = F)
 
+## read in the metadata
+groupings <- read.table(args[6], sep="\t", row.names = 1, header=T, comment.char = "", quote="", check.names = F)
+# in some cases metadata will be smaller than the ASV table so we take intersect
+samps_keep <- intersect(colnames(ASV_table_2), rownames(groupings))
+ASV_table_2 <- ASV_table_2[,samps_keep]
+## this makes it so we only keep samples in the table we are interested in comparing
 
-### we need to remove rows that have a sum of 0
 
+### we need to remove rows (ASVs) that have a sum of 0 across all samples
 remove_rows <- which(rowSums(ASV_table_2)==0)
 
 if(length(remove_rows) != 0){
@@ -66,6 +73,12 @@ if(!identical(colnames(ASV_table_1), colnames(ASV_table_2))){
     
     message("There are more samples in the non-rarified table. These samples will be fitlered out before running differential abundance calculations")
     ASV_table_1 <- ASV_table_1[, colnames(ASV_table_2)]
+   
+    #fix issue 1 by making sure there are no rowSums equal to 0 in the non-rare table.
+    remove_rows_zero <- which(rowSums(ASV_table_1)==0)
+    if(length(remove_rows_zero) != 0){
+      ASV_table_1 <- ASV_table_1[-remove_rows_zero,]
+    }
     write.table(ASV_table_1, sep="\t", quote=F, file=args[[3]])
     write.table(ASV_table_2, sep="\t", quote=F, file=args[[4]])
   }
@@ -75,6 +88,12 @@ if(!identical(colnames(ASV_table_1), colnames(ASV_table_2))){
   }
 }else{
   "Samples  between tables agree, no sample filter required, returning feature filtered tables"
+  
+  #fix issue 1 by making sure there are no rowSums equal to 0 in the non-rare table.
+  remove_rows_zero <- which(rowSums(ASV_table_1)==0)
+  if(length(remove_rows_zero) != 0){
+    ASV_table_1 <- ASV_table_1[-remove_rows_zero,]
+  }
   write.table(ASV_table_1, sep="\t", quote=F, file=args[[3]])
   write.table(ASV_table_2, sep="\t", quote=F, file = args[[4]])
 }

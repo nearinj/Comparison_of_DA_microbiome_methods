@@ -1,0 +1,17 @@
+/Studies/ArcticFireSoils/ArcticFireSoils_ASVs_table_rare.tsv
+/Studies/ArcticFireSoils/ArcticFireSoils_ASVs_table.tsv
+/Studies/ArcticFireSoils/ArcticFireSoils_meta.tsv
+/Studies/ArcticFireSoils/No_filt_Results
+/Studies/ArcticFreshwaters/ArcticFreshwaters_ASVs_table_rare.tsv
+/Studies/ArcticFreshwaters/ArcticFreshwaters_ASVs_table.tsv
+/Studies/ArcticFreshwaters/ArcticFreshwaters_meta.tsv
+/Studies/ArcticFreshwaters/No_filt_Results
+/Studies/ArcticTransects/ArcticTransects_ASVs_table_rare.tsv
+/Studies/ArcticTransects/ArcticTransects_ASVs_table.tsv
+/Studies/ArcticTransects/ArcticTransects_meta.tsv
+/Studies/ArcticTransects/No_filt_Results
+/Studies/Office/Office_ASVs_table_rare.tsv
+/Studies/Office/Office_ASVs_table.tsv
+/Studies/Office/Office_metadata.tsv
+/Studies/Office/No_filt_Results
+

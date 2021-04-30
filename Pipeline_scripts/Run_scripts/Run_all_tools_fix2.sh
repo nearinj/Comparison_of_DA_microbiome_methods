@@ -239,8 +239,9 @@ out_file_new_tab_rar_ASV=$Output_Path/fixed_rare_tables/$table_name
 ### Run script that checks if rare table has the same samples as the non-rar table and then filters the non-rare tab
 if [ $Filt_level == 0 ]; then
 	echo "No Filtering was selected. Due to this we expect that a rarified table has also been provided. This will be fixed in future update"
-	Rscript $TOOL_DIR/Filter_samples_of_non_rare_table.R $ASV_table_Path $Rar_ASV_table_PATH $out_file_new_tab_ASV
+	Rscript $TOOL_DIR/Filter_samples_of_non_rare_table.R $ASV_table_Path $Rar_ASV_table_PATH $out_file_new_tab_ASV $Groupings_Path $out_file_new_tab_rar_ASV
 	ASV_table_Path=$out_file_new_tab_ASV
+	Rar_ASV_table_PATH=$out_file_new_tab_rar_ASV
 else
 	#### Run script that checks if non-rare table has the same samples as rare table
 	#### The script also takes the filter level and filters the non-rare table to that level
@@ -248,7 +249,7 @@ else
 		echo "Please Enter the rarification depth you would like to us"
 		exit 1
 	else	
-		Rscript $TOOL_DIR/Filter_samples_and_features.R $ASV_table_Path $Filt_level $out_file_new_tab_ASV $out_file_new_tab_rar_ASV $depth
+		Rscript $TOOL_DIR/Filter_samples_and_features.R $ASV_table_Path $Filt_level $out_file_new_tab_ASV $out_file_new_tab_rar_ASV $depth $Groupings_Path
 		ASV_table_Path=$out_file_new_tab_ASV
 		Rar_ASV_table_PATH=$out_file_new_tab_rar_ASV
 	fi

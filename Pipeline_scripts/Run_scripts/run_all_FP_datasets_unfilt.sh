@@ -6,10 +6,10 @@ mkdir $DATA_DIR/logs
 
 ## arcticfresh
 
-#FP_runs/run_arcticfresh_unfilt.sh 2> $DATA_DIR/logs/artic_unfilt.log
+FP_runs/run_arcticfresh_unfilt.sh 2> $DATA_DIR/logs/artic_unfilt.log
 
 ## blueberry
-#FP_runs/run_blueberry_unfilt.sh 2> $DATA_DIR/logs/blueberry_unfilt.log
+FP_runs/run_blueberry_unfilt.sh 2> $DATA_DIR/logs/blueberry_unfilt.log
 
 ## goodrich
 FP_runs/run_goodrich_unfilt.sh 2> $DATA_DIR/logs/goodrich_unfilt.log

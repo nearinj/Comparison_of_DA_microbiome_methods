@@ -85,11 +85,14 @@ write_random_grpings <- function(grp_file, num_tabs){
     temp_groupings[1] <- "ran2"
     temp_groupings[samps_choosen,] <- "ran1"
     tab_name <- paste(args[[4]], "/random_table_",i,".tsv",sep="")
+    if(i > 10){
+        tab_name <- paste(tab_name, "ext", sep="")
+    }
     write.table(temp_groupings, file=tab_name, quote=FALSE, sep="\t", col.names = NA)
   }
 
 }
 
-write_random_grpings(filt_groupings, 10)
+write_random_grpings(filt_groupings, 100)
 
 

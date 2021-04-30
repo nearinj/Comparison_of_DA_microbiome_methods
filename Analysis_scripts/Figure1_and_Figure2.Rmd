@@ -11,16 +11,17 @@ knitr::opts_chunk$set(echo = TRUE)
 # Libraries
 library(pheatmap)
 library(gridExtra)
+library(ggplot2)
 # Set WD
 
 
 ### SET DIRECTORY WITH DATA HERE
-knitr::opts_knit$set(root.dir = '/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/')
-setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/")
+knitr::opts_knit$set(root.dir = '/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/')
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/")
 
 ### Folders where final figures are written
 ### Make sure this is pointed to your home directory
-display_items_out <- "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Display_items/"
+display_items_out <- "/home/jacob/GitHub_Repos/Clean_Hackathon/Display_items/"
 
 
 ###updated dataset names
@@ -256,8 +257,8 @@ names(filt_results) <- hackathon_study_ids
 unfilt_results <- lapply(hackathon_study_ids, read_hackathon_results, results_folder = "No_filt_Results")
 names(unfilt_results) <- hackathon_study_ids
 
-saveRDS(filt_results, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/Filt_results_TEST_DA_TEST2.RDS")
-saveRDS(unfilt_results, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/Unfilt_results_TEST_DA_TEST2.RDS")
+saveRDS(filt_results, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/Filt_results_21_04_07.RDS")
+saveRDS(unfilt_results, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/Unfilt_results_21_04_07.RDS")
 
 ```
 
@@ -322,24 +323,24 @@ for (study in hackathon_study_ids){
   }else{
       unfilt_study_tab[["nonrare"]][[study]] <- Read_study_table(paste(study, "/No_filt_Results/fixed_non_rare_tables/", study, "_ASVs_table.tsv", sep=""),
                                                            paste(study, "/",grp_file_name, sep=""))
-      unfilt_study_tab[["rare"]][[study]] <- Read_study_table(paste(study, "/", study, "_ASVs_table_rare.tsv", sep=""),
+      unfilt_study_tab[["rare"]][[study]] <- Read_study_table(paste(study, "/No_filt_Results/fixed_rare_tables/", study, "_ASVs_table.tsv", sep=""),
                                                             paste(study,"/",grp_file_name, sep=""))
   }
 }
 
-saveRDS(unfilt_study_tab, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/unfilt_study_tab_TEST_DA_TEST2.RDS")
-saveRDS(filt_study_tab, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/filt_study_tab_TEST_DA_TEST2.RDS")
+saveRDS(unfilt_study_tab, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/unfilt_study_tab_21_04_07.RDS")
+saveRDS(filt_study_tab, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/filt_study_tab_21_04_07.RDS")
 ```
 
 # Figure 1 Analysis
 
 ## Read in data
 ```{r}
-filt_results <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Filt_results_TEST_DA_TEST2.RDS")
-unfilt_results <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Unfilt_results_TEST_DA_TEST2.RDS")
+filt_results <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Filt_results_21_04_07.RDS")
+unfilt_results <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Unfilt_results_21_04_07.RDS")
 
-unfilt_study_tab  <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/unfilt_study_tab_TEST_DA_TEST2.RDS")
-filt_study_tab <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/filt_study_tab_TEST_DA_TEST2.RDS")
+unfilt_study_tab  <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/unfilt_study_tab_21_04_07.RDS")
+filt_study_tab <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/filt_study_tab_21_04_07.RDS")
 
 ```
 
@@ -768,7 +769,7 @@ ggsave(filename=paste(display_items_out, "Main_figures", "Figure1.png", sep="/")
 
 
 
-## Supplemental Correlation Figure
+## Correlation Figure
 ```{r}
 
 library(corrplot)
@@ -813,7 +814,7 @@ rownames(filt_pvals_df) <- colnames(filt_sig_percent_fix)
 colnames(filt_rhos_df) <- colnames(fixed_hackathon_metadata_filt)[30:37]
 colnames(filt_pvals_df) <- colnames(fixed_hackathon_metadata_filt)[30:37]
 
-corrplot(filt_rhos_df[,-3], p.mat = filt_pvals_df[,-3], sig.level = 0.05, insig = "blank")
+corrplot(filt_rhos_df[,-3], p.mat = filt_pvals_df[,-3], sig.level = 0.05, insig = "blank", full_col = FALSE)
 # Saved manually as 8.5x11 inches as Main_figures/Figure2B_Corrplot_Filt_raw.pdf
 
 
@@ -857,7 +858,7 @@ rownames(unfilt_pvals_df) <- colnames(unfilt_sig_percent_fix)
 colnames(unfilt_rhos_df) <- colnames(fixed_hackathon_metadata_unfilt)[30:37]
 colnames(unfilt_pvals_df) <- colnames(fixed_hackathon_metadata_unfilt)[30:37]
 
-corrplot(as.matrix(unfilt_rhos_df[,-3]), p.mat = unfilt_pvals_df[,-3], sig.level = 0.05, insig = "blank")
+corrplot(as.matrix(unfilt_rhos_df[,-3]), p.mat = unfilt_pvals_df[,-3], sig.level = 0.05, insig = "blank", full_col = FALSE)
 # Saved manually as 8.5x11 inches as Main_figures/Figure2A_Corrplot_Unfilt_raw.pdf
 ```
 

@@ -1,4 +1,4 @@
----
+insta---
 title: "Differential abundance genus consistency results"
 author: "Gavin Douglas"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'

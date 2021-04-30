@@ -10,10 +10,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(reshape2)
 library(pheatmap)
+library(plyr)
 
 ### Folders where final figures are written
 ### Make sure this is pointed to your home directory
-display_items_out <- "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Display_items/"
+display_items_out <- "/home/jacob/GitHub_Repos/Clean_Hackathon/Display_items/"
 
 Data_set_names <- c(ArcticFireSoils="Soil - Fires",
                          ArcticFreshWater="Freshwater - Arctic",
@@ -201,7 +202,7 @@ read_hackathon_results <- function(study) {
 ```{r}
 Filtered_FD_data <- list()
 
-setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/Office/False_Discovery_Testing/results_filt/")
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13//Hackathon/Studies/Office/False_Discovery_Testing/results_filt/")
 
 
 Office_filt_results <- lapply(c(1:10), read_hackathon_results)
@@ -222,7 +223,7 @@ Filtered_FD_data[["Office"]] <- Office_filt_p_tabs
 
 #### ArcticFreshWaters
 ```{r}
-setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/ArcticFreshwaters/False_Discovery_Testing/results_filt/")
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/ArcticFreshwaters/False_Discovery_Testing/results_filt/")
 
 Arctic_results_filt <- lapply(c(1:10), read_hackathon_results)
 
@@ -240,7 +241,7 @@ Filtered_FD_data[["ArcticFreshWaters"]] <- Arctic_filt_p_tabs
 
 #### Blueberry
 ```{r}
-setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/Blueberry/False_Discovery_Testing/results_filt/")
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Blueberry/False_Discovery_Testing/results_filt/")
 
 
 Blueb_filt_results <- lapply(c(1:10), read_hackathon_results)
@@ -258,7 +259,7 @@ Filtered_FD_data[["Blueberry"]] <- Blueb_filt_p_tabs
 
 #### Goodrich
 ```{r}
-setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/ob_goodrich/False_Discovery_Testing/results_filt/")
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/ob_goodrich/False_Discovery_Testing/results_filt/")
 
 goodrich_filt_results <- lapply(c(1:10), read_hackathon_results)
 
@@ -276,7 +277,7 @@ Filtered_FD_data[["ob_goodrich"]] <- goodrich_filt_p_tabs
 #### hiv_noguerajulian
 
 ```{r}
-setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/hiv_noguerajulian/False_Discovery_Testing/results_filt/")
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/hiv_noguerajulian/False_Discovery_Testing/results_filt/")
 
 hiv_nog_filt_results <- lapply(c(1:10), read_hackathon_results)
 
@@ -293,7 +294,7 @@ Filtered_FD_data[["hiv_noguerajulian"]] <- hiv_nog_filt_p_tabs
 
 #### Ji_WTP_DS
 ```{r}
-setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/Ji_WTP_DS/False_Discovery_Testing/results_filt/")
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Ji_WTP_DS/False_Discovery_Testing/results_filt/")
 
 JI_WTP_filt_results <- lapply(c(1:10), read_hackathon_results)
 
@@ -310,7 +311,7 @@ Filtered_FD_data[["Ji_WTP_DS"]] <- JI_WTP_filt_p_tabs
 
 #### Schubert
 ```{r}
-setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/cdi_schubert/False_Discovery_Testing/results_filt/")
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/cdi_schubert/False_Discovery_Testing/results_filt/")
 
 schubert_filt_results <- lapply(c(1:10), read_hackathon_results)
 
@@ -327,7 +328,7 @@ Filtered_FD_data[["cdi_schubert"]] <- schubert_filt_p_tabs
 
 #### sw_sed_detender
 ```{r}
-setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/sw_sed_detender/False_Discovery_Testing/results_filt/")
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/sw_sed_detender/False_Discovery_Testing/results_filt/")
 
 sw_sed_filt_results <- lapply(c(1:10), read_hackathon_results)
 
@@ -342,18 +343,19 @@ Filtered_FD_data[["sw_sed_detender"]] <- sw_sed_filt_p_tabs
 
 #### Save list
 ```{r}
-saveRDS(Filtered_FD_data, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_filt_TEST_DA_TEST2.RDS")
+saveRDS(Filtered_FD_data, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_filt_21_04_08.RDS")
 ```
 
 ### Unfiltered
 ```{r}
 Unfiltered_FD_data <- list()
+Unfiltered_FD_data_ext <- list()
 ```
 
 #### ArcticFreshWaters
 
 ```{r}
-setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/ArcticFreshwaters/False_Discovery_Testing/results_nonfilt/")
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/ArcticFreshwaters/False_Discovery_Testing/results_nonfilt/")
 
 arcticfresh_nonfilt <- lapply(c(1:10), read_hackathon_results)
 
@@ -367,11 +369,29 @@ for(i in 1:10){
 }
 
 Unfiltered_FD_data[["ArcticFreshWaters"]] <- arcticfresh_nonfilt_p_tabs
+
+
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/ArcticFreshwaters/False_Discovery_Testing/results_nonfilt_ext/")
+
+
+arcticfresh_nonfilt_ext <- lapply(c(1:90), read_hackathon_results)
+
+arcticfresh_nonfilt_p_tabs_ext <- list()
+
+for(i in 1:90){
+  
+    arcticfresh_nonfilt_p_tabs_ext[[i]] <- arcticfresh_nonfilt_ext[[i]]$adjP_table
+  
+}
+
+
+Unfiltered_FD_data_ext[["ArcticFreshWaters"]] <- arcticfresh_nonfilt_p_tabs_ext
+
 ```
 
 #### Blueberry
 ```{r}
-setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/Blueberry/False_Discovery_Testing/results_nonfilt/")
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Blueberry/False_Discovery_Testing/results_nonfilt/")
 
 Blueberry_nonfilt <- lapply(c(1:10), read_hackathon_results)
 
@@ -384,11 +404,27 @@ for(i in 1:10){
 }
 
 Unfiltered_FD_data[["Blueberry"]] <- Blueberry_nonfilt_p_tabs
+
+
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Blueberry/False_Discovery_Testing/results_nonfilt_ext/")
+
+Blueberry_nonfilt_ext <- lapply(c(1:90), read_hackathon_results)
+
+Blueberry_nonfilt_p_tabs_ext <- list()
+
+for(i in 1:90){
+  
+  Blueberry_nonfilt_p_tabs_ext[[i]] <- Blueberry_nonfilt_ext[[i]]$adjP_table
+  
+}
+
+Unfiltered_FD_data_ext[["Blueberry"]] <- Blueberry_nonfilt_p_tabs_ext
+
 ```
 
 #### ob_goodrich
 ```{r}
-setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/ob_goodrich/False_Discovery_Testing/results_nonfilt/")
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/ob_goodrich/False_Discovery_Testing/results_nonfilt/")
 
 goodrich_nonfilt <- lapply(c(1:10), read_hackathon_results)
 
@@ -402,12 +438,29 @@ for(i in 1:10){
 }
 
 Unfiltered_FD_data[["ob_goodrich"]] <- goodrich_nonfilt_p_tabs
+
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/ob_goodrich/False_Discovery_Testing/results_nonfilt_ext/")
+
+goodrich_nonfilt_ext <- lapply(c(1:90), read_hackathon_results)
+
+goodrich_nonfilt_p_tabs_ext <- list()
+
+for(i in 1:90){
+  
+    goodrich_nonfilt_p_tabs_ext[[i]] <- goodrich_nonfilt_ext[[i]]$adjP_table
+  
+}
+
+Unfiltered_FD_data_ext[["ob_goodrich"]] <- goodrich_nonfilt_p_tabs_ext
+
+
+
 ```
 
 #### hiv_noguerajulian
 
 ```{r}
-setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/hiv_noguerajulian/False_Discovery_Testing/results_nonfilt/")
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/hiv_noguerajulian/False_Discovery_Testing/results_nonfilt/")
 
 hiv_nog_nonfilt <- lapply(c(1:10), read_hackathon_results)
 
@@ -420,12 +473,30 @@ for(i in 1:10){
 }
 
 Unfiltered_FD_data[["hiv_noguerajulian"]] <- hiv_nog_nonfilt_p_tabs
+
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/hiv_noguerajulian/False_Discovery_Testing/results_nonfilt_ext/")
+
+
+hiv_nog_nonfilt_ext <- lapply(c(1:90), read_hackathon_results)
+
+
+hiv_nog_nonfilt_p_tabs_ext <- list()
+
+
+
+for(i in 1:90){
+  
+  hiv_nog_nonfilt_p_tabs_ext[[i]] <- hiv_nog_nonfilt_ext[[i]]$adjP_table
+}
+
+Unfiltered_FD_data_ext[["hiv_noguerajulian"]] <- hiv_nog_nonfilt_p_tabs_ext
+
 ```
 
 #### Ji_WTP_DS
 
 ```{r}
-setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/Ji_WTP_DS/False_Discovery_Testing/results_nonfilt/")
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Ji_WTP_DS/False_Discovery_Testing/results_nonfilt/")
 
 JI_WTP_nonfilt <- lapply(c(1:10), read_hackathon_results)
 
@@ -438,11 +509,28 @@ for(i in 1:10){
 }
 
 Unfiltered_FD_data[["Ji_WTP_DS"]] <- JI_WTP_nonfilt_p_tabs
+
+
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Ji_WTP_DS/False_Discovery_Testing/results_nonfilt_ext/")
+
+JI_WTP_nonfilt_ext <- lapply(c(1:90), read_hackathon_results)
+
+
+JI_WTP_nonfilt_p_tabs_ext <- list()
+
+for(i in 1:90){
+  
+  JI_WTP_nonfilt_p_tabs_ext[[i]] <- JI_WTP_nonfilt_ext[[i]]$adjP_table
+  
+}
+
+Unfiltered_FD_data_ext[["Ji_WTP_DS"]] <- JI_WTP_nonfilt_p_tabs_ext
+
 ```
 
 #### Office
 ```{r}
-setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/Office/False_Discovery_Testing/results_nonfilt/")
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Office/False_Discovery_Testing/results_nonfilt/")
 
 ## have to skip 5 as aldex2 didn't finish due to memory issues with other stuff being run..
 Office_nonfilt <- lapply(c(1:10), read_hackathon_results)
@@ -456,11 +544,27 @@ for(i in 1:10){
 
 
 Unfiltered_FD_data[["Office"]] <- Office_nonfilt_p_tabs
+
+
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Office/False_Discovery_Testing/results_nonfilt_ext/")
+
+Office_nonfilt_ext <- lapply(c(1:90), read_hackathon_results)
+
+Office_nonfilt_p_tabs_ext <- list()
+
+for(i in 1:90){
+  Office_nonfilt_p_tabs_ext[[i]] <- Office_nonfilt_ext[[i]]$adjP_table
+}
+
+
+Unfiltered_FD_data_ext[["Office"]] <- Office_nonfilt_p_tabs_ext
+
+
 ```
 
 #### cdi_schubert
 ```{r}
-setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/cdi_schubert/False_Discovery_Testing/results_nonfilt/")
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/cdi_schubert/False_Discovery_Testing/results_nonfilt/")
 
 schubert_nonfilt <- lapply(c(1:10), read_hackathon_results)
 
@@ -473,11 +577,28 @@ for(i in 1:10){
 }
 
 Unfiltered_FD_data[["cdi_schubert"]] <- schubert_nonfilt_p_tabs
+
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/cdi_schubert/False_Discovery_Testing/results_nonfilt_ext/")
+
+
+schubert_nonfilt_ext <- lapply(c(1:90), read_hackathon_results)
+
+
+schubert_nonfilt_p_tabs_ext <- list()
+
+for(i in 1:90){
+  
+  schubert_nonfilt_p_tabs_ext[[i]] <- schubert_nonfilt_ext[[i]]$adjP_table
+    
+}
+
+
+Unfiltered_FD_data_ext[["cdi_schubert"]] <- schubert_nonfilt_p_tabs_ext
 ```
 
 #### sw_sed_detender
 ```{r}
-setwd("/home/jacob/projects/TEST_DA_TEST2/Hackathon/Studies/sw_sed_detender/False_Discovery_Testing/results_nonfilt/")
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/sw_sed_detender/False_Discovery_Testing/results_nonfilt/")
 
 sw_sed_nonfilt <- lapply(c(1:10), read_hackathon_results)
 
@@ -490,17 +611,36 @@ for(i in 1:10){
 }
 
 Unfiltered_FD_data[["sw_sed_detender"]] <- sw_sed_nonfilt_p_tabs
+
+
+
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/sw_sed_detender/False_Discovery_Testing/results_nonfilt_ext/")
+
+
+sw_sed_nonfilt_ext <- lapply(c(1:90), read_hackathon_results)
+
+
+sw_sed_nonfilt_p_tabs_ext <- list()
+
+for(i in 1:90){
+  
+  sw_sed_nonfilt_p_tabs_ext[[i]] <- sw_sed_nonfilt_ext[[i]]$adjP_table
+  
+}
+
+Unfiltered_FD_data_ext[["sw_sed_detender"]] <- sw_sed_nonfilt_p_tabs_ext
 ```
 
 #### Save data
 ```{r}
-saveRDS(Unfiltered_FD_data, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_unfilt.RDS")
+saveRDS(Unfiltered_FD_data, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_unfilt_21_04_08.RDS")
+saveRDS(Unfiltered_FD_data_ext, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_ext_21_04_08.RDS")
 ```
 
 
-## Data Analysis
+# Data Analysis
 
-### Functions
+## Functions
 ```{r}
 ### get percent significant for each tool
 get_percent_sig <- function(df_list, total_feats, total_rar_feats){
@@ -518,23 +658,38 @@ get_percent_sig <- function(df_list, total_feats, total_rar_feats){
   ### now we need to go through these and convert to % significant found for each tool
   temp_per_sig <- list()
   temp_raw_count <- list()
+  
+  
+  ## go through each data frame in the list and get the total number of significant hits along with
+  ## the % of significant hits found
   for(i in 1:length(temp_sig_list)){
     
     #get # of significant features for each tool
     num_hits <- colSums(temp_sig_list[[i]], na.rm = T)
+    ## save this to a list that we will later bind into a dataframe.
     temp_raw_count[[i]] <- num_hits 
+    
     ### now this part is tricky b/c some tools use rarified data and some do not...
     ## this will be the # representing total features tested
     ## the problem is to get this data we would need to load in the large list so we will manually
-    num_hits[c(1:5, 7, 9, 11, 13,14)] <- num_hits[c(1:5, 7, 9, 11, 13,14)]/total_feats
-    num_hits[c(6,8,10,12)] <- num_hits[c(6,8,10,12)]/total_rar_feats
-    num_hits <- num_hits*100
-    temp_per_sig[[i]] <- num_hits
+    for(j in 1:length(num_hits)){
+      #check if it is rarified tool
+      if(names(num_hits)[j]=="lefse" | 
+         names(num_hits)[j]=="maaslin2rare" | 
+         names(num_hits)[j]=="ttestrare" |
+         names(num_hits)[j]=="wilcoxonrare"){
+          num_hits[j] <- num_hits[j]/total_rar_feats
+      }else{
+           num_hits[j] <- num_hits[j]/total_feats
+         }
+           
+      temp_per_sig[[i]] <- num_hits
       
+    }
   }
   
-  temp_per_sig_df <- do.call(rbind, temp_per_sig)
-  temp_raw_count_df <- do.call(rbind, temp_raw_count)
+  temp_per_sig_df <- rbind.fill(lapply(temp_per_sig,function(y){as.data.frame(t(y),stringsAsFactors=FALSE)}))
+  temp_raw_count_df <- rbind.fill(lapply(temp_raw_count,function(y){as.data.frame(t(y),stringsAsFactors=FALSE)}))
   ret_data <- list()
   ret_data[['raw_count']] <- temp_raw_count_df
   ret_data[['per_sig']] <- temp_per_sig_df
@@ -542,32 +697,35 @@ get_percent_sig <- function(df_list, total_feats, total_rar_feats){
   
 }
 
+
+
+
 ```
 
 ### Generate per_sig_DFs
 
 #### Filtered
 ```{r}
-Filtered_FD_data <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_filt_TEST_DA_TEST2.RDS")
+Filtered_FD_data <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_filt_21_04_08.RDS")
 
 names(Filtered_FD_data)
 
 
-Office_per_sig <- get_percent_sig(Filtered_FD_data[[1]], 185, 185)
+Office_per_sig <- get_percent_sig(Filtered_FD_data[["Office"]], 185, 185)
 
-ArcticFreshWaters_per_sig <- get_percent_sig(Filtered_FD_data[[2]], 344, 344)
+ArcticFreshWaters_per_sig <- get_percent_sig(Filtered_FD_data[["ArcticFreshWaters"]], 344, 343)
 
-Blueberry_per_sig <- get_percent_sig(Filtered_FD_data[[3]], 3254, 3254)
+Blueberry_per_sig <- get_percent_sig(Filtered_FD_data[["Blueberry"]], 3250, 3245)
 
-ob_goodrich_per_sig <- get_percent_sig(Filtered_FD_data[[4]], 4287, 4287)
+ob_goodrich_per_sig <- get_percent_sig(Filtered_FD_data[["ob_goodrich"]], 4287, 4287)
 
-hiv_noguerajulian_per_sig <- get_percent_sig(Filtered_FD_data[[5]], 3092, 2951)
+hiv_noguerajulian_per_sig <- get_percent_sig(Filtered_FD_data[["hiv_noguerajulian"]], 3092, 2842)
 
-Ji_WTP_DS_per_sig <- get_percent_sig(Filtered_FD_data[[6]], 256, 256)
+Ji_WTP_DS_per_sig <- get_percent_sig(Filtered_FD_data[["Ji_WTP_DS"]], 242, 242)
 
-cdi_schubert_per_sig <- get_percent_sig(Filtered_FD_data[[7]], 599, 599)
+cdi_schubert_per_sig <- get_percent_sig(Filtered_FD_data[["cdi_schubert"]], 599, 599)
 
-sw_sed_detender_per_sig <- get_percent_sig(Filtered_FD_data[[8]], 2246, 2218)
+sw_sed_detender_per_sig <- get_percent_sig(Filtered_FD_data[["sw_sed_detender"]], 1553, 1998)
 
 ## generete dataframe to create DF
 Mean_filt_percent_sig <- data.frame(ArcticFreshWater = colMeans(ArcticFreshWaters_per_sig[[2]]),
@@ -638,35 +796,53 @@ final_plot
 
 #### Unfiltered
 ```{r}
-Unfiltered_FD_data <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_unfilt.RDS")
+Unfiltered_FD_data <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_unfilt_21_04_08.RDS")
+
+Unfiltered_FD_data_ext <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_ext_21_04_08.RDS")
+names(Unfiltered_FD_data)
+names(Unfiltered_FD_data_ext)
+
+### something odd going on with the ext data...
+
+
+
+## combine the data lists together
+ArcticFreshWater_FD_data_comb  <- c(Unfiltered_FD_data[["ArcticFreshWaters"]], Unfiltered_FD_data_ext[["ArcticFreshWaters"]])
+Blueberry_FD_data_comb <- c(Unfiltered_FD_data[["Blueberry"]], Unfiltered_FD_data_ext[["Blueberry"]])
+ob_goodrich_data_comb <- c(Unfiltered_FD_data[["ob_goodrich"]], Unfiltered_FD_data_ext[["ob_goodrich"]])
+hiv_noguerajulian_data_comb <- c(Unfiltered_FD_data[["hiv_noguerajulian"]], Unfiltered_FD_data_ext[["hiv_noguerajulian"]])
+Ji_WTP_DS_data_comb <- c(Unfiltered_FD_data[["Ji_WTP_DS"]], Unfiltered_FD_data_ext[["Ji_WTP_DS"]])
+Office_data_comb <- c(Unfiltered_FD_data[["Office"]], Unfiltered_FD_data_ext[["Office"]])
+cdi_schubert_data_comb <- c(Unfiltered_FD_data[["cdi_schubert"]], Unfiltered_FD_data_ext[["cdi_schubert"]])
+sw_sed_detender_data_comb <- c(Unfiltered_FD_data[["sw_sed_detender"]], Unfiltered_FD_data_ext[["sw_sed_detender"]])
 
 names(Unfiltered_FD_data)
 
-ArcticFreshWaters_per_sig_un <- get_percent_sig(Unfiltered_FD_data[[1]], 178927, 98923)
+ArcticFreshWaters_per_sig_un <- get_percent_sig(ArcticFreshWater_FD_data_comb, 65597, 35419)
 
-Blueberry_per_sig_un <- get_percent_sig(Unfiltered_FD_data[[2]], 8245, 8228)
+Blueberry_per_sig_un <- get_percent_sig(Blueberry_FD_data_comb, 7827, 8012)
 
-ob_goodrich_per_sig_un <- get_percent_sig(Unfiltered_FD_data[[3]], 55964, 47153)
+ob_goodrich_per_sig_un <- get_percent_sig(ob_goodrich_data_comb, 55929, 42602)
 
-hiv_noguerajulian_per_sig_un <- get_percent_sig(Unfiltered_FD_data[[4]], 14597, 9738)
+hiv_noguerajulian_per_sig_un <- get_percent_sig(hiv_noguerajulian_data_comb, 14584, 8967)
 
-Ji_WTP_DS_per_sig_un <- get_percent_sig(Unfiltered_FD_data[[5]], 3764, 2976)
+Ji_WTP_DS_per_sig_un <- get_percent_sig(Ji_WTP_DS_data_comb, 2163, 1831)
 
-Office_per_sig_un <- get_percent_sig(Unfiltered_FD_data[[6]], 147251, 91295)
+Office_per_sig_un <- get_percent_sig(Office_data_comb, 50238, 34614)
 
-cdi_schubert_per_sig_un <- get_percent_sig(Unfiltered_FD_data[[7]], 3346, 3316)
+cdi_schubert_per_sig_un <- get_percent_sig(cdi_schubert_data_comb, 3039, 2922)
 
-sw_sed_detender_per_sig_un <- get_percent_sig(Unfiltered_FD_data[[8]], 10749, 7112)
+sw_sed_detender_per_sig_un <- get_percent_sig(sw_sed_detender_data_comb, 5893, 2648)
 
 
-Mean_nonfilt_percent_sig <- data.frame(ArcticFreshWater = colMeans(ArcticFreshWaters_per_sig_un[[2]]),
-                                       Office = colMeans(Office_per_sig_un[[2]]),
-                                       Blueberry = colMeans(Blueberry_per_sig_un[[2]]),
-                                       Goodrich = colMeans(ob_goodrich_per_sig_un[[2]]),
-                                       Hiv_noguerajulian = colMeans(hiv_noguerajulian_per_sig_un[[2]]),
-                                       Ji_WTP_DS = colMeans(Ji_WTP_DS_per_sig_un[[2]]),
-                                       Schubert = colMeans(cdi_schubert_per_sig_un[[2]]),
-                                       Sw_sed_detender = colMeans(sw_sed_detender_per_sig_un[[2]]))
+Mean_nonfilt_percent_sig <- data.frame(ArcticFreshWater = colMeans(ArcticFreshWaters_per_sig_un[[2]], na.rm = T),
+                                       Office = colMeans(Office_per_sig_un[[2]], na.rm=T),
+                                       Blueberry = colMeans(Blueberry_per_sig_un[[2]], na.rm=T),
+                                       Goodrich = colMeans(ob_goodrich_per_sig_un[[2]], na.rm=T),
+                                       Hiv_noguerajulian = colMeans(hiv_noguerajulian_per_sig_un[[2]], na.rm=T),
+                                       Ji_WTP_DS = colMeans(Ji_WTP_DS_per_sig_un[[2]], na.rm=T),
+                                       Schubert = colMeans(cdi_schubert_per_sig_un[[2]], na.rm=T),
+                                       Sw_sed_detender = colMeans(sw_sed_detender_per_sig_un[[2]], na.rm=T))
 
 unfilt_perc_heat <- pheatmap::pheatmap(Mean_nonfilt_percent_sig,
          cluster_cols=F,
@@ -677,14 +853,14 @@ unfilt_perc_heat <- pheatmap::pheatmap(Mean_nonfilt_percent_sig,
 
 unfilt_perc_heat
 
-Mean_raw_nonfilt <- data.frame(ArcticFreshWater = colMeans(ArcticFreshWaters_per_sig_un[[1]]),
-                               Office = colMeans(Office_per_sig_un[[1]]),
-                                       Blueberry = colMeans(Blueberry_per_sig_un[[1]]),
-                                       Goodrich = colMeans(ob_goodrich_per_sig_un[[1]]),
-                                       Hiv_noguerajulian = colMeans(hiv_noguerajulian_per_sig_un[[1]]),
-                                       Ji_WTP_DS = colMeans(Ji_WTP_DS_per_sig_un[[1]]),
-                                       Schubert = colMeans(cdi_schubert_per_sig_un[[1]]),
-                                       Sw_sed_detender = colMeans(sw_sed_detender_per_sig_un[[1]]))
+Mean_raw_nonfilt <- data.frame(ArcticFreshWater = colMeans(ArcticFreshWaters_per_sig_un[[1]], na.rm=T),
+                               Office = colMeans(Office_per_sig_un[[1]], na.rm=T),
+                                       Blueberry = colMeans(Blueberry_per_sig_un[[1]], na.rm=T),
+                                       Goodrich = colMeans(ob_goodrich_per_sig_un[[1]], na.rm = T),
+                                       Hiv_noguerajulian = colMeans(hiv_noguerajulian_per_sig_un[[1]], na.rm = T),
+                                       Ji_WTP_DS = colMeans(Ji_WTP_DS_per_sig_un[[1]], na.rm=T),
+                                       Schubert = colMeans(cdi_schubert_per_sig_un[[1]], na.rm=T),
+                                       Sw_sed_detender = colMeans(sw_sed_detender_per_sig_un[[1]], na.rm=T))
 
 raw_heat_nonfilt <- pheatmap::pheatmap(Mean_raw_nonfilt,
          cluster_cols=F,
