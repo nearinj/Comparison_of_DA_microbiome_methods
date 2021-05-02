@@ -544,7 +544,8 @@ mean_RA_filt_plot <- ggplot(mean_RA_sig_data_filt, aes(x=tool_name, y=value)) + 
   theme_classic() + ylab("Relative abundance %") + 
   theme(axis.text = element_text(size=12, color="black"), axis.text.x = element_text(angle=90)) +
   theme(axis.title = element_text(size=16, color="black")) + ylim(c(0,0.25)) +
-  theme(axis.title.x = element_blank())
+  theme(axis.title.x = element_blank()) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 
 
 mean_RA_filt_plot
@@ -656,7 +657,8 @@ mean_RA_unfilt_plot <- ggplot(mean_RA_sig_data_unfilt, aes(x=tool_name, y=value)
   theme_classic() + ylab("Relative abundance %") + 
   theme(axis.text = element_text(size=12, color="black"), axis.text.x = element_text(angle=90)) +
   theme(axis.title = element_text(size=16, color="black")) + ylim(c(0,0.25)) +
-  theme(axis.title.x = element_blank())
+  theme(axis.title.x = element_blank()) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 
 mean_RA_unfilt_plot
 ## lost many features due to them being outliers... 
@@ -717,13 +719,15 @@ Total_bars <- ggplot(Tool_total_feats_found_comb, aes(x=Tool_rename, y=value)) +
 unfilt_sig_count <- ggplot(Tool_total_feats_found_unfilt, aes(x=Tool_rename, y=value)) + geom_bar(stat="identity") +ylim(c(0,535000)) +
   theme_cowplot() + theme(axis.text.x = element_text(angle=90)) + ylab("Total significant features") +
   theme(strip.background = element_blank()) +
-  theme(axis.title.x = element_blank())
+  theme(axis.title.x = element_blank()) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 
 
 filt_sig_count <- ggplot(Tool_total_feats_found_filt, aes(x=Tool_rename, y=value)) + geom_bar(stat="identity") +ylim(c(0,535000)) +
   theme_cowplot() + theme(axis.text.x = element_text(angle=90)) + ylab("Total significant features") +
   theme(strip.background = element_blank()) +
-  theme(axis.title.x = element_blank())
+  theme(axis.title.x = element_blank()) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 ```
 
 ```{r}
@@ -741,6 +745,4 @@ ggsave(filename=paste(display_items_out, "Supp_figures", "Relabun_and_count_sig_
 
 ggsave(filename=paste(display_items_out, "Supp_figures", "Relabun_and_count_sig_hits.png", sep="/"),
        plot = ASV_relabun_and_num_plot, width = 12, height=10, units="in", dpi=100)
-
-
 ```
