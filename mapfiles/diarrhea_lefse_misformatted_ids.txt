@@ -1,0 +1,70 @@
+raw	fixed
+_Ruminococcus_gnavusgroup	[Ruminococcus] gnavus group
+_Ruminococcus_torquesgroup	[Ruminococcus] torques group
+LachnospiraceaeNK4A136group	Lachnospiraceae NK4A136 group
+UCG_003	UCG_003
+UCG_002	UCG_002
+ErysipelotrichaceaeUCG_003	Erysipelotrichaceae UCG_003
+_Eubacterium_eligensgroup	[Eubacterium] eligens group
+LachnospiraceaeUCG_004	Lachnospiraceae UCG_004
+_Eubacterium_halliigroup	[Eubacterium] hallii group
+Clostridiumsensustricto1	Clostridium sensu stricto 1
+NA	NA
+Prevotella2	Prevotella 2
+Prevotella9	Prevotella 9
+Prevotella7	Prevotella 7
+Coprococcus1	Coprococcus 1
+Coprococcus2	Coprococcus 2
+CoriobacteriaceaeUCG_002	Coriobacteriaceae UCG_002
+ErysipelotrichaceaeUCG_003	Erysipelotrichaceae UCG_003
+ErysipelotrichaceaeUCG_006	Erysipelotrichaceae UCG_006
+ErysipelotrichaceaeUCG_004	Erysipelotrichaceae UCG_004
+_Eubacterium_oxidoreducensgroup	[Eubacterium] oxidoreducens group
+LachnospiraceaeUCG_005	Lachnospiraceae UCG_005
+LachnospiraceaeND3007group	Lachnospiraceae ND3007 group
+LachnospiraceaeUCG_004	Lachnospiraceae UCG_004
+FamilyXIIIAD3011group	Family XIIIAD3011 group
+LachnospiraceaeUCG_007	Lachnospiraceae UCG_007
+LachnospiraceaeUCG_001	Lachnospiraceae UCG_001
+LachnospiraceaeUCG_003	Lachnospiraceae UCG_003
+Clostridiumsensustricto1	Clostridium sensu stricto 1
+LachnospiraceaeUCG_008	Lachnospiraceae UCG_008
+Ruminococcus1	Ruminococcus 1
+Ruminococcus2	Ruminococcus 2
+LachnospiraceaeUCG_010	Lachnospiraceae UCG_010
+FamilyXIIIUCG_001	Family XIIIUCG_001
+ChristensenellaceaeR_7group	Christensenellaceae R_7 group
+_Eubacterium_ruminantiumgroup	[Eubacterium] ruminantium group
+PrevotellaceaeNK3B31group	Prevotellaceae NK3B31 group
+RuminococcaceaeUCG_014	Ruminococcaceae UCG_014
+RuminococcaceaeUCG_013	Ruminococcaceae UCG_013
+RuminococcaceaeUCG_010	Ruminococcaceae UCG_010
+_Eubacterium_brachygroup	[Eubacterium] brachy group
+RuminococcaceaeNK4A214group	Ruminococcaceae NK4A214 group
+RikenellaceaeRC9gutgroup	Rikenellaceae RC9 gut group
+RuminococcaceaeUCG_011	Ruminococcaceae UCG_011
+DefluviitaleaceaeUCG_011	Defluviitaleaceae UCG_011
+RuminococcaceaeUCG_009	Ruminococcaceae UCG_009
+RuminococcaceaeUCG_005	Ruminococcaceae UCG_005
+RuminococcaceaeUCG_004	Ruminococcaceae UCG_004
+RuminococcaceaeUCG_007	Ruminococcaceae UCG_007
+RuminococcaceaeUCG_003	Ruminococcaceae UCG_003
+RuminococcaceaeUCG_002	Ruminococcaceae UCG_002
+LachnospiraceaeNK4A136group	Lachnospiraceae NK4A136 group
+_Eubacterium_coprostanoligenesgroup	[Eubacterium] coprostanoligenes group
+_Eubacterium_nodatumgroup	[Eubacterium] nodatum group
+LachnospiraceaeNC2004group	Lachnospiraceae NC2004 group
+Tyzzerella3	Tyzzerella 3
+Corynebacterium1	Corynebacterium 1
+CandidatusSoleaferrea	Candidatus Soleaferrea
+_Eubacterium_halliigroup	[Eubacterium] halliigroup
+CandidatusSaccharimonas	Candidatus Saccharimonas
+RuminococcaceaeV9D2013group	Ruminococcaceae V9D2013 group
+Escherichia_Shigella	Escherichia_Shigella
+LachnospiraceaeFCS020group	Lachnospiraceae FCS020 group
+Ruminiclostridium9	Ruminiclostridium 9
+Ruminiclostridium6	Ruminiclostridium 6
+Ruminiclostridium5	Ruminiclostridium 5
+Ruminiclostridium1	Ruminiclostridium 1
+_Eubacterium_ventriosumgroup	[Eubacterium] ventriosum group
+_Ruminococcus_gauvreauiigroup	[Ruminococcus] gauvreauii group
