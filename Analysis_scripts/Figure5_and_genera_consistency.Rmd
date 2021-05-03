@@ -39,13 +39,13 @@ theme_set(theme_classic())
 ```
 
 ```{r read_RDS}
-diarrhea_outputs_binary_clean_combined <- readRDS(file =                                           "/home/gavin/projects/hackathon/consistency_analysis/RDS_out/diarrhea_outputs_binary_clean_combined.rds")
+diarrhea_outputs_binary_clean_combined <- readRDS(file =                                           "/home/gavin/projects/hackathon/consistency_analysis_RDS_out/diarrhea_outputs_binary_clean_combined.rds")
 
-diarrhea_combined_overlap <- readRDS(file ="/home/gavin/projects/hackathon/consistency_analysis/RDS_out/diarrhea_combined_overlap.rds")
+diarrhea_combined_overlap <- readRDS(file = "/home/gavin/projects/hackathon/consistency_analysis_RDS_out/diarrhea_combined_overlap.rds")
 
-obesity_outputs_binary_clean_combined <- readRDS(file = "/home/jacob/GitHub_Repos/Hackathon_testing/Data/obesity_outputs_binary_clean_combined.rds")
+obesity_outputs_binary_clean_combined <- readRDS(file = "/home/gavin/projects/hackathon/consistency_analysis_RDS_out/obesity_outputs_binary_clean_combined.rds")
 
-obesity_combined_overlap <- readRDS(file = "/home/jacob/GitHub_Repos/Hackathon_testing/Data/obesity_combined_overlap.rds")
+obesity_combined_overlap <- readRDS(file = "/home/gavin/projects/hackathon/consistency_analysis_RDS_out/obesity_combined_overlap.rds")
 
 ```
 
@@ -314,8 +314,8 @@ Below are the results for each set of datasets - first as barplots, which enable
     
   }
   
-  if(length(which(diarrhea_ks_out[, "P"] < 0.000000000000001)) > 0) {
-    diarrhea_ks_out[which(diarrhea_ks_out[, "P"] < 0.000000000000001), "P"] <- "< 1e-4"
+  if(length(which(diarrhea_ks_out[, "P"] < 0.0001)) > 0) {
+    diarrhea_ks_out[which(diarrhea_ks_out[, "P"] < 0.0001), "P"] <- "< 1e-4"
   }
   
   diarrhea_ks_out[, "No. sig. genera"] <- colSums(diarrhea_outputs_binary_clean_summed > 0, na.rm = TRUE)

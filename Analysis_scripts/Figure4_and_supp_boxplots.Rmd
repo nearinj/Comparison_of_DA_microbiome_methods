@@ -1,0 +1,465 @@
+---
+title: "Figure4"
+author: "Jacob T. Nearing and Gavin Douglas"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(reshape2)
+library(pheatmap)
+library(plyr)
+library(cowplot)
+library(ggplotify)
+library(RColorBrewer)
+library(ggbeeswarm)
+
+### Folders where final figures are written
+### Make sure this is pointed to your home directory
+display_items_out <- "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Display_items"
+
+Data_set_names <- c(ArcticFireSoils="Soil - Fires",
+                         ArcticFreshWater="Freshwater - Arctic",
+                         ArcticTransects="Soil - Arctic",
+                         art_scher="Human - RA",
+                         asd_son= "Human - ASD",
+                         BISCUIT= "Human - CD (1)",
+                         Blueberry= "Soil - Blueberry",
+                         Schubert="Human - C. diff (1)",
+                         cdi_vincent="Human - C. diff (2)",
+                         Chemerin="Mouse Facilities",
+                         crc_baxter="Human - CC (1)",
+                         crc_zeller="Human - CC (2)",
+                         edd_singh="Human - Inf.",
+                         Exercise="Mouse - Exercised",
+                         glass_plastic_oberbeckmann="Marine - Plastic (4)",
+                         GWMC_ASIA_NA="WWSR - Continents",
+                         GWMC_HOT_COLD="WWSR - Temp.",
+                         hiv_dinh="Human - HIV (1)",
+                         hiv_lozupone="Human - HIV (2)",
+                         Hiv_noguerajulian="Human - HIV (3)",
+                         ibd_gevers="Human - CD (2)",
+                         ibd_papa="Human - IBD",
+                         Ji_WTP_DS="Freshwater - Treat.",
+                         MALL="Human - ALL",
+                         Goodrich="Human - OB (1)",
+                         ob_ross="Human - OB (2)",
+                         ob_turnbaugh="Human - OB (3)",
+                         ob_zhu="Human - OB (4)",
+                         ###"ob_zupancic",
+                         Office="Built - Office",
+                         par_scheperjans="Human - Par.",
+                         sed_plastic_hoellein="Marine - Plastic (2)",
+                         sed_plastic_rosato="Marine - Plastic (5)",
+                         seston_plastic_mccormick="River - Plastic",
+                         sw_plastic_frere="Marine - Plastic (1)",
+                         Sw_sed_detender="Marine - Sediment",
+                          t1d_alkanani="Human - T1D (1)",
+                         t1d_mejialeon="Human - T1D (2)",
+                         wood_plastic_kesy="Marine - Plastic (3)")
+
+tool_names <- c(aldex2="ALDEx2", ancom="ANCOM-II", corncob="corncob", deseq2="DESeq2", edger="edgeR", lefse="LEfSe", 
+                limma_voom_TMM="limma voom (TMM)", limma_voom_TMMwsp="limma voom (TMMwsp)", maaslin2="MaAsLin2",
+                maaslin2rare="MaAsLin2 (rare)", metagenomeSeq="metagenomeSeq", ttestrare="t-test (rare)", 
+                wilcoxonclr="Wilcoxon (CLR)", wilcoxonrare="Wilcoxon (rare)")
+```
+
+# Introduction
+
+The below code parses simulation replicates where we do not expect to see differential abundance differences; the groups being compared are just randomly sampled controls. Heatmaps and boxplots are generated to summarize the data.
+
+# Analyses
+
+# Creating summary dataframes
+
+```{r}
+### get percent significant for each tool
+get_percent_sig <- function(df_list){
+  
+  rare_tools <- c("lefse", "maaslin2rare", "ttestrare", "wilcoxonrare")
+
+  total_feats <- nrow(df_list[[1]])
+  
+  rare_nonNA_val <- colSums(!is.na(df_list[[1]][, rare_tools]))
+  
+  if (length(which(duplicated(rare_nonNA_val))) == 3) {
+    total_rar_feats <- as.numeric(rare_nonNA_val[1])
+  } else {
+    stop("Unable to figure out how many rarefied features there were.")
+  }
+  
+  ### first convert DF to binary 1 and 0 representing sig and nonsig features.
+  temp_sig_list <- list()
+  for (i in 1:length(df_list)){
+    temp_tab <- df_list[[i]]
+    temp_tab[temp_tab < 0.05] <- 2
+    temp_tab[temp_tab != 2] <- 0
+    temp_tab[temp_tab == 2] <- 1
+    temp_sig_list[[i]] <- temp_tab
+  }
+  
+  ### now we need to go through these and convert to % significant found for each tool
+  temp_per_sig <- list()
+  temp_raw_count <- list()
+  
+  
+  ## go through each data frame in the list and get the total number of significant hits along with
+  ## the % of significant hits found
+  for(i in 1:length(temp_sig_list)){
+    
+    #get # of significant features for each tool
+    num_hits <- colSums(temp_sig_list[[i]], na.rm = T)
+    ## save this to a list that we will later bind into a dataframe.
+    temp_raw_count[[i]] <- num_hits 
+    
+    ### now this part is tricky b/c some tools use rarified data and some do not...
+    ## this will be the # representing total features tested
+    ## the problem is to get this data we would need to load in the large list so we will manually
+    for(j in 1:length(num_hits)){
+      #check if it is rarified tool
+      if(names(num_hits)[j]=="lefse" | 
+         names(num_hits)[j]=="maaslin2rare" | 
+         names(num_hits)[j]=="ttestrare" |
+         names(num_hits)[j]=="wilcoxonrare"){
+          num_hits[j] <- num_hits[j]/total_rar_feats
+      }else{
+           num_hits[j] <- num_hits[j]/total_feats
+         }
+           
+      temp_per_sig[[i]] <- num_hits
+      
+    }
+  }
+  
+  temp_per_sig_df <- rbind.fill(lapply(temp_per_sig,function(y){as.data.frame(t(y),stringsAsFactors=FALSE)}))
+  temp_raw_count_df <- rbind.fill(lapply(temp_raw_count,function(y){as.data.frame(t(y),stringsAsFactors=FALSE)}))
+  ret_data <- list()
+  ret_data[['raw_count']] <- temp_raw_count_df
+  ret_data[['per_sig']] <- temp_per_sig_df * 100
+  return(ret_data)
+  
+}
+```
+
+## Filtered
+```{r}
+#Filtered_FD_data <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_filt_21_04_08.RDS")
+Filtered_FD_data <- readRDS("/home/gavin/tmp/FD_data_filt_21_04_08.RDS")
+
+Office_per_sig <- get_percent_sig(Filtered_FD_data[["Office"]])
+
+ArcticFreshWaters_per_sig <- get_percent_sig(Filtered_FD_data[["ArcticFreshWaters"]])
+
+Blueberry_per_sig <- get_percent_sig(Filtered_FD_data[["Blueberry"]])
+
+ob_goodrich_per_sig <- get_percent_sig(Filtered_FD_data[["ob_goodrich"]])
+
+hiv_noguerajulian_per_sig <- get_percent_sig(Filtered_FD_data[["hiv_noguerajulian"]])
+
+Ji_WTP_DS_per_sig <- get_percent_sig(Filtered_FD_data[["Ji_WTP_DS"]])
+
+cdi_schubert_per_sig <- get_percent_sig(Filtered_FD_data[["cdi_schubert"]])
+
+sw_sed_detender_per_sig <- get_percent_sig(Filtered_FD_data[["sw_sed_detender"]])
+
+## generete dataframe to create DF
+Mean_filt_percent_sig <- data.frame(ArcticFreshWater = colMeans(ArcticFreshWaters_per_sig[[2]]),
+                                    Office = colMeans(Office_per_sig[[2]]),
+                                    Blueberry = colMeans(Blueberry_per_sig[[2]]),
+                                    Goodrich = colMeans(ob_goodrich_per_sig[[2]]),
+                                    Hiv_noguerajulian = colMeans(hiv_noguerajulian_per_sig[[2]]),
+                                    Ji_WTP_DS = colMeans(Ji_WTP_DS_per_sig[[2]]),
+                                    Schubert = colMeans(cdi_schubert_per_sig[[2]]),
+                                    Sw_sed_detender = colMeans(sw_sed_detender_per_sig[[2]]))
+
+
+perc_heatmap <- pheatmap::pheatmap(as.matrix(Mean_filt_percent_sig),
+         cluster_cols=F,
+         cluster_rows = F,
+         display_numbers = round(Mean_filt_percent_sig, 3),
+         number_color = "Black",
+         main = "Filtered Percent")
+
+
+Mean_raw_sig <- data.frame(ArcticFreshWater = colMeans(ArcticFreshWaters_per_sig[[1]]),
+                                    Office = colMeans(Office_per_sig[[1]]),
+                                    Blueberry = colMeans(Blueberry_per_sig[[1]]),
+                                    Goodrich = colMeans(ob_goodrich_per_sig[[1]]),
+                                    Hiv_noguerajulian = colMeans(hiv_noguerajulian_per_sig[[1]]),
+                                    Ji_WTP_DS = colMeans(Ji_WTP_DS_per_sig[[1]]),
+                                    Schubert = colMeans(cdi_schubert_per_sig[[1]]),
+                                    Sw_sed_detender = colMeans(sw_sed_detender_per_sig[[1]]))
+
+raw_heatmap <- pheatmap::pheatmap(as.matrix(Mean_raw_sig),
+                                 cluster_cols=F,
+                                 cluster_rows = F,
+                                 display_numbers = round(Mean_raw_sig, 3),
+                                 number_color = "Black",
+                                 main = "Filtered")
+
+rownames(Mean_filt_percent_sig) <- tool_names[rownames(Mean_filt_percent_sig)]
+colnames(Mean_filt_percent_sig) <- Data_set_names[colnames(Mean_filt_percent_sig)]
+
+breaksList = seq(0, 30, by = 0.2)
+
+filtered_heatmap_panel <- pheatmap::pheatmap(as.matrix(Mean_filt_percent_sig),
+                                             cluster_cols=F,
+                                             cluster_rows = F,
+                                             display_numbers = round(Mean_raw_sig, 3),
+                                             number_color = "Black",
+                                             main = "Filtered",
+                                             angle_col=315,
+                                             color = colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(length(breaksList)),
+                                             breaks = breaksList)
+
+
+filtered_heatmap_panel
+
+```
+
+
+## Unfiltered
+```{r}
+Unfiltered_FD_data <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_unfilt_21_04_08.RDS")
+
+Unfiltered_FD_data_ext <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_ext_21_04_08.RDS")
+
+
+## combine the data lists together
+ArcticFreshWater_FD_data_comb  <- c(Unfiltered_FD_data[["ArcticFreshWaters"]], Unfiltered_FD_data_ext[["ArcticFreshWaters"]])
+Blueberry_FD_data_comb <- c(Unfiltered_FD_data[["Blueberry"]], Unfiltered_FD_data_ext[["Blueberry"]])
+ob_goodrich_data_comb <- c(Unfiltered_FD_data[["ob_goodrich"]], Unfiltered_FD_data_ext[["ob_goodrich"]])
+hiv_noguerajulian_data_comb <- c(Unfiltered_FD_data[["hiv_noguerajulian"]], Unfiltered_FD_data_ext[["hiv_noguerajulian"]])
+Ji_WTP_DS_data_comb <- c(Unfiltered_FD_data[["Ji_WTP_DS"]], Unfiltered_FD_data_ext[["Ji_WTP_DS"]])
+Office_data_comb <- c(Unfiltered_FD_data[["Office"]], Unfiltered_FD_data_ext[["Office"]])
+cdi_schubert_data_comb <- c(Unfiltered_FD_data[["cdi_schubert"]], Unfiltered_FD_data_ext[["cdi_schubert"]])
+sw_sed_detender_data_comb <- c(Unfiltered_FD_data[["sw_sed_detender"]], Unfiltered_FD_data_ext[["sw_sed_detender"]])
+
+ArcticFreshWaters_per_sig_un <- get_percent_sig(ArcticFreshWater_FD_data_comb)
+
+Blueberry_per_sig_un <- get_percent_sig(Blueberry_FD_data_comb)
+
+ob_goodrich_per_sig_un <- get_percent_sig(ob_goodrich_data_comb)
+
+hiv_noguerajulian_per_sig_un <- get_percent_sig(hiv_noguerajulian_data_comb)
+
+Ji_WTP_DS_per_sig_un <- get_percent_sig(Ji_WTP_DS_data_comb)
+
+Office_per_sig_un <- get_percent_sig(Office_data_comb)
+
+cdi_schubert_per_sig_un <- get_percent_sig(cdi_schubert_data_comb)
+
+sw_sed_detender_per_sig_un <- get_percent_sig(sw_sed_detender_data_comb)
+
+
+Mean_nonfilt_percent_sig <- data.frame(ArcticFreshWater = colMeans(ArcticFreshWaters_per_sig_un[[2]], na.rm = T),
+                                       Office = colMeans(Office_per_sig_un[[2]], na.rm=T),
+                                       Blueberry = colMeans(Blueberry_per_sig_un[[2]], na.rm=T),
+                                       Goodrich = colMeans(ob_goodrich_per_sig_un[[2]], na.rm=T),
+                                       Hiv_noguerajulian = colMeans(hiv_noguerajulian_per_sig_un[[2]], na.rm=T),
+                                       Ji_WTP_DS = colMeans(Ji_WTP_DS_per_sig_un[[2]], na.rm=T),
+                                       Schubert = colMeans(cdi_schubert_per_sig_un[[2]], na.rm=T),
+                                       Sw_sed_detender = colMeans(sw_sed_detender_per_sig_un[[2]], na.rm=T))
+
+unfilt_perc_heat <- pheatmap::pheatmap(Mean_nonfilt_percent_sig,
+         cluster_cols=F,
+         cluster_rows = F,
+         display_numbers = round(Mean_nonfilt_percent_sig, 3),
+         number_color="Black",
+         main="Unfiltered Percent")
+
+unfilt_perc_heat
+
+Mean_raw_nonfilt <- data.frame(ArcticFreshWater = colMeans(ArcticFreshWaters_per_sig_un[[1]], na.rm=T),
+                               Office = colMeans(Office_per_sig_un[[1]], na.rm=T),
+                                       Blueberry = colMeans(Blueberry_per_sig_un[[1]], na.rm=T),
+                                       Goodrich = colMeans(ob_goodrich_per_sig_un[[1]], na.rm = T),
+                                       Hiv_noguerajulian = colMeans(hiv_noguerajulian_per_sig_un[[1]], na.rm = T),
+                                       Ji_WTP_DS = colMeans(Ji_WTP_DS_per_sig_un[[1]], na.rm=T),
+                                       Schubert = colMeans(cdi_schubert_per_sig_un[[1]], na.rm=T),
+                                       Sw_sed_detender = colMeans(sw_sed_detender_per_sig_un[[1]], na.rm=T))
+
+raw_heat_nonfilt <- pheatmap::pheatmap(Mean_raw_nonfilt,
+         cluster_cols=F,
+         cluster_rows = F,
+         display_numbers = round(Mean_raw_nonfilt, 3),
+         number_color="Black",
+         main="Unfiltered")
+raw_heat_nonfilt
+
+
+
+rownames(Mean_nonfilt_percent_sig) <- tool_names[rownames(Mean_nonfilt_percent_sig)]
+colnames(Mean_nonfilt_percent_sig) <- Data_set_names[colnames(Mean_nonfilt_percent_sig)]
+
+
+unfiltered_heatmap_panel <- pheatmap::pheatmap(Mean_nonfilt_percent_sig,
+                                               cluster_cols=F,
+                                               cluster_rows = F,
+                                               display_numbers = round(Mean_raw_nonfilt, 3),
+                                               number_color="Black",
+                                               main="Unfiltered",
+                                               angle_col=315,
+                                               color = colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(length(breaksList)),
+                                               breaks = breaksList)
+
+unfiltered_heatmap_panel
+```
+
+
+# Final heatmap
+Heatmap to be saved and then edited outside of R so that the colour key is labelled and only shown once for both plots.
+
+```{r}
+Figure4_plot <- cowplot::plot_grid(ggplotify::as.ggplot(unfiltered_heatmap_panel),
+                                   ggplotify::as.ggplot(filtered_heatmap_panel),
+                                   nrow=2, labels = c("A", "B"))
+
+Figure4_plot
+
+ggsave(filename=paste(display_items_out, "Main_figures", "Figure4_FDR_heatmaps_raw.pdf", sep="/"),
+       plot = Figure4_plot, width = 6, height=7, units="in", dpi=600)
+```
+
+
+# Supplementary boxplot figures
+
+```{r}
+qual_col <- c("grey", #ALDEx2
+              "palegreen3", # ANCOM
+              "dodgerblue4", #corncob
+              "darkorange", # DESeq2
+              "seagreen4", # edgeR
+              "ivory3", # LEfSe
+              "darkorchid1", "darkorchid3", # limma-voom x 2
+              "yellow1", "yellow3", # Maaslin 2
+              "steelblue2", # metagenomeseq
+              "magenta1", # t-test
+              "coral2", "coral4") # Wilcoxon x 2
+
+filt_percent_sig <- do.call(rbind, list(ArcticFreshWater = melt(ArcticFreshWaters_per_sig[[2]]),
+                                         Office = melt(Office_per_sig[[2]]),
+                                         Blueberry = melt(Blueberry_per_sig[[2]]),
+                                         Goodrich = melt(ob_goodrich_per_sig[[2]]),
+                                         Hiv_noguerajulian = melt(hiv_noguerajulian_per_sig[[2]]),
+                                         Ji_WTP_DS = melt(Ji_WTP_DS_per_sig[[2]]),
+                                         Schubert = melt(cdi_schubert_per_sig[[2]]),
+                                         Sw_sed_detender = melt(sw_sed_detender_per_sig[[2]])))
+
+filt_percent_sig$dataset <- gsub("\\..*$", "", rownames(filt_percent_sig))
+
+colnames(filt_percent_sig) <- c("Tool", "Percent_sig", "Dataset")
+
+filt_percent_sig$Tool <- as.character(filt_percent_sig$Tool)
+filt_percent_sig$Dataset <- as.character(filt_percent_sig$Dataset)
+
+filt_percent_sig$Tool <- factor(tool_names[filt_percent_sig$Tool])
+filt_percent_sig$Tool <- factor(filt_percent_sig$Tool, levels = rev(levels(filt_percent_sig$Tool)))
+filt_percent_sig$Dataset <- Data_set_names[filt_percent_sig$Dataset]
+
+
+filt_percent_sig_boxplots <- ggplot(filt_percent_sig, aes(y = Tool, x = Percent_sig, fill = Tool)) +
+                                    geom_boxplot(outlier.shape = NA, colour = "black") +
+                                    geom_quasirandom(groupOnX = FALSE, size = 1, pch = 21, colour = "black") +
+                                    theme_bw() +
+                                    xlab(expression("Percent significant after multiple-test correction (log"[10]*"-scale)")) +
+                                    ylab("") +
+                                    theme(legend.position = "none") +
+                                    theme(plot.title = element_text(hjust = 0.5)) +
+                                    facet_wrap(. ~ Dataset, nrow = 2) +
+                                    scale_x_continuous(trans = scales::pseudo_log_trans(base = 10),
+                                                       breaks = c(0, 1, 2, 5, 10, 30, 100),
+                                                       limits = c(0, 100)) +
+                                    scale_colour_manual(values = qual_col) +
+                                    scale_fill_manual(values = qual_col) +
+                                    ggtitle("Filtered")
+
+
+
+unfilt_percent_sig <- do.call(rbind, list(ArcticFreshWater = melt(ArcticFreshWaters_per_sig_un[[2]]),
+                                         Office = melt(Office_per_sig_un[[2]]),
+                                         Blueberry = melt(Blueberry_per_sig_un[[2]]),
+                                         Goodrich = melt(ob_goodrich_per_sig_un[[2]]),
+                                         Hiv_noguerajulian = melt(hiv_noguerajulian_per_sig_un[[2]]),
+                                         Ji_WTP_DS = melt(Ji_WTP_DS_per_sig_un[[2]]),
+                                         Schubert = melt(cdi_schubert_per_sig_un[[2]]),
+                                         Sw_sed_detender = melt(sw_sed_detender_per_sig_un[[2]])))
+
+unfilt_percent_sig$dataset <- gsub("\\..*$", "", rownames(unfilt_percent_sig))
+
+colnames(unfilt_percent_sig) <- c("Tool", "Percent_sig", "Dataset")
+
+unfilt_percent_sig$Tool <- as.character(unfilt_percent_sig$Tool)
+unfilt_percent_sig$Dataset <- as.character(unfilt_percent_sig$Dataset)
+
+unfilt_percent_sig$Tool <- factor(tool_names[unfilt_percent_sig$Tool])
+unfilt_percent_sig$Tool <- factor(unfilt_percent_sig$Tool, levels = rev(levels(unfilt_percent_sig$Tool)))
+unfilt_percent_sig$Dataset <- Data_set_names[unfilt_percent_sig$Dataset]
+
+
+unfilt_percent_sig <- unfilt_percent_sig[-which(is.na(unfilt_percent_sig$Percent_sig)), ]
+
+unfilt_percent_sig_boxplots <- ggplot(unfilt_percent_sig, aes(y = Tool, x = Percent_sig, fill = Tool)) +
+                                    geom_boxplot(outlier.shape = NA) +
+                                    geom_quasirandom(color = "black", groupOnX = FALSE, size = 1, pch = 21,) +
+                                    theme_bw() +
+                                    xlab(expression("Percent significant after multiple-test correction (log"[10]*"-scale)")) +
+                                    ylab("") +
+                                    theme(legend.position = "none") +
+                                    theme(plot.title = element_text(hjust = 0.5)) +
+                                    facet_wrap(. ~ Dataset, nrow = 2) +
+                                    scale_x_continuous(trans = scales::pseudo_log_trans(base = 10),
+                                                       breaks = c(0, 1, 2, 5, 10, 30, 100),
+                                                       limits = c(0, 100)) +
+                                    scale_fill_manual(values = qual_col) +
+                                    ggtitle("Unfiltered")
+
+
+filt_percent_sig_boxplots
+
+unfilt_percent_sig_boxplots
+
+ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_FDR_filt_boxplots.png", sep="/"),
+       plot = filt_percent_sig_boxplots, width = 10, height=7, units="in", dpi=300)
+
+ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_FDR_filt_boxplots.pdf", sep="/"),
+       plot = filt_percent_sig_boxplots, width = 10, height=7, units="in", dpi=600)
+
+ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_FDR_unfilt_boxplots.png", sep="/"),
+       plot = unfilt_percent_sig_boxplots, width = 10, height=7, units="in", dpi=300)
+
+ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_FDR_unfilt_boxplots.pdf", sep="/"),
+       plot = unfilt_percent_sig_boxplots, width = 10, height=7, units="in", dpi=600)
+
+```
+
+### Text summary stats
+
+```{r}
+print("edgeR filtered")
+print("mean")
+print(mean(as.numeric(Mean_filt_percent_sig["edgeR", ])))
+print("sd")
+print(sd(as.numeric(Mean_filt_percent_sig["edgeR", ])))
+
+print("========")
+
+print("LEfSe filtered")
+print("mean")
+print(mean(as.numeric(Mean_filt_percent_sig["LEfSe", ])))
+print("sd")
+print(sd(as.numeric(Mean_filt_percent_sig["LEfSe", ])))
+
+
+print("=======")
+print("filtered - all tool means")
+print(rowMeans(Mean_filt_percent_sig))
+
+
+print("======")
+print("unfiltered limma voom results")
+print(Mean_nonfilt_percent_sig[grep("limma voom", rownames(Mean_nonfilt_percent_sig)), ])
+  
+```
