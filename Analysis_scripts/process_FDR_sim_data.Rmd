@@ -343,8 +343,7 @@ Filtered_FD_data[["sw_sed_detender"]] <- sw_sed_filt_p_tabs
 
 #### Save list
 ```{r}
-#saveRDS(Filtered_FD_data, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_filt_21_04_08.RDS")
-saveRDS(Filtered_FD_data, "/home/gavin/tmp/FD_data_filt_21_04_08.RDS")
+saveRDS(Filtered_FD_data, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_filt_21_04_08.RDS")
 ```
 
 ### Unfiltered
