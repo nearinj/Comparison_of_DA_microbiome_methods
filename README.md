@@ -18,5 +18,4 @@ However, we also included several analyses to help gauge the false positive rate
   
   Within this repo there is a config file named *config.sh* that contains all the PATHs used by the pipeline scripts to generate all the results analysised in this project. All the raw tables along with the correct folder structuring is available in figshare at the following link: https://figshare.com/articles/dataset/16S_rRNA_Microbiome_Datasets/14531724
   
-  Users can unzip this file and point the config DATA_DIR parameter to where this file is unzipped to run all of the tests that were done in this manuscript. Note the users must also update the ANCOM_DIR parameter and the TOOL_DIR parameter to point to the Ancom2_Script folder within this repo and the Tool_scripts folder within this repo.
-  
+  Users can unzip this file and point the config DATA_DIR parameter to where this file is unzipped to run all of the tests that were done in this manuscript. Note the users must also update the ANCOM_DIR parameter and the TOOL_DIR parameter to point to the Ancom2_Script folder within this repo and the Tool_scripts folder within this repo. Finally the user needs to have all of the tools installed for running this tool. A docker image with the correct versions is currently being designed to assist with this. 
