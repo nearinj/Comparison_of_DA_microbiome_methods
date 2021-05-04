@@ -1,0 +1,304 @@
+---
+title: "Analysis of FP results"
+author: "Jacob T. Nearing"
+date: "5/3/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(plyr)
+library(ggplot2)
+library(vegan)
+library(ggbeeswarm)
+
+display_items_out <- "/home/jacob/GitHub_Repos/Clean_Hackathon/Display_items/"
+```
+
+## Functions
+```{r}
+get_percent_sig <- function(df_list){
+  
+  rare_tools <- c("lefse", "maaslin2rare", "ttestrare", "wilcoxonrare")
+
+  total_feats <- nrow(df_list[[1]])
+  
+  rare_nonNA_val <- colSums(!is.na(df_list[[1]][, rare_tools]))
+  
+  if (length(which(duplicated(rare_nonNA_val))) == 3) {
+    total_rar_feats <- as.numeric(rare_nonNA_val[1])
+  } else {
+    stop("Unable to figure out how many rarefied features there were.")
+  }
+  
+  ### first convert DF to binary 1 and 0 representing sig and nonsig features.
+  temp_sig_list <- list()
+  for (i in 1:length(df_list)){
+    temp_tab <- df_list[[i]]
+    temp_tab[temp_tab < 0.05] <- 2
+    temp_tab[temp_tab != 2] <- 0
+    temp_tab[temp_tab == 2] <- 1
+    temp_sig_list[[i]] <- temp_tab
+  }
+  
+  ### now we need to go through these and convert to % significant found for each tool
+  temp_per_sig <- list()
+  temp_raw_count <- list()
+  
+  
+  ## go through each data frame in the list and get the total number of significant hits along with
+  ## the % of significant hits found
+  for(i in 1:length(temp_sig_list)){
+    
+    #get # of significant features for each tool
+    num_hits <- colSums(temp_sig_list[[i]], na.rm = T)
+    ## save this to a list that we will later bind into a dataframe.
+    temp_raw_count[[i]] <- num_hits 
+    
+    ### now this part is tricky b/c some tools use rarified data and some do not...
+    ## this will be the # representing total features tested
+    ## the problem is to get this data we would need to load in the large list so we will manually
+    for(j in 1:length(num_hits)){
+      #check if it is rarified tool
+      if(names(num_hits)[j]=="lefse" | 
+         names(num_hits)[j]=="maaslin2rare" | 
+         names(num_hits)[j]=="ttestrare" |
+         names(num_hits)[j]=="wilcoxonrare"){
+          num_hits[j] <- num_hits[j]/total_rar_feats
+      }else{
+           num_hits[j] <- num_hits[j]/total_feats
+         }
+           
+      temp_per_sig[[i]] <- num_hits
+      
+    }
+  }
+  
+  temp_per_sig_df <- rbind.fill(lapply(temp_per_sig,function(y){as.data.frame(t(y),stringsAsFactors=FALSE)}))
+  temp_raw_count_df <- rbind.fill(lapply(temp_raw_count,function(y){as.data.frame(t(y),stringsAsFactors=FALSE)}))
+  ret_data <- list()
+  ret_data[['raw_count']] <- temp_raw_count_df
+  ret_data[['per_sig']] <- temp_per_sig_df * 100
+  return(ret_data)
+  
+}
+
+
+read_in_table <- function(x){
+  
+  con <- file(x)
+  file_1_line1 <- readLines(con,n=1)
+  close(con)
+
+  if(grepl("Constructed from biom file", file_1_line1)){
+    ASV_table <- read.table(x, sep="\t", skip=1, header=T, row.names = 1, 
+                          comment.char = "", quote="", check.names = F)
+  }else{
+   ASV_table <- read.table(x, sep="\t", header=T, row.names = 1, 
+                          comment.char = "", quote="", check.names = F)
+  }
+}
+
+
+
+read_in_groupings <- function(x){
+  
+  
+  files_to_read <- list.files(path=x, pattern="*.tsv$", full.names = T)
+  files_to_read_ext <- list.files(path=x, pattern="*.tsvext", full.names = T)
+  files_to_read <- c(files_to_read, files_to_read_ext)
+
+  groupings_list <- list()
+  for(i in 1:length(files_to_read)){
+    groupings_list[[files_to_read[i]]] <- read.table(files_to_read[i], sep="\t", row.names = 1, header=T, comment.char = "", quote="", check.names = F)
+  }
+  return(groupings_list)
+}
+```
+## Load in data
+
+### Load in FP results
+```{r}
+## Load in the FP results
+Unfiltered_FD_data <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_unfilt_21_04_08.RDS")
+
+Unfiltered_FD_data_ext <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_ext_21_04_08.RDS")
+
+
+## combine the data lists together
+ArcticFreshWater_FD_data_comb  <- c(Unfiltered_FD_data[["ArcticFreshWaters"]], Unfiltered_FD_data_ext[["ArcticFreshWaters"]])
+Blueberry_FD_data_comb <- c(Unfiltered_FD_data[["Blueberry"]], Unfiltered_FD_data_ext[["Blueberry"]])
+ob_goodrich_data_comb <- c(Unfiltered_FD_data[["ob_goodrich"]], Unfiltered_FD_data_ext[["ob_goodrich"]])
+hiv_noguerajulian_data_comb <- c(Unfiltered_FD_data[["hiv_noguerajulian"]], Unfiltered_FD_data_ext[["hiv_noguerajulian"]])
+Ji_WTP_DS_data_comb <- c(Unfiltered_FD_data[["Ji_WTP_DS"]], Unfiltered_FD_data_ext[["Ji_WTP_DS"]])
+Office_data_comb <- c(Unfiltered_FD_data[["Office"]], Unfiltered_FD_data_ext[["Office"]])
+cdi_schubert_data_comb <- c(Unfiltered_FD_data[["cdi_schubert"]], Unfiltered_FD_data_ext[["cdi_schubert"]])
+sw_sed_detender_data_comb <- c(Unfiltered_FD_data[["sw_sed_detender"]], Unfiltered_FD_data_ext[["sw_sed_detender"]])
+
+
+ArcticFreshWaters_per_sig_un <- get_percent_sig(ArcticFreshWater_FD_data_comb)
+
+Blueberry_per_sig_un <- get_percent_sig(Blueberry_FD_data_comb)
+
+ob_goodrich_per_sig_un <- get_percent_sig(ob_goodrich_data_comb)
+
+hiv_noguerajulian_per_sig_un <- get_percent_sig(hiv_noguerajulian_data_comb)
+
+Ji_WTP_DS_per_sig_un <- get_percent_sig(Ji_WTP_DS_data_comb)
+
+Office_per_sig_un <- get_percent_sig(Office_data_comb)
+
+cdi_schubert_per_sig_un <- get_percent_sig(cdi_schubert_data_comb)
+
+sw_sed_detender_per_sig_un <- get_percent_sig(sw_sed_detender_data_comb)
+```
+
+### Load in Unfiltered data tables
+
+```{r}
+
+ArcticFreshWater_unfilt_tab <- read_in_table("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/ArcticFreshwaters/False_Discovery_Testing/results_nonfilt/1/fixed_non_rare_tables/ArcticFreshwaters_ASVs_table.tsv")
+
+Blueberry_unfilt_tab <- read_in_table("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Blueberry/False_Discovery_Testing/results_nonfilt/1/fixed_non_rare_tables/Blueberry_ASVs_table.tsv")
+
+ob_goodrich_unfilt_tab <- read_in_table("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/ob_goodrich/False_Discovery_Testing/results_nonfilt/1/fixed_non_rare_tables/ob_goodrich_ASVs_table.tsv")
+
+hiv_noguerajulian_unfilt_tab <- read_in_table("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/hiv_noguerajulian/False_Discovery_Testing/results_nonfilt/1/fixed_non_rare_tables/hiv_noguerajulian_ASVs_table.tsv")
+
+Ji_WTP_DS_unfilt_tab <- read_in_table("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Ji_WTP_DS/False_Discovery_Testing/results_nonfilt/1/fixed_non_rare_tables/Ji_WTP_DS_ASVs_table.tsv")
+
+Office_unfilt_tab <- read_in_table("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Office/False_Discovery_Testing/results_nonfilt/1/fixed_non_rare_tables/Office_ASVs_table.tsv")
+
+cdi_schubert_unfilt_tab <- read_in_table("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/cdi_schubert/False_Discovery_Testing/results_nonfilt/1/fixed_non_rare_tables/cdi_schubert_ASVs_table.tsv")
+
+sw_sed_detender_unfilt_tab <- read_in_table("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/sw_sed_detender/False_Discovery_Testing/results_nonfilt/1/fixed_non_rare_tables/sw_sed_detender_ASVs_table.tsv")
+
+
+## load in groupings for each dataset....
+ArcticFreshWaters_groupings <- read_in_groupings("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/ArcticFreshwaters/False_Discovery_Testing/nonfilt_tabs/")
+Blueberry_groupings <- read_in_groupings("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Blueberry/False_Discovery_Testing/nonfilt_tabs/")
+ob_goodrich_groupings <- read_in_groupings("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/ob_goodrich/False_Discovery_Testing/nonfilt_tabs/")  
+hiv_noguerajulian_groupings <- read_in_groupings("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/hiv_noguerajulian/False_Discovery_Testing/nonfilt_tabs/")
+Ji_WTP_DS_groupings <- read_in_groupings("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Ji_WTP_DS/False_Discovery_Testing/nonfilt_tabs/")
+Office_groupings <- read_in_groupings("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Office/False_Discovery_Testing/nonfilt_tabs/")
+cdi_schubert_groupings <- read_in_groupings("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/cdi_schubert/False_Discovery_Testing/nonfilt_tabs/")
+sw_sed_detender_groupings <- read_in_groupings("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/sw_sed_detender/False_Discovery_Testing/nonfilt_tabs/")
+
+```
+
+## Read Depth Analysis
+
+```{r}
+## calculate the difference in read depth between the two groupings
+
+get_read_depth_dif <- function(tab, grp){
+  
+  Read_depths <- colSums(tab)
+  mean_depths <- mean(Read_depths)
+  depth_diffs <- c()
+  for(i in 1:length(grp)){
+    agg <- aggregate(Read_depths, by=list(grp[[i]][,1]), mean)
+    diff <- abs(agg$x[1] - agg$x[2])
+    rel_diff <- diff/mean_depths
+    depth_diffs <- c(depth_diffs, rel_diff)
+  }
+  return(depth_diffs)
+}
+
+
+ArcticFreshwater_diffs <- get_read_depth_dif(ArcticFreshWater_unfilt_tab, ArcticFreshWaters_groupings)
+Blueberry_diffs <- get_read_depth_dif(Blueberry_unfilt_tab, Blueberry_groupings)
+ob_goodrich_diffs <- get_read_depth_dif(ob_goodrich_unfilt_tab, ob_goodrich_groupings)
+hiv_noguerajulian_diffs <- get_read_depth_dif(hiv_noguerajulian_unfilt_tab, hiv_noguerajulian_groupings)
+Ji_WTP_DS_diffs <- get_read_depth_dif(Ji_WTP_DS_unfilt_tab, Ji_WTP_DS_groupings)
+Office_diffs <- get_read_depth_dif(Office_unfilt_tab, Office_groupings)
+cdi_schubert_diffs <- get_read_depth_dif(cdi_schubert_unfilt_tab, cdi_schubert_groupings)
+sw_sed_detender_diffs <- get_read_depth_dif(sw_sed_detender_unfilt_tab, sw_sed_detender_groupings)
+
+## now we need a function that assigns a vector value if you are above the fdr cutoff our not
+
+get_FP_sig_cut <- function(FP_res, cuttoff=0.3){
+  
+  FP_res_class <- list()
+  
+  FP_res_class[["Wilcoxon (CLR)"]] <- data.frame(FP_class=FP_res[[2]]$wilcoxonclr >= cuttoff, 
+                                                 Raw_FP_per=FP_res[[2]]$wilcoxonclr,
+                                                 Tool="Wilcoxon (CLR)")
+  FP_res_class[["limma voom (TMM)"]] <- data.frame(FP_class=FP_res[[2]]$limma_voom_TMM >= cuttoff,
+                                                   Raw_FP_per=FP_res[[2]]$limma_voom_TMM,
+                                                   Tool="limma voom (TMM)")
+  FP_res_class[["limma voom (TMMWSP)"]] <- data.frame(FP_class=FP_res[[2]]$limma_voom_TMMwsp >= cuttoff,
+                                                      Raw_FP_per=FP_res[[2]]$limma_voom_TMMwsp,
+                                                      Tool="limma voom (TMMWSP)")
+  
+  return_frame <- do.call(rbind, FP_res_class)
+  return(return_frame)
+  
+  
+}
+
+
+
+Arctic_fresh_FP_class <- get_FP_sig_cut(ArcticFreshWaters_per_sig_un)
+Blueberry_FP_class <- get_FP_sig_cut(Blueberry_per_sig_un)
+ob_goodrich_FP_class <- get_FP_sig_cut(ob_goodrich_per_sig_un)
+hiv_noguerajulian_FP_class <- get_FP_sig_cut(hiv_noguerajulian_per_sig_un)
+Ji_WTP_DS_FP_class <- get_FP_sig_cut(Ji_WTP_DS_per_sig_un)
+Office_FP_class <- get_FP_sig_cut(Office_per_sig_un)
+cdi_schubert_FP_class <- get_FP_sig_cut(cdi_schubert_per_sig_un)
+sw_sed_detender_FP_class <- get_FP_sig_cut(sw_sed_detender_per_sig_un)
+
+
+plot_data <- list()
+
+plot_data[[1]] <- data.frame(FP_class=Arctic_fresh_FP_class,
+                        depth_diff=ArcticFreshwater_diffs,
+                        dataset="ArcticFreshwater")
+
+plot_data[[2]] <- data.frame(FP_class=Blueberry_FP_class,
+                                  depth_diff=Blueberry_diffs,
+                                  dataset="Blueberry")
+plot_data[[3]] <- data.frame(FP_class=ob_goodrich_FP_class,
+                                    depth_diff=ob_goodrich_diffs,
+                                    dataset="ob_goodrich")
+plot_data[[4]] <- data.frame(FP_class=hiv_noguerajulian_FP_class,
+                                depth_diff=hiv_noguerajulian_diffs,
+                                dataset="hiv nog")
+plot_data[[5]] <- data.frame(FP_class=Ji_WTP_DS_FP_class,
+                             depth_diff=Ji_WTP_DS_diffs,
+                             dataset="Ji WTP DS")
+plot_data[[6]] <- data.frame(FP_class=Office_FP_class,
+                             depth_diff=Office_diffs,
+                             dataset="Office")
+
+plot_data[[7]] <- data.frame(FP_class=cdi_schubert_FP_class,
+                             depth_diff=cdi_schubert_diffs,
+                             dataset="cdi schubert")
+
+plot_data[[8]] <- data.frame(FP_class=sw_sed_detender_FP_class,
+                             depth_diff=sw_sed_detender_diffs,
+                             dataset="SW Sed Detender")
+
+
+total_plot_data <- do.call(rbind, plot_data)
+
+library(ggplot2)
+scatter_FP_res <- ggplot(total_plot_data, aes(x=depth_diff, y=FP_class.Raw_FP_per)) + geom_point() + xlab("Relative difference in read depth") +
+  ylab("Percentage of False Positives") + facet_grid(cols=vars(total_plot_data$FP_class.Tool), rows=vars(total_plot_data$dataset)) + theme_bw()
+scatter_FP_res
+
+
+box_FP_res <- ggplot(total_plot_data, aes(x=FP_class.FP_class, y=depth_diff)) + geom_boxplot() + xlab("FP >= 30%") +
+  ylab("Mean Difference in Read Depth") + facet_grid(cols=vars(total_plot_data$FP_class.Tool), rows=vars(total_plot_data$dataset)) + geom_beeswarm() +
+  theme_bw()
+
+box_FP_res
+
+
+ggsave(filename=paste(display_items_out, "Supp_figures", "Read_depth_FP_analysis.pdf", sep="/"),
+       plot = box_FP_res, width = 12, height=10, units="in", dpi=600)
+
+
+ggsave(filename=paste(display_items_out, "Supp_figures", "Read_depth_FP_analysis.png", sep="/"),
+       plot = box_FP_res, width = 12, height=10, units="in", dpi=100)
+```
