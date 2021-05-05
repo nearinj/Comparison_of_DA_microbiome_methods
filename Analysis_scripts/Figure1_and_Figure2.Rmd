@@ -646,6 +646,10 @@ colnames(fixed_hackathon_metadata)[which(colnames(fixed_hackathon_metadata) == "
 colnames(fixed_hackathon_metadata)[which(colnames(fixed_hackathon_metadata) == "Read Depth Variation")] <- "Read depth variation"
 colnames(fixed_hackathon_metadata)[which(colnames(fixed_hackathon_metadata) == "Log Sample Size")] <- "log(Sample size)"
 
+Alpha_order_filt <- Alpha_order_filt[sort(rownames(Alpha_order_filt)), ]
+order_raw_count_df <- order_raw_count_df[sort(rownames(order_raw_count_df)), ]
+
+
 filt_ASV_nums <- pheatmap(t(Alpha_order_filt),
          clustering_method = "complete",
          legend=TRUE,
@@ -656,8 +660,8 @@ filt_ASV_nums <- pheatmap(t(Alpha_order_filt),
          annotation_legend=FALSE,
          legend_labels = "% sig. features",
          treeheight_col = 0,
-         cluster_cols = F,
-         cluster_rows = F,
+         cluster_cols = FALSE,
+         cluster_rows = TRUE,
          main="Filtered",
          angle_col=315)
 ```
@@ -727,6 +731,7 @@ test2 <- Data_set_names[rownames(fixed_hackathon_metadata)]
 rownames(fixed_hackathon_metadata) <- test2
 
 
+
 test <- Metadata_renames[colnames(fixed_hackathon_metadata[30:37])]
 
 colnames(fixed_hackathon_metadata)[30:37] <- Metadata_renames
@@ -737,20 +742,22 @@ colnames(fixed_hackathon_metadata)[which(colnames(fixed_hackathon_metadata) == "
 colnames(fixed_hackathon_metadata)[which(colnames(fixed_hackathon_metadata) == "Read Depth Variation")] <- "Read depth variation"
 colnames(fixed_hackathon_metadata)[which(colnames(fixed_hackathon_metadata) == "Log Sample Size")] <- "log(Sample size)"
 
+Alpha_order_unfilt <- Alpha_order_unfilt[sort(rownames(Alpha_order_unfilt)), ]
+fix_raw_counts_unfilt <- fix_raw_counts_unfilt[sort(rownames(fix_raw_counts_unfilt)), ]
 
 unfilt_ASV_nums <- pheatmap(t(Alpha_order_unfilt),
-         clustering_method = "complete",
-         legend=TRUE,
-         display_numbers=t(fix_raw_counts_unfilt),
-         annotation_row=fixed_hackathon_metadata[, c("log(Sample size)", "log(Aitch. dist. effect size)", 
-                                                     "Sparsity", "Richness", "Read depth variation", 
-                                                     "log(Read depth range)"), drop=FALSE],
-         annotation_legend=FALSE,
-         treeheight_col = 0,
-         cluster_cols = F,
-         cluster_rows = F,
-         main="Unfiltered",
-         angle_col=315)
+                           clustering_method = "complete",
+                           legend=TRUE,
+                           display_numbers=t(fix_raw_counts_unfilt),
+                           annotation_row=fixed_hackathon_metadata[, c("log(Sample size)", "log(Aitch. dist. effect size)", 
+                                                                       "Sparsity", "Richness", "Read depth variation", 
+                                                                       "log(Read depth range)"), drop=FALSE],
+                           annotation_legend=FALSE,
+                           treeheight_col = 0,
+                           cluster_cols = FALSE,
+                           cluster_rows = TRUE,
+                           main="Unfiltered",
+                           angle_col=315)
 ```
 
 
