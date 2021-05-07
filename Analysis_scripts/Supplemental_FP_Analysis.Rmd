@@ -253,31 +253,31 @@ plot_data <- list()
 
 plot_data[[1]] <- data.frame(FP_class=Arctic_fresh_FP_class,
                         depth_diff=ArcticFreshwater_diffs,
-                        dataset="ArcticFreshwater")
+                        dataset="Freshwater - Arctic")
 
 plot_data[[2]] <- data.frame(FP_class=Blueberry_FP_class,
                                   depth_diff=Blueberry_diffs,
-                                  dataset="Blueberry")
+                                  dataset="Soil - Blueberry")
 plot_data[[3]] <- data.frame(FP_class=ob_goodrich_FP_class,
                                     depth_diff=ob_goodrich_diffs,
-                                    dataset="ob_goodrich")
+                                    dataset="Human - OB (1)")
 plot_data[[4]] <- data.frame(FP_class=hiv_noguerajulian_FP_class,
                                 depth_diff=hiv_noguerajulian_diffs,
-                                dataset="hiv nog")
+                                dataset="Human - HIV (3)")
 plot_data[[5]] <- data.frame(FP_class=Ji_WTP_DS_FP_class,
                              depth_diff=Ji_WTP_DS_diffs,
-                             dataset="Ji WTP DS")
+                             dataset="Freshwater - Treat.")
 plot_data[[6]] <- data.frame(FP_class=Office_FP_class,
                              depth_diff=Office_diffs,
-                             dataset="Office")
+                             dataset="Built - Office")
 
 plot_data[[7]] <- data.frame(FP_class=cdi_schubert_FP_class,
                              depth_diff=cdi_schubert_diffs,
-                             dataset="cdi schubert")
+                             dataset="Human - C.diff (1)")
 
 plot_data[[8]] <- data.frame(FP_class=sw_sed_detender_FP_class,
                              depth_diff=sw_sed_detender_diffs,
-                             dataset="SW Sed Detender")
+                             dataset="Marine - Sediment")
 
 
 total_plot_data <- do.call(rbind, plot_data)
@@ -288,7 +288,7 @@ scatter_FP_res <- ggplot(total_plot_data, aes(x=depth_diff, y=FP_class.Raw_FP_pe
 scatter_FP_res
 
 
-box_FP_res <- ggplot(total_plot_data, aes(x=FP_class.FP_class, y=depth_diff)) + geom_boxplot() + xlab("FP >= 30%") +
+box_FP_res <- ggplot(total_plot_data, aes(x=FP_class.FP_class, y=depth_diff)) + geom_boxplot() + xlab("ASVs >= 30% Significant") +
   ylab("Mean Difference in Read Depth") + facet_grid(cols=vars(total_plot_data$FP_class.Tool), rows=vars(total_plot_data$dataset)) + geom_beeswarm() +
   theme_bw()
 

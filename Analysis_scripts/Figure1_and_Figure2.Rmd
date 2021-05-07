@@ -71,7 +71,8 @@ tool_names <- c(aldex2="ALDEx2", ancom="ANCOM-II", corncob="corncob", deseq2="DE
                 maaslin2rare="MaAsLin2 (rare)", metagenomeSeq="metagenomeSeq", ttestrare="t-test (rare)", 
                 wilcoxonclr="Wilcoxon (CLR)", wilcoxonrare="Wilcoxon (rare)")
 
-Metadata_renames <- c(log_N="Log Sample Size", R.squared="Aitchson's Dist. Effect Size", log_R.squared="Log Aitchson's Dist. Effect Size", Sparsity="Sparsity", Richness="Richness", log_Depth="Log Max Read Depth", log_Depth_range="Log Read Depth Range", CoV_Depth="Read Depth Variation")
+
+Metadata_renames <- c(log_N="log(Sample size)", R.squared="Aitchson's Dist. Effect Size", log_R.squared="log(Aitch. dist. effect size)", Sparsity="Sparsity", Richness="Richness", log_Depth="log(Max read depth)", log_Depth_range="log(Read depth range)", CoV_Depth="Read depth variation")
 ```
 
 # Functions
@@ -561,68 +562,78 @@ hackathon_metadata_filt <- read.table("/home/jacob/GitHub_Repos/Hackathon_testin
 rownames(hackathon_metadata_filt) <- hackathon_metadata_filt$Dataset.Name
 
 #remove ob_zupanic
+## dataset removed due to filtering removing all features
+## fixed prefix refers to the removal of this dataset
 fixed_hackathon_metadata_filt <- hackathon_metadata_filt[-which(rownames(hackathon_metadata_filt) == "ob_zupancic"), ]
 
-## getting sample sizes from metadata sheet.... I'm not sure if these match exactly with the tables... we should double check this...
+## getting sample sizes from metadata sheet..
 fixed_hackathon_metadata_filt$log_N <- log(fixed_hackathon_metadata_filt$Sample.Size)
 
+#load in permanova results from atichsons distance with a 1 pseudocount
 aitchison_permanova <- read.table("/home/gavin/projects/hackathon/21_04_7_PERMANOVA_results.tsv", header = TRUE, sep = "\t", row.names = 1)
 
+# attach r2 value for the filt-nonrare datasets
 fixed_hackathon_metadata_filt$R.squared <- aitchison_permanova[rownames(fixed_hackathon_metadata_filt), "filt_nonrare_R2"]
 
+# log r2 values for visualization purposes
 fixed_hackathon_metadata_filt$log_R.squared <- log(fixed_hackathon_metadata_filt$R.squared)
 
 
-## attach other dataset statistics
+## attach other dataset statistics that we calculated above
 
 sort_filt_nonrare_metrics_df <- filt_nonrare_metrics_df[rownames(fixed_hackathon_metadata_filt),,drop=F]
-fixed_hackathon_metadata_filt$Sparsity <- sort_filt_nonrare_metrics_df[,1]
-fixed_hackathon_metadata_filt$Richness <- sort_filt_nonrare_metrics_df[,4]
-fixed_hackathon_metadata_filt$log_Depth <- log(sort_filt_nonrare_metrics_df[,3])
-fixed_hackathon_metadata_filt$log_Depth_range <- log(sort_filt_nonrare_metrics_df[,5])
-fixed_hackathon_metadata_filt$CoV_Depth <- sort_filt_nonrare_metrics_df[,6]
+fixed_hackathon_metadata_filt$Sparsity <- sort_filt_nonrare_metrics_df[,"Sparsity"]
+fixed_hackathon_metadata_filt$Richness <- sort_filt_nonrare_metrics_df[,"Median Richness"]
+fixed_hackathon_metadata_filt$log_Depth <- log(sort_filt_nonrare_metrics_df[,"Median Depth"])
+fixed_hackathon_metadata_filt$log_Depth_range <- log(sort_filt_nonrare_metrics_df[,"Depth Range"])
+fixed_hackathon_metadata_filt$CoV_Depth <- sort_filt_nonrare_metrics_df[,"Depth CoV"]
 
+#fix dataset names
 colnames(filt_sig_percent_scaled)
-test <- Data_set_names[colnames(filt_sig_percent_scaled)]
-colnames(filt_sig_percent_scaled) <- test
+fixed_ds_names <- Data_set_names[colnames(filt_sig_percent_scaled)]
+colnames(filt_sig_percent_scaled) <- fixed_ds_names
 
 colnames(filt_sig_percent_scaled)
 rownames(filt_sig_percent_scaled)
+
+
 ## fix tool names now...
 tool_rename <- tool_names[rownames(filt_sig_percent_scaled)]
 rownames(filt_sig_percent_scaled) <- tool_rename
 
-### now fix metadata
-
-
+### now fix dataset names for metadata
 rownames(fixed_hackathon_metadata_filt) <- Data_set_names[rownames(fixed_hackathon_metadata_filt)]
 
+# order them by dataset names so that they are sorted by environment
 Alpha_order_filt <- filt_sig_percent_scaled[,order(colnames(filt_sig_percent_scaled))]
 
 
 ### now fix raw count dataframe
 
+## set tool names to proper presentation names
 raw_count_df <- t(filt_sig_counts[,-1])
 rownames(raw_count_df) <- tool_names[rownames(raw_count_df)]
 
-
+## fix dataset names
 colnames(raw_count_df) <- Data_set_names[colnames(raw_count_df)]
+
+## order them the same way as the sig_percent table
 order_raw_count_df <- raw_count_df[,colnames(Alpha_order_filt)]
 
+
+#make sure that they match up.
 identical(colnames(order_raw_count_df), colnames(Alpha_order_filt))
 
+#rename the metadata for plotting
 colnames(fixed_hackathon_metadata_filt)[30:37] <- Metadata_renames[colnames(fixed_hackathon_metadata_filt[30:37])]
 
-colnames(fixed_hackathon_metadata_filt)[which(colnames(fixed_hackathon_metadata_filt) == "Log Aitchson's Dist. Effect Size")] <- "log(Aitch. dist. effect size)"
-colnames(fixed_hackathon_metadata_filt)[which(colnames(fixed_hackathon_metadata_filt) == "Log Read Depth Range")] <- "log(Read depth range)"
-colnames(fixed_hackathon_metadata_filt)[which(colnames(fixed_hackathon_metadata_filt) == "Log Max Read Depth")] <- "log(Max read depth)"
-colnames(fixed_hackathon_metadata_filt)[which(colnames(fixed_hackathon_metadata_filt) == "Read Depth Variation")] <- "Read depth variation"
-colnames(fixed_hackathon_metadata_filt)[which(colnames(fixed_hackathon_metadata_filt) == "Log Sample Size")] <- "log(Sample size)"
-
+#sort rows by tool name
 Alpha_order_filt <- Alpha_order_filt[sort(rownames(Alpha_order_filt)), ]
+
+#sort rows by tool name
 order_raw_count_df <- order_raw_count_df[sort(rownames(order_raw_count_df)), ]
 
-
+## Create heatmap
 filt_ASV_nums <- pheatmap(t(Alpha_order_filt),
                          clustering_method = "complete",
                          legend=TRUE,
@@ -650,35 +661,41 @@ rownames(hackathon_metadata_unfilt) <- hackathon_metadata_unfilt$Dataset.Name
 #remove ob_zupanic
 fixed_hackathon_metadata_unfilt <- hackathon_metadata_unfilt[-which(rownames(hackathon_metadata_unfilt) == "ob_zupancic"), ]
 
-## getting sample sizes from metadata sheet.... I'm not sure if these match exactly with the tables... we should double check this...
+## getting sample sizes from metadata sheet....
 fixed_hackathon_metadata_unfilt$log_N <- log(fixed_hackathon_metadata_unfilt$Sample.Size)
 
+## Get r2 values
 aitchison_permanova <- read.table("/home/gavin/projects/hackathon/21_04_7_PERMANOVA_results.tsv", header = TRUE, sep = "\t", row.names = 1)
 
+#set R2 values into metadata sheet
 fixed_hackathon_metadata_unfilt$R.squared <- aitchison_permanova[rownames(fixed_hackathon_metadata_unfilt), "unfilt_nonrare_R2"]
 
+#set log R2 values into metadata sheet
 fixed_hackathon_metadata_unfilt$log_R.squared <- log(fixed_hackathon_metadata_unfilt$R.squared)
 
 ## attach other dataset statistics
 
 sort_unfilt_nonrare_metrics_df <- unfilt_nonrare_metrics_df[rownames(fixed_hackathon_metadata_unfilt),,drop=F]
-fixed_hackathon_metadata_unfilt$Sparsity <- sort_unfilt_nonrare_metrics_df[,1]
-fixed_hackathon_metadata_unfilt$Richness <- sort_unfilt_nonrare_metrics_df[,4]
-fixed_hackathon_metadata_unfilt$log_Depth <- log(sort_unfilt_nonrare_metrics_df[,3])
-fixed_hackathon_metadata_unfilt$Log_Depth_range <- log(sort_unfilt_nonrare_metrics_df[,5])
-fixed_hackathon_metadata_unfilt$CoV_Depth <- sort_unfilt_nonrare_metrics_df[,6]
+fixed_hackathon_metadata_unfilt$Sparsity <- sort_unfilt_nonrare_metrics_df[,"Sparsity"]
+fixed_hackathon_metadata_unfilt$Richness <- sort_unfilt_nonrare_metrics_df[,"Median Richness"]
+fixed_hackathon_metadata_unfilt$log_Depth <- log(sort_unfilt_nonrare_metrics_df[,"Median Depth"])
+fixed_hackathon_metadata_unfilt$Log_Depth_range <- log(sort_unfilt_nonrare_metrics_df[,"Depth Range"])
+fixed_hackathon_metadata_unfilt$CoV_Depth <- sort_unfilt_nonrare_metrics_df[,"Depth CoV"]
 
-
+#fix dataset names
 colnames(unfilt_sig_percent_scaled) <- Data_set_names[colnames(unfilt_sig_percent_scaled)]
 
+#fix tool names
 rownames(unfilt_sig_percent_scaled) <- tool_names[rownames(unfilt_sig_percent_scaled)]
 
+#order by dataset
 Alpha_order_unfilt <- unfilt_sig_percent_scaled[, order(colnames(unfilt_sig_percent_scaled))]
 
-
+#set raw counts tool names
 raw_counts_unfilt <- t(unfilt_sig_counts[, -which(colnames(unfilt_sig_counts) == "dataset")])
 rownames(raw_counts_unfilt) <- tool_names[rownames(raw_counts_unfilt)]
 
+#set dataset names
 colnames(raw_counts_unfilt) <- Data_set_names[colnames(raw_counts_unfilt)]
 fix_raw_counts_unfilt <- raw_counts_unfilt[, colnames(Alpha_order_unfilt)]
 
@@ -742,42 +759,54 @@ filt_sig_percent_fix <- filt_sig_percent[,-1]
 #fix dataset names
 rownames(filt_sig_percent_fix) <- Data_set_names[rownames(filt_sig_percent_fix)]
 
+#re order to make sure the datasets match up in order
 fixed_hackathon_metadata_filt <- fixed_hackathon_metadata_filt[rownames(filt_sig_percent_fix),]
 
-
+#create list to hold the spearman rho values for each correlation and the p-values
 filt_rhos <- list()
 filt_ps <- list()
 
+#loop through each tool
 for(i in 1:length(colnames(filt_sig_percent_fix))){
-  ##go through each Tool
+  ## set vectors that contain the pvals and rho values between that tools results and the metadata character.
   temp_pvals <- vector()
   temp_rhos <- vector()
   
+  #go through a total of 7 different dataset characteristics
   for(j in 1:8){
-    message(j)
-    # run correlation of column
+    # run correlation on each column of metadata and each tool
     temp_pvals[[j]] <- cor.test(filt_sig_percent_fix[,i], fixed_hackathon_metadata_filt[,(j+29)], method="spearman", exact=F)$p.value
     temp_rhos[[j]] <- cor.test(filt_sig_percent_fix[,i], fixed_hackathon_metadata_filt[,(j+29)], method="spearman", exact=F)$estimate
   }
-  
+  ## add the results to the final table list
   filt_rhos[[i]] <- temp_rhos
   filt_ps[[i]] <- temp_pvals
 }
 
+#bind them into data frames
 filt_rhos_df <- do.call(rbind, filt_rhos)
 filt_pvals_df <- do.call(rbind, filt_ps)
 
+#add rownames 
 rownames(filt_rhos_df) <- colnames(filt_sig_percent_fix)
-
+#fix rownames to match the published tool names
 rownames(filt_rhos_df) <- tool_rename[rownames(filt_rhos_df)]
 
+#same as above
 rownames(filt_pvals_df) <- colnames(filt_sig_percent_fix)
+rownames(filt_pvals_df) <- tool_rename[rownames(filt_pvals_df)]
 
+#sort by 
 filt_rhos_df <- filt_rhos_df[sort(rownames(filt_rhos_df)), ]
 filt_pvals_df <- filt_pvals_df[sort(rownames(filt_pvals_df)), ]
 
+#set column names to the correct metadata names
 colnames(filt_rhos_df) <- colnames(fixed_hackathon_metadata_filt)[30:37]
 colnames(filt_pvals_df) <- colnames(fixed_hackathon_metadata_filt)[30:37]
+
+#generate corrplot of the results using df that has rho values and then filter by df with pvals
+identical(rownames(filt_rhos_df), rownames(filt_pvals_df))
+identical(colnames(filt_rhos_df), colnames(filt_pvals_df))
 
 corrplot(filt_rhos_df[,-3], p.mat = filt_pvals_df[,-3], sig.level = 0.05, insig = "blank", full_col = FALSE)
 # Saved manually as 8.5x11 inches as Main_figures/Figure2B_Corrplot_Filt_raw.pdf
@@ -791,24 +820,23 @@ rownames(unfilt_sig_percent_fix) <- Data_set_names[rownames(unfilt_sig_percent_f
 
 fixed_hackathon_metadata_unfilt <- fixed_hackathon_metadata_unfilt[rownames(unfilt_sig_percent_fix),]
 
-
+#list to have the rho values and pvals
 unfilt_rhos <- list()
 unfilt_ps <- list()
 
 for(i in 1:length(colnames(unfilt_sig_percent_fix))){
   ##go through each Tool
-  temp_pvals <- vector()
-  temp_rhos <- vector()
+  temp_pvals_unfilt <- vector()
+  temp_rhos_unfilt <- vector()
   
   for(j in 1:8){
-    message(j+29)
     # run correlation of column
-    temp_pvals[[j]] <- cor.test(unfilt_sig_percent_fix[,i], fixed_hackathon_metadata_unfilt[,(j+29)], method="spearman", exact=F)$p.value
-    temp_rhos[[j]] <- cor.test(unfilt_sig_percent_fix[,i], fixed_hackathon_metadata_unfilt[,(j+29)], method="spearman", exact=F)$estimate
+    temp_pvals_unfilt[[j]] <- cor.test(unfilt_sig_percent_fix[,i], fixed_hackathon_metadata_unfilt[,(j+29)], method="spearman", exact=F)$p.value
+    temp_rhos_unfilt[[j]] <- cor.test(unfilt_sig_percent_fix[,i], fixed_hackathon_metadata_unfilt[,(j+29)], method="spearman", exact=F)$estimate
   }
   
-  unfilt_rhos[[i]] <- temp_rhos
-  unfilt_ps[[i]] <- temp_pvals
+  unfilt_rhos[[i]] <- temp_rhos_unfilt
+  unfilt_ps[[i]] <- temp_pvals_unfilt
 }
 
 unfilt_rhos_df <- do.call(rbind, unfilt_rhos)
@@ -819,12 +847,14 @@ rownames(unfilt_rhos_df) <- colnames(unfilt_sig_percent_fix)
 rownames(unfilt_rhos_df) <- tool_rename[rownames(unfilt_rhos_df)]
 
 rownames(unfilt_pvals_df) <- colnames(unfilt_sig_percent_fix)
+rownames(unfilt_pvals_df) <- tool_rename[rownames(unfilt_pvals_df)]
 
 unfilt_rhos_df <- unfilt_rhos_df[sort(rownames(unfilt_rhos_df)), ]
 unfilt_pvals_df <- unfilt_pvals_df[sort(rownames(unfilt_pvals_df)), ]
 
 colnames(unfilt_rhos_df) <- colnames(fixed_hackathon_metadata_unfilt)[30:37]
 colnames(unfilt_pvals_df) <- colnames(fixed_hackathon_metadata_unfilt)[30:37]
+
 
 corrplot(as.matrix(unfilt_rhos_df[,-3]), p.mat = unfilt_pvals_df[,-3], sig.level = 0.05, insig = "blank", full_col = FALSE)
 # Saved manually as 8.5x11 inches as Main_figures/Figure2A_Corrplot_Unfilt_raw.pdf
