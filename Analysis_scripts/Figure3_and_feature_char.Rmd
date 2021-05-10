@@ -20,7 +20,7 @@ library(pheatmap)
 library(ggrepel)
 options(scipen = 999)
 
-
+#names to use in publication
 tool_names <- c(aldex2="ALDEx2", ancom="ANCOM-II", corncob="corncob", deseq2="DESeq2", edger="edgeR", lefse="LEfSe", 
                 limma_voom_TMM="limma voom (TMM)", limma_voom_TMMwsp="limma voom (TMMwsp)", maaslin2="MaAsLin2",
                 maaslin2rare="MaAsLin2 (rare)", metagenomeSeq="metagenomeSeq", ttestrare="t-test (rare)", 
@@ -40,7 +40,7 @@ filt_study_tab <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/filt_
 
 #Consistentcy Analysis
 ```{r}
-## Pull out P-values from each
+## Pull out P-values for ASV reported by each tool for all studys in the filt results
 Adj_p_tabs_filt <- list()
 
 for(study in names(filt_results)){
@@ -50,16 +50,25 @@ for(study in names(filt_results)){
   
 }
 
+#turn into data frame
 Adj_p_all_filt <- do.call(rbind, Adj_p_tabs_filt)
+
 ### okay next thing we need to do is set sig hits to 2 and non-sig hits to 0
 ## remeber the sig hits for ancom were coded as 0 so we need to account for this.
+
+#set all significant htis to value of 2
 Adj_p_all_filt[Adj_p_all_filt < 0.05] <- 2
 
+#set all non-sig hits to 0
 Adj_p_all_filt[Adj_p_all_filt != 2] <- 0
-#now we set 2 to =1
+
+#now we set all sig hits to 1
 Adj_p_all_filt[Adj_p_all_filt==2] <- 1
 
+## now we have a table were all sig hits are coded as 1 and non-sig hits are 0
+
 ### okay now for each feature we need to get its row sum
+## this gives us how many times this feature was called significant
 Feature_sig_count_filt <- rowSums(Adj_p_all_filt, na.rm=T)
 
 
@@ -74,13 +83,11 @@ for(study in names(unfilt_results)){
 
 
 
-### remove dataset that Aldex2 didn't work on
+### remove dataset that Aldex2 didn't work on as this will obstruct the analysis
 ### Either that or just set that column to NA... HMMMM
 ### I think for now we will just remove that dataset
-No_FreshWater_Adj_p_tabs_unfilt <- Adj_p_tabs_unfilt
-No_FreshWater_Adj_p_tabs_unfilt[[2]] <- NULL
 
-Adj_p_all_unfilt <- do.call(rbind, No_FreshWater_Adj_p_tabs_unfilt)
+Adj_p_all_unfilt <- do.call(rbind, Adj_p_tabs_unfilt)
 
 Adj_p_all_unfilt[Adj_p_all_unfilt < 0.05] <- 2
 Adj_p_all_unfilt[Adj_p_all_unfilt != 2] <- 0
@@ -92,33 +99,41 @@ Feature_sig_count_unfilt <- rowSums(Adj_p_all_unfilt, na.rm=T)
 
 
 
-### okay now we need to characteris each tool... We can add a row to the p value table with the "Type of Significant feature it is"
-## Okay now we go through the dataframe and replace the significant hit numbers (1) with the number of hits that feature has...
+### okay now we need to characteris each tool...
+## Okay now we go through the dataframe and replace all signifciant hit values (1s) with the number of times that feature was identified as significant
+
 
 Feature_count_tab_filt <- Adj_p_all_filt
+
 ### first we need to set NA to 0 and then remove any rows that sum to 0
+## this will remove all ASVs that were not found to be signicant in any tool tests
 Feature_count_tab_filt[is.na(Feature_count_tab_filt)] <- 0
 row_to_remove <- which(rowSums(Feature_count_tab_filt)==0)
-
 Feature_count_tab_filt <- Feature_count_tab_filt[-row_to_remove, ]
 
 
 ## next we need go through ASV and set its score in the column if it was found by that tool.
-for(row_num in 1:length(rownames(Feature_count_tab_filt))){
+## This code takes awhile to run so we save it as an RDS after its first run through for future re-use
 
-  row_name <- rownames(Feature_count_tab_filt)[row_num]
-  Score_for_that_row <- Feature_sig_count_filt[row_name]
-
-  for(j in 1:length(colnames(Feature_count_tab_filt))){
-    if(is.na(Feature_count_tab_filt[row_num, j])){
-
-    }else if(Feature_count_tab_filt[row_num, j] == 1){
-      Feature_count_tab_filt[row_num, j] <- Score_for_that_row
-    }
-  }
-}
-
-saveRDS(Feature_count_tab_filt, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_21_04_07.RDS")
+#go through all the rows in the feature table
+# for(row_num in 1:length(rownames(Feature_count_tab_filt))){
+# 
+# #get the feature name we are dealing with
+#   row_name <- rownames(Feature_count_tab_filt)[row_num]
+# #look up the "score" (how many tools found it be significant) for this feature
+#   Score_for_that_row <- Feature_sig_count_filt[row_name]
+# 
+# #in this row go through each column (representing different tested tools) and replace any 1 values with the features "score"
+#   for(j in 1:length(colnames(Feature_count_tab_filt))){
+#     if(is.na(Feature_count_tab_filt[row_num, j])){
+# 
+#     }else if(Feature_count_tab_filt[row_num, j] == 1){
+#       Feature_count_tab_filt[row_num, j] <- Score_for_that_row
+#     }
+#   }
+# }
+# 
+# saveRDS(Feature_count_tab_filt, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_21_04_07.RDS")
 
 Feature_count_tab_filt <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_21_04_07.RDS")
 
@@ -127,10 +142,11 @@ Feature_count_tab_filt <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Da
 ## for now we will remove NAs
 plot_info_barplot <- reshape2::melt(Feature_count_tab_filt, na.rm=T)
 ### remove any with 0 which represents a feature that was significant by one tool but not found by that tool...
+### we are not interested in this grouping for this analysis 
 remove_row <- which(plot_info_barplot$value==0)
 no_zero <- plot_info_barplot[-remove_row,]
 
-
+#get total number of features that are significantly called by each tool
 feat_sum_filt <- Feature_count_tab_filt
 feat_sum_filt[feat_sum_filt > 0] <- 1
 Tool_total_feats_found <- as.data.frame(colSums(feat_sum_filt))
@@ -145,6 +161,7 @@ merged_no_zero_filt <- dplyr::inner_join(no_zero, Tool_total_feats_found)
 colnames(merged_no_zero_filt)[3] <- "total_hits"
 
 
+## do same as above but with unfiltered data
 
 # Unfilt data now!
 Feature_count_tab_unfilt <- Adj_p_all_unfilt
@@ -155,7 +172,7 @@ remove_rows <- which(rowSums(Feature_count_tab_unfilt)==0)
 
 Feature_count_tab_unfilt <- Feature_count_tab_unfilt[-remove_rows,]
 
-# 
+# # 
 # for(row_num in 1:length(rownames(Feature_count_tab_unfilt))){
 # 
 #   row_name <- rownames(Feature_count_tab_unfilt)[row_num]
@@ -197,21 +214,22 @@ merged_no_zero_filt$clean_variable <- tool_names[merged_no_zero_filt$variable]
 
 
 ### need to make a new data.frame that has the total counts for each tool and each value
-test <- reshape2::dcast(merged_no_zero_filt, variable ~ value)
+wide_filt_tab <- reshape2::dcast(merged_no_zero_filt, variable ~ value)
 ## convert to R.A
-test_RA2 <- test
-test_RA2[,-1] <- sweep(test_RA2[,-1], 1, rowSums(test_RA2[,-1]), '/')*100
+wide_filt_tab_RA2 <- wide_filt_tab
+#convert this to the proportions of hits in each "score" category"
+wide_filt_tab_RA2[,-1] <- sweep(wide_filt_tab_RA2[,-1], 1, rowSums(wide_filt_tab_RA2[,-1]), '/')*100
 
 
+#melt this back into long form
+long_filt_melt <- reshape2::melt(wide_filt_tab_RA2)
+colnames(long_filt_melt) <- c("variable", "Score", "value")
+long_filt_melt$Method_clean <- tool_names[long_filt_melt$variable]
 
-test_melt <- reshape2::melt(test_RA2)
-colnames(test_melt) <- c("variable", "Score", "value")
-test_melt$Method_clean <- tool_names[test_melt$variable]
+long_filt_melt_join <- dplyr::inner_join(long_filt_melt, Tool_total_feats_found)
+colnames(long_filt_melt_join)[5] <- "Total_Hits"
 
-test_join <- dplyr::inner_join(test_melt, Tool_total_feats_found)
-colnames(test_join)[5] <- "Total_Hits"
-
-Filt_bars <- ggplot(test_join, aes(x=as.numeric(Score), y=value, width=1, fill=Total_Hits)) + geom_bar(stat="identity") +
+Filt_bars <- ggplot(long_filt_melt_join, aes(x=as.numeric(Score), y=value, width=1, fill=Total_Hits)) + geom_bar(stat="identity") +
   xlab("No. tools that called feature significant") + ylab("") + ggtitle("Filtered data") + 
   facet_grid(rows=vars(Method_clean), switch='y') + theme_classic() + 
   scale_y_continuous(position = "right", breaks=c(0, 20, 40, 60), labels=c("0", "", "40", "")) +
@@ -221,7 +239,7 @@ Filt_bars <- ggplot(test_join, aes(x=as.numeric(Score), y=value, width=1, fill=T
 
 Filt_bars
 
-## now unfilt
+## do same as above but with unfiltered data
 unfilt_bars_data <- reshape2::dcast(merged_no_zero_unfilt, variable ~ value)
 unfilt_bars_data_RA <- unfilt_bars_data
 unfilt_bars_data_RA[,-1] <- sweep(unfilt_bars_data_RA[,-1], 1, rowSums(unfilt_bars_data_RA[,-1]), '/')*100
@@ -241,9 +259,6 @@ Unfilt_bars <- ggplot(unfilt_bars_data_join, aes(x=as.numeric(Score), y=value, w
     scale_fill_continuous(high = "#132B43", low = "#56B1F7", breaks=seq(100000,500000, by=100000))
 
 Unfilt_bars
-
-## need to scale the data to relative abundances...
-
 ```
 
 ## PCoA of Binary Distances for each tool
@@ -251,7 +266,7 @@ Unfilt_bars
 ## Start with filtered data
 ## We want to weight each dataset equally so we will take the mean the binary distance for all datasets for each tool
 
-first_data = TRUE
+first_data_filt = TRUE
 for(dataset in filt_results){
   
   ### anything under 0.05 set to sig
@@ -264,24 +279,28 @@ for(dataset in filt_results){
   ## if was significant set value to 1
   bin_dataset[bin_dataset==2] <- 1
   
-  if(first_data){
+  if(first_data_filt){
     dataset_binary_dist <- dist(t(bin_dataset), method="binary")
-    first_data <- F
+    first_data_filt <- F
   }else{
     dataset_binary_dist <- dataset_binary_dist + dist(t(bin_dataset), method="binary")
   }
   
 }
-
+## since we continued to add the distances together for each dataset we now must divide them by the total number of datasets
 dataset_binary_dist <- dataset_binary_dist/length(filt_results)
 
+## do demension reduction
 filt_pcoa <- cmdscale(d=dataset_binary_dist, k=5, eig=T)
 
+#pull out eig values for each axis
 eig_percent <- filt_pcoa$eig*100/sum(filt_pcoa$eig) 
 eig_percent
 names(eig_percent) <- c(1:14)
+## plot eig_percent for each component
 eig_filt_plot <- ~barplot(eig_percent, xlab='Component', ylab="Percent explained", main="Filtered data", ylim = c(0,30))
 
+#create labels for each axis on the plots
 PC1_set <- paste("PC1 (", as.character(format(round(eig_percent[1], 2), nsmall = 2)), "%)", sep="")
 PC2_set <- paste("PC2 (", as.character(format(round(eig_percent[2], 2), nsmall = 2)), "%)", sep="")
 PC3_set <- paste("PC3 (", as.character(format(round(eig_percent[3], 2), nsmall = 2)), "%)", sep="")
@@ -335,13 +354,11 @@ ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_PCOA_Filt.png", s
 
 
 ```{r}
-first_data = TRUE
+first_data_unfilt = TRUE
 
 ## need to remove dataset where one tool didn't finish.
-No_FreshWater_Adj_p_tabs_unfilt <- unfilt_results
-No_FreshWater_Adj_p_tabs_unfilt[[2]] <- NULL
 
-for(dataset in No_FreshWater_Adj_p_tabs_unfilt){
+for(dataset in unfilt_results){
   
   ### anything under 0.05 set to sig
   bin_dataset <- dataset[[2]]
@@ -353,16 +370,16 @@ for(dataset in No_FreshWater_Adj_p_tabs_unfilt){
   ## if was significant set value to 1
   bin_dataset[bin_dataset==2] <- 1
   
-  if(first_data){
+  if(first_data_unfilt){
     dataset_binary_dist_unfilt <- dist(t(bin_dataset), method="binary")
-    first_data <- F
+    first_data_unfilt <- F
   }else{
     dataset_binary_dist_unfilt <- dataset_binary_dist_unfilt + dist(t(bin_dataset), method="binary")
   }
   
 }
 
-dataset_binary_dist_unfilt <- dataset_binary_dist_unfilt/37
+dataset_binary_dist_unfilt <- dataset_binary_dist_unfilt/length(unfilt_results)
 
 unfilt_pcoa <- cmdscale(d=dataset_binary_dist_unfilt, k=5, eig=T)
 
@@ -468,6 +485,18 @@ filt_study_tab_mean_RA <- lapply(filt_study_tab_RA, function(x) rowMeans(x))
 ### combined them
 filt_study_tab_all_mean <- do.call(c, filt_study_tab_mean_RA)
 
+
+
+filt_study_tab_RA_rare <- lapply(filt_study_tab[["rare"]], function(x) sweep(x, 2, colSums(x), '/'))
+
+## now we need to get the average value for each row
+filt_study_tab_mean_RA_rare <- lapply(filt_study_tab_RA_rare, function(x) rowMeans(x))
+
+
+### combined them
+filt_study_tab_all_mean_rare <- do.call(c, filt_study_tab_mean_RA_rare)
+
+
 ## alright now we just go through the Adj_p_all_filt table and replace any 1 values with the correspond value in the vector
 
 filt_sig_abundance <- Adj_p_all_filt
@@ -478,11 +507,17 @@ filt_sig_abundance <- Adj_p_all_filt
 filt_sig_abundance[is.na(filt_sig_abundance)] <- 0
 filt_sig_abundance <- as.matrix(filt_sig_abundance)
 
-library(doParallel)
-library(doMC)
-
+# library(doParallel)
+# library(doMC)
+# 
 # registerDoMC(cores=14)
 # getDoParWorkers()
+# 
+# 
+# #iterate through the columns
+# #we need to do something special to iters that are from rare tools
+# 
+# rare_tools <- colnames(filt_sig_abundance)[c(6,8,10,12)]
 # 
 # identical(rownames(filt_sig_abundance), names(filt_study_tab_all_mean))
 # 
@@ -492,8 +527,9 @@ library(doMC)
 # identical(rownames(filt_sig_abundance), names(ordered_filt_study_tab_all_mean))
 # ### now they are in the same order
 # 
+# filt_sig_abundance_nonrare <- filt_sig_abundance[,-c(6,8,10,12)]
 # 
-# filt_sig_abundance_final <- foreach(ITER=iter(filt_sig_abundance, by="col"), .combine=cbind) %dopar% {
+# filt_sig_abundance_final_nonrare <- foreach(ITER=iter(filt_sig_abundance_nonrare, by="col"), .combine=cbind) %dopar% {
 #    for(i in 1:length(ITER)){
 # 
 #      if(ITER[i]==1){
@@ -502,7 +538,45 @@ library(doMC)
 #    }
 #   ITER
 # }
-# saveRDS(filt_sig_abundance_final, "/home/jacob/GitHub_Repos/Clean_Hackathon/Data/filt_sig_abundance_21_04_08.RDS")
+# 
+# 
+# 
+# ## we need to do the same calculation for rarified tools
+# ## problem is that the p-val table is going to contain rows that are not existent in the abundance tables
+# 
+# filt_sig_abundance_rare <- filt_sig_abundance[,rare_tools]
+# 
+# ## lets get the intersection here
+# 
+# keep_rows <- intersect(rownames(filt_sig_abundance_rare), names(filt_study_tab_all_mean_rare))
+# 
+# ordered_filt_sig_abundance_rare <- filt_sig_abundance_rare[keep_rows,]
+# ordered_filt_study_tab_all_mean_rare <- filt_study_tab_all_mean_rare[keep_rows]
+# 
+# identical(names(ordered_filt_study_tab_all_mean_rare), rownames(ordered_filt_sig_abundance_rare))
+# 
+# 
+# ## now we run same loop as above
+# 
+# 
+# filt_sig_abundance_final_rare <- foreach(ITER=iter(ordered_filt_sig_abundance_rare, by="col"), .combine=cbind) %dopar% {
+#    for(i in 1:length(ITER)){
+# 
+#      if(ITER[i]==1){
+#        ITER[i] <- ordered_filt_study_tab_all_mean_rare[i]
+#      }
+#    }
+#   ITER
+# }
+# 
+# ## merge and clean
+# 
+# filt_sig_abundance_final_merged <- merge(filt_sig_abundance_final_rare, filt_sig_abundance_final_nonrare, all=T, by=0)
+# rownames(filt_sig_abundance_final_merged) <- filt_sig_abundance_final_merged$Row.names
+# filt_sig_abundance_final_merged <- filt_sig_abundance_final_merged[,-1]
+# 
+# saveRDS(filt_sig_abundance_final_merged, "/home/jacob/GitHub_Repos/Clean_Hackathon/Data/filt_sig_abundance_21_04_08.RDS")
+
 
 filt_sig_abundance <- data.frame(readRDS("/home/jacob/GitHub_Repos/Clean_Hackathon/Data/filt_sig_abundance_21_04_08.RDS"))
 
@@ -555,20 +629,7 @@ mean_RA_filt_plot
 ### Unfiltered data
 
 #convert to relative abundances
-
-### Skip over Freshwater b/c ALDEx2 didn't finish it.
-total <- 0
-for(i in 1:length(unfilt_study_tab[["nonrare"]])){
-  if(i != 2){
-      total <- dim(unfilt_study_tab[["nonrare"]][[i]])[1] + total
-  }
-
-  
-}
-total
-
-
-unfilt_study_tab_RA <- lapply(unfilt_study_tab[["nonrare"]][-2], function(x) sweep(x, 2, colSums(x), '/'))
+unfilt_study_tab_RA <- lapply(unfilt_study_tab[["nonrare"]], function(x) sweep(x, 2, colSums(x), '/'))
 
 ## get mean for each row
 unfilt_study_tab_mean_RA <- lapply(unfilt_study_tab_RA, function(x) rowMeans(x))
@@ -579,6 +640,19 @@ unfilt_study_tab_all_mean <- do.call(c, unfilt_study_tab_mean_RA)
 
 ## convert to %
 unfilt_study_tab_all_mean <- unfilt_study_tab_all_mean*100
+
+
+unfilt_study_tab_RA_rare <- lapply(unfilt_study_tab[["rare"]], function(x) sweep(x, 2, colSums(x), '/'))
+
+## get mean for each row
+unfilt_study_tab_mean_RA_rare <- lapply(unfilt_study_tab_RA_rare, function(x) rowMeans(x))
+
+
+### combined data
+unfilt_study_tab_all_mean_rare <- do.call(c, unfilt_study_tab_mean_RA_rare)
+
+## convert to %
+unfilt_study_tab_all_mean_rare <- unfilt_study_tab_all_mean_rare*100
 
 
 ## alright now we just go through the Adj_p_all_filt table and replace any 1 values with the correspond value in the vector
@@ -599,24 +673,51 @@ unfilt_sig_abundance <- as.matrix(unfilt_sig_abundance)
 # registerDoMC(cores=14)
 # getDoParWorkers()
 # 
-# identical(rownames(unfilt_sig_abundance), rownames(unfilt_study_tab_all_mean))
+# rare_tools <- colnames(unfilt_sig_abundance)[c(6,8,10,12)]
 # 
-# #we can rearrange the filt_study_tab_all_mean to match the same order as filt_sig_abundance
-# ordered_unfilt_study_tab_all_mean <- unfilt_study_tab_all_mean[rownames(unfilt_sig_abundance)]
+# ## they are in order
+# identical(rownames(unfilt_sig_abundance), names(unfilt_study_tab_all_mean))
 # 
-# identical(rownames(unfilt_sig_abundance), names(ordered_unfilt_study_tab_all_mean))
+# unfilt_sig_abundance_nonrare <- unfilt_sig_abundance[,-c(6,8,10,12)]
 # 
 # 
-# unfilt_sig_abundance_final <- foreach(ITER=iter(unfilt_sig_abundance, by="col"), .combine=cbind) %dopar% {
+# unfilt_sig_abundance_final_nonrare <- foreach(ITER=iter(unfilt_sig_abundance_nonrare, by="col"), .combine=cbind) %dopar% {
 #    for(i in 1:length(ITER)){
 # 
 #      if(ITER[i]==1){
-#        ITER[i] <- ordered_unfilt_study_tab_all_mean[i]
+#        ITER[i] <- unfilt_study_tab_all_mean[i]
 #      }
 #    }
 #   ITER
 # }
-# saveRDS(unfilt_sig_abundance_final, file="/home/jacob/GitHub_Repos/Clean_Hackathon/Data/unfilt_sig_abundance_21_04_08.RDS")
+# 
+# unfilt_sig_abundance_rare <- unfilt_sig_abundance[,rare_tools]
+# 
+# 
+# keep_rows_unfilt <- intersect(rownames(unfilt_sig_abundance_rare), names(unfilt_study_tab_all_mean_rare))
+# 
+# ordered_unfilt_sig_abundance_rare <- unfilt_sig_abundance_rare[keep_rows_unfilt,]
+# ordered_unfilt_study_tab_all_mean_rare <- unfilt_study_tab_all_mean_rare[keep_rows_unfilt]
+# 
+# 
+# identical(rownames(ordered_unfilt_sig_abundance_rare), names(ordered_unfilt_study_tab_all_mean_rare))
+# 
+# 
+# unfilt_sig_abundance_final_rare <- foreach(ITER=iter(ordered_unfilt_sig_abundance_rare, by="col"), .combine=cbind) %dopar% {
+#    for(i in 1:length(ITER)){
+# 
+#      if(ITER[i]==1){
+#        ITER[i] <- ordered_unfilt_study_tab_all_mean_rare[i]
+#      }
+#    }
+#   ITER
+# }
+# 
+# unfilt_sig_abundance_final_merged <- merge(unfilt_sig_abundance_final_nonrare, unfilt_sig_abundance_final_rare, by=0, all=T)
+# rownames(unfilt_sig_abundance_final_merged) <- unfilt_sig_abundance_final_merged$Row.names
+# unfilt_sig_abundance_final_merged <- unfilt_sig_abundance_final_merged[,-1]
+# 
+# saveRDS(unfilt_sig_abundance_final_merged, file="/home/jacob/GitHub_Repos/Clean_Hackathon/Data/unfilt_sig_abundance_21_04_08.RDS")
 
 
 unfilt_sig_abundance <- data.frame(readRDS("/home/jacob/GitHub_Repos/Clean_Hackathon/Data/unfilt_sig_abundance_21_04_08.RDS"))
@@ -716,14 +817,14 @@ Total_bars <- ggplot(Tool_total_feats_found_comb, aes(x=Tool_rename, y=value)) +
   theme(strip.background = element_blank())
 
 
-unfilt_sig_count <- ggplot(Tool_total_feats_found_unfilt, aes(x=Tool_rename, y=value)) + geom_bar(stat="identity") +ylim(c(0,535000)) +
+unfilt_sig_count <- ggplot(Tool_total_feats_found_unfilt, aes(x=Tool_rename, y=value)) + geom_bar(stat="identity") +ylim(c(0,635000)) +
   theme_cowplot() + theme(axis.text.x = element_text(angle=90)) + ylab("Total significant features") +
   theme(strip.background = element_blank()) +
   theme(axis.title.x = element_blank()) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 
 
-filt_sig_count <- ggplot(Tool_total_feats_found_filt, aes(x=Tool_rename, y=value)) + geom_bar(stat="identity") +ylim(c(0,535000)) +
+filt_sig_count <- ggplot(Tool_total_feats_found_filt, aes(x=Tool_rename, y=value)) + geom_bar(stat="identity") +ylim(c(0,635000)) +
   theme_cowplot() + theme(axis.text.x = element_text(angle=90)) + ylab("Total significant features") +
   theme(strip.background = element_blank()) +
   theme(axis.title.x = element_blank()) +
