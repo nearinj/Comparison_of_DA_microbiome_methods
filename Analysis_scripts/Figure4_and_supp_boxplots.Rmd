@@ -174,14 +174,6 @@ Mean_filt_percent_sig <- data.frame(ArcticFreshWater = colMeans(ArcticFreshWater
                                     Sw_sed_detender = colMeans(sw_sed_detender_per_sig[[2]]))
 
 
-perc_heatmap <- pheatmap::pheatmap(as.matrix(Mean_filt_percent_sig),
-         cluster_cols=F,
-         cluster_rows = F,
-         display_numbers = round(Mean_filt_percent_sig, 3),
-         number_color = "Black",
-         main = "Filtered Percent")
-
-
 Mean_raw_sig <- data.frame(ArcticFreshWater = colMeans(ArcticFreshWaters_per_sig[[1]]),
                                     Office = colMeans(Office_per_sig[[1]]),
                                     Blueberry = colMeans(Blueberry_per_sig[[1]]),
@@ -191,25 +183,30 @@ Mean_raw_sig <- data.frame(ArcticFreshWater = colMeans(ArcticFreshWaters_per_sig
                                     Schubert = colMeans(cdi_schubert_per_sig[[1]]),
                                     Sw_sed_detender = colMeans(sw_sed_detender_per_sig[[1]]))
 
-raw_heatmap <- pheatmap::pheatmap(as.matrix(Mean_raw_sig),
-                                 cluster_cols=F,
-                                 cluster_rows = F,
-                                 display_numbers = round(Mean_raw_sig, 3),
-                                 number_color = "Black",
-                                 main = "Filtered")
+# Sort rownames
+Mean_filt_percent_sig <- Mean_filt_percent_sig[sort(rownames(Mean_filt_percent_sig)), ]
+Mean_raw_sig <- Mean_raw_sig[sort(rownames(Mean_raw_sig)), ]
 
 rownames(Mean_filt_percent_sig) <- tool_names[rownames(Mean_filt_percent_sig)]
 colnames(Mean_filt_percent_sig) <- Data_set_names[colnames(Mean_filt_percent_sig)]
 
 breaksList = seq(0, 30, by = 0.2)
 
+# Round values greater than 1
+Mean_raw_sig[Mean_raw_sig >= 1] <- round(Mean_raw_sig[Mean_raw_sig >= 1])
+Mean_raw_sig[Mean_raw_sig < 1] <- round(Mean_raw_sig[Mean_raw_sig < 1], 1)
+
+# Order column names
+Mean_raw_sig <- Mean_raw_sig[, order(colnames(Mean_filt_percent_sig))]
+Mean_filt_percent_sig <- Mean_filt_percent_sig[, order(colnames(Mean_filt_percent_sig))]
+
 filtered_heatmap_panel <- pheatmap::pheatmap(as.matrix(Mean_filt_percent_sig),
-                                             cluster_cols=F,
-                                             cluster_rows = F,
+                                             cluster_cols = FALSE,
+                                             cluster_rows = FALSE,
                                              display_numbers = round(Mean_raw_sig, 3),
                                              number_color = "Black",
                                              main = "Filtered",
-                                             angle_col=315,
+                                             angle_col = 315,
                                              color = colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(length(breaksList)),
                                              breaks = breaksList)
 
@@ -262,14 +259,6 @@ Mean_nonfilt_percent_sig <- data.frame(ArcticFreshWater = colMeans(ArcticFreshWa
                                        Schubert = colMeans(cdi_schubert_per_sig_un[[2]], na.rm=T),
                                        Sw_sed_detender = colMeans(sw_sed_detender_per_sig_un[[2]], na.rm=T))
 
-unfilt_perc_heat <- pheatmap::pheatmap(Mean_nonfilt_percent_sig,
-         cluster_cols=F,
-         cluster_rows = F,
-         display_numbers = round(Mean_nonfilt_percent_sig, 3),
-         number_color="Black",
-         main="Unfiltered Percent")
-
-unfilt_perc_heat
 
 Mean_raw_nonfilt <- data.frame(ArcticFreshWater = colMeans(ArcticFreshWaters_per_sig_un[[1]], na.rm=T),
                                Office = colMeans(Office_per_sig_un[[1]], na.rm=T),
@@ -280,18 +269,24 @@ Mean_raw_nonfilt <- data.frame(ArcticFreshWater = colMeans(ArcticFreshWaters_per
                                        Schubert = colMeans(cdi_schubert_per_sig_un[[1]], na.rm=T),
                                        Sw_sed_detender = colMeans(sw_sed_detender_per_sig_un[[1]], na.rm=T))
 
-raw_heat_nonfilt <- pheatmap::pheatmap(Mean_raw_nonfilt,
-         cluster_cols=F,
-         cluster_rows = F,
-         display_numbers = round(Mean_raw_nonfilt, 3),
-         number_color="Black",
-         main="Unfiltered")
-raw_heat_nonfilt
 
-
+# Sort rownames
+Mean_nonfilt_percent_sig <- Mean_nonfilt_percent_sig[sort(rownames(Mean_nonfilt_percent_sig)), ]
+Mean_raw_nonfilt <- Mean_raw_nonfilt[sort(rownames(Mean_raw_nonfilt)), ]
 
 rownames(Mean_nonfilt_percent_sig) <- tool_names[rownames(Mean_nonfilt_percent_sig)]
 colnames(Mean_nonfilt_percent_sig) <- Data_set_names[colnames(Mean_nonfilt_percent_sig)]
+
+
+breaksList = seq(0, 30, by = 0.2)
+
+# Round values greater than 1
+Mean_raw_nonfilt[Mean_raw_nonfilt >= 1] <- round(Mean_raw_nonfilt[Mean_raw_nonfilt >= 1])
+Mean_raw_nonfilt[Mean_raw_nonfilt < 1] <- round(Mean_raw_nonfilt[Mean_raw_nonfilt < 1], 1)
+
+# Order column names
+Mean_raw_nonfilt <- Mean_raw_nonfilt[, order(colnames(Mean_nonfilt_percent_sig))]
+Mean_nonfilt_percent_sig <- Mean_nonfilt_percent_sig[, order(colnames(Mean_nonfilt_percent_sig))]
 
 
 unfiltered_heatmap_panel <- pheatmap::pheatmap(Mean_nonfilt_percent_sig,
@@ -314,12 +309,12 @@ Heatmap to be saved and then edited outside of R so that the colour key is label
 ```{r}
 Figure4_plot <- cowplot::plot_grid(ggplotify::as.ggplot(unfiltered_heatmap_panel),
                                    ggplotify::as.ggplot(filtered_heatmap_panel),
-                                   nrow=2, labels = c("A", "B"))
+                                   nrow=1, labels = c("A", "B"))
 
 Figure4_plot
 
 ggsave(filename=paste(display_items_out, "Main_figures", "Figure4_FDR_heatmaps_raw.pdf", sep="/"),
-       plot = Figure4_plot, width = 6, height=7, units="in", dpi=600)
+       plot = Figure4_plot, width = 9, height=3.5, units="in", dpi=600)
 ```
 
 
