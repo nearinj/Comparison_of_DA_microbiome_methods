@@ -23,6 +23,7 @@ However, we also included several analyses to help gauge the false positive rate
   * Users can unzip the raw data and point the config DATA_DIR parameter to where this file is unzipped i.e. (DATA_DIR="/home/USER/PATH_TO_UNZIP_DATA/Hackathon"). Note the users must also update the ANCOM_DIR parameter and the TOOL_DIR parameter to point to the Ancom2_Script folder within this repo and the Tool_scripts folder within this repo. ANCOM_DIR="/home/USER/THIS_REPO/Pipeline_scripts/Ancom2_Script" TOOL_DIR="/home/USER/THIS_REPO/Pipeline_scripts/Tool_scripts/
   
   * Finally the user needs to have all of the tools installed to be able to run the main script "run_all_tools.sh" on a dataset.
+  * R version: 3.6.3
     A list of required R packages:
     * "GUniFrac" Version: 1.1
     * "ALDEx2" Version: 1.18.0 
