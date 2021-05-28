@@ -24,7 +24,7 @@ However, we also included several analyses to help gauge the false positive rate
   
   * Finally the user needs to have all of the tools installed to be able to run the main script "run_all_tools.sh" on a dataset.
   * R version: 3.6.3
-    A list of required R packages:
+  * A list of required R packages:
     * "GUniFrac" Version: 1.1
     * "ALDEx2" Version: 1.18.0 
     * "exactRankTests" Version: 0.8.31
