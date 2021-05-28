@@ -94,3 +94,8 @@ However, we also included several analyses to help gauge the false positive rate
   ```
   * -D represents the rarefaction depth
   * -F represents the prevelance filtering. I.e. 0.1 represents a 10% prevelance filter (the used within the analysis of the linked manuscript)
+
+#### Expected Output
+
+  * We have included the expected results from running the Human-ALL dataset (MALL dataset). This can be found in the Expected_MALL_output folder.
+  * Running this dataset should take ~20 minutes on a modern cpu using a single core. This was tested on linux ubuntu 16.04
