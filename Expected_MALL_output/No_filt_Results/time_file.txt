@@ -1,0 +1,15 @@
+Filtering took 0 seconds
+Aldex2 took 40 seconds
+Deseq2 took  16 seconds
+Lefse took 13 seconds
+Corncob took 51 seconds
+Wilcoxon rare took 2 seconds
+Wilcoxon CLR took 2 seconds
+Maaslin2 rare took 6 seconds
+Maaslin2 took 6 seconds
+Ancom2 took 580 seconds
+metagenomeSeq took 8 seconds
+edgeR took 7 seconds
+t test rare took 1 seconds
+Limma_voom_tmm took 2  seconds
+Limma_voom_TMMwsp took 1  seconds
