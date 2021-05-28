@@ -92,5 +92,5 @@ However, we also included several analyses to help gauge the false positive rate
   ```
   run_all_tools.sh -A ASV_TABLE.tsv -G METADATA_FILE.tsv -O OUTPUT_FOLDER -D 2000 -F 0.1
   ```
-  -D represents the rarefaction depth
-  -F represents the prevelance filtering. I.e. 0.1 represents a 10% prevelance filter (the used within the analysis of the linked manuscript)
+  * -D represents the rarefaction depth
+  * -F represents the prevelance filtering. I.e. 0.1 represents a 10% prevelance filter (the used within the analysis of the linked manuscript)
