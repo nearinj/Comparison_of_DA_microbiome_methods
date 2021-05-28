@@ -462,7 +462,7 @@ print(c("sd:", sd(unfilt_bars_high_summed$value)))
 print("=======")
 
 print("filt")
-filt_bars_high <- test_join[which(as.numeric(test_join$Score) > 12), ]
+filt_bars_high <- long_filt_melt_join[which(as.numeric(long_filt_melt_join$Score) > 12), ]
 filt_bars_high_summed <- aggregate(value ~ variable, FUN=sum, data=filt_bars_high[, c("variable", "value")])
 
 print(c("mean:", mean(filt_bars_high_summed$value)))

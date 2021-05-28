@@ -2,7 +2,7 @@ deps = c("metagenomeSeq")
 for (dep in deps){
   if (dep %in% installed.packages()[,"Package"] == FALSE){
     if (!requireNamespace("BiocManager", quietly = TRUE))
-      install.packages("BdepManager")
+      install.packages("BiocManager")
     
     BiocManager::install(deps)
   }

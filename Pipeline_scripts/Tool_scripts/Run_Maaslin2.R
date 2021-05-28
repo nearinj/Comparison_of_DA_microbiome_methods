@@ -1,3 +1,7 @@
+if(!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install("Maaslin2")
+
 args <- commandArgs(trailingOnly = TRUE)
 
 if (length(args) <= 2) {
