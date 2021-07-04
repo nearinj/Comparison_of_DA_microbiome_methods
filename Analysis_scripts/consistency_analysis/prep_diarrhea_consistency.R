@@ -22,7 +22,7 @@ for (study in diarrhea_studies) {
 
 # Fix genera labels, including stripping full taxonomy from Duvallet datasets.
 # Also, Lefse converted several genera names to the wrong format.
-fixed_lefse_ids <- read.table("/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/mapfiles/diarrhea_lefse_misformatted_ids.txt",
+fixed_lefse_ids <- read.table("/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Misc_datafiles/mapfiles/diarrhea_lefse_misformatted_ids.txt",
                               header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 
 fixed_lefse_ids <- fixed_lefse_ids[-which(duplicated(fixed_lefse_ids$raw)), ]

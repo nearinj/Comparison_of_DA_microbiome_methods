@@ -226,7 +226,7 @@ Below are the results for each set of datasets - first as barplots, which enable
 ### Barplots
 
 ```{r diarrhea_all_observed_vs_expected_barplot}
-  tool_mapfile <- read.table("../mapfiles/tool_name_mapping.csv", header=TRUE, sep=",", stringsAsFactors = FALSE, row.names = 1)  
+  tool_mapfile <- read.table("../Misc_datafiles/mapfiles/tool_name_mapping.csv", header=TRUE, sep=",", stringsAsFactors = FALSE, row.names = 1)  
 
   diarrhea_tally_summary <- data.frame(matrix(NA, nrow=ncol(diarrhea_combined_overlap) * max(diarrhea_combined_overlap, na.rm = TRUE), ncol=6))
   colnames(diarrhea_tally_summary) <- c("Num_times_genus_sig", "Percentage", "raw_type", "Distribution", "raw_tool", "Tool")
