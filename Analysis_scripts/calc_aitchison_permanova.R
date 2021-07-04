@@ -81,5 +81,5 @@ for (study in names(filt_study_tab$nonrare)) {
 }
 
 write.table(x = PERMANOVA_output,
-            file = "/home/gavin/projects/hackathon/21_04_7_PERMANOVA_results.tsv",
+            file = "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Misc_datafiles/aitchison_permanova_results.tsv",
             row.names = FALSE, col.names = TRUE, quote = FALSE, sep = "\t")
