@@ -99,7 +99,7 @@ for(study in obesity_studies) {
 
 tool_sampling_p <- list()
   
-num_rep <- 100000
+num_rep <- 1000 * 116
 tool_samplings <- data.frame(matrix(0, nrow = num_rep, ncol = ncol(obesity_outputs_binary_clean_summed)))
 colnames(tool_samplings) <- colnames(obesity_outputs_binary_clean_summed)
   
@@ -150,15 +150,12 @@ for(tool in colnames(obesity_outputs_binary_clean_summed)) {
 
 combined_overlap <- combined_overlap[, sort(colnames(combined_overlap))]
 
-# Ignore all cases of 0
-combined_overlap[combined_overlap ==  0] <- NA
-
 
 # Save key prepped tables.
 saveRDS(object = obesity_outputs_binary_clean_combined,
-        file = "/home/gavin/projects/hackathon/consistency_analysis_RDS_out/obesity_outputs_binary_clean_combined.rds")
+        file = "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Misc_datafiles/consistency_analysis_RDS_out/obesity_outputs_binary_clean_combined.rds")
 
 saveRDS(object = combined_overlap,
-        file = "/home/gavin/projects/hackathon/consistency_analysis_RDS_out/obesity_combined_overlap.rds")
+        file = "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Misc_datafiles/consistency_analysis_RDS_out/obesity_combined_overlap.rds")
 
 

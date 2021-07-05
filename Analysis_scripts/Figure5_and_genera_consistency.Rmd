@@ -35,17 +35,19 @@ library(vegan)
 
 theme_set(theme_classic())
 
+knitr::opts_knit$set(root.dir = '/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/')
+
 
 ```
 
 ```{r read_RDS}
-diarrhea_outputs_binary_clean_combined <- readRDS(file =                                           "/home/gavin/projects/hackathon/consistency_analysis_RDS_out/diarrhea_outputs_binary_clean_combined.rds")
+diarrhea_outputs_binary_clean_combined <- readRDS(file = "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Misc_datafiles/consistency_analysis_RDS_out/diarrhea_outputs_binary_clean_combined.rds")
 
-diarrhea_combined_overlap <- readRDS(file = "/home/gavin/projects/hackathon/consistency_analysis_RDS_out/diarrhea_combined_overlap.rds")
+diarrhea_combined_overlap <- readRDS(file = "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Misc_datafiles/consistency_analysis_RDS_out/diarrhea_combined_overlap.rds")
 
-obesity_outputs_binary_clean_combined <- readRDS(file = "/home/gavin/projects/hackathon/consistency_analysis_RDS_out/obesity_outputs_binary_clean_combined.rds")
+obesity_outputs_binary_clean_combined <- readRDS(file = "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Misc_datafiles/consistency_analysis_RDS_out/obesity_outputs_binary_clean_combined.rds")
 
-obesity_combined_overlap <- readRDS(file = "/home/gavin/projects/hackathon/consistency_analysis_RDS_out/obesity_combined_overlap.rds")
+obesity_combined_overlap <- readRDS(file = "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Misc_datafiles/consistency_analysis_RDS_out/obesity_combined_overlap.rds")
 
 ```
 
@@ -226,7 +228,7 @@ Below are the results for each set of datasets - first as barplots, which enable
 ### Barplots
 
 ```{r diarrhea_all_observed_vs_expected_barplot}
-  tool_mapfile <- read.table("../Misc_datafiles/mapfiles/tool_name_mapping.csv", header=TRUE, sep=",", stringsAsFactors = FALSE, row.names = 1)  
+  tool_mapfile <- read.table("Misc_datafiles/mapfiles/tool_name_mapping.csv", header=TRUE, sep=",", stringsAsFactors = FALSE, row.names = 1)  
 
   diarrhea_tally_summary <- data.frame(matrix(NA, nrow=ncol(diarrhea_combined_overlap) * max(diarrhea_combined_overlap, na.rm = TRUE), ncol=6))
   colnames(diarrhea_tally_summary) <- c("Num_times_genus_sig", "Percentage", "raw_type", "Distribution", "raw_tool", "Tool")
@@ -263,74 +265,82 @@ Below are the results for each set of datasets - first as barplots, which enable
                                 facet_wrap(~Tool, ncol=3) +
                                 xlab("Number of studies where genus was significant") +
                                 ylab("Percentage of significant genera") +
-                                 theme(panel.grid.major = element_blank(),
+                                theme(panel.grid.major = element_blank(),
                                         panel.grid.minor = element_blank(),
                                         strip.background = element_blank(),
-                                        panel.border = element_rect(colour = "black", fill = NA))
+                                        panel.border = element_rect(colour = "black", fill = NA)) +
+                                scale_y_continuous(limits = c(0, 100))
   
   diarrhea_barplots
   
-  ggsave(filename="../Display_items/Main_figures/Figure5.pdf",
+  ggsave(filename="Display_items/Main_figures/Figure5.pdf",
          plot = diarrhea_barplots, width = 7, height=8, units="in", dpi=600)
   
-  ggsave(filename="../Display_items/Main_figures/Figure5.png",
+  ggsave(filename="Display_items/Main_figures/Figure5.png",
          plot = diarrhea_barplots, width = 7, height=8, units="in", dpi=600)
     
 ```
 
-### ks test results
-```{r diarrhea_observed_vs_expected_ks}
+### Empirical fold-change test results
+```{r diarrhea_observed_vs_expected_empirical}
 
- diarrhea_ks_out <- data.frame(matrix(NA, nrow=ncol(diarrhea_outputs_binary_clean_summed), ncol=8))
-  colnames(diarrhea_ks_out) <- c("Tool", "No. sig. genera", "Max overlap", "Mean exp.", "Mean obs.", "fold.change", "D", "P")
-  rownames(diarrhea_ks_out) <- colnames(diarrhea_outputs_binary_clean_summed)
-  diarrhea_ks_out$Tool <- tool_mapfile[colnames(diarrhea_outputs_binary_clean_summed), "clean"]
+ diarrhea_summary_out <- data.frame(matrix(NA, nrow=ncol(diarrhea_outputs_binary_clean_summed), ncol=7))
+  colnames(diarrhea_summary_out) <- c("Tool", "No. sig. genera", "Max overlap", "Mean exp.", "Mean obs.", "fold.change", "P")
+  rownames(diarrhea_summary_out) <- colnames(diarrhea_outputs_binary_clean_summed)
+  diarrhea_summary_out$Tool <- tool_mapfile[colnames(diarrhea_outputs_binary_clean_summed), "clean"]
   
   for(tool in colnames(diarrhea_outputs_binary_clean_summed)) {
     
     exp_name <- paste(tool, "expected", sep=".") 
     obs_name <- paste(tool, "observed", sep=".")
-  
-    raw_diarrhea_ks_out <- ks.boot(Co = diarrhea_combined_overlap[, exp_name],
-                                   Tr = diarrhea_combined_overlap[, obs_name],
-                                   nboots = 10000,
-                                   alternative = "two.sided")
     
-    diarrhea_ks_out[tool, "D"] <- round(raw_diarrhea_ks_out$ks$statistic, 3)
+    expected_distribution <- diarrhea_combined_overlap[, exp_name]
+    expected_distribution[which(expected_distribution == 0)] <- NA
     
-    if(raw_diarrhea_ks_out$ks.boot.pvalue < 0.001) {
-        diarrhea_ks_out[tool, "P"] <- formatC(raw_diarrhea_ks_out$ks.boot.pvalue, format = "e", digits = 2)
-    } else {
-      diarrhea_ks_out[tool, "P"] <- round(raw_diarrhea_ks_out$ks.boot.pvalue, 3)
+    observed_distribution <- diarrhea_combined_overlap[1:nrow(diarrhea_outputs_binary_clean_combined), obs_name]
+    observed_distribution[which(observed_distribution == 0)] <- NA
+    
+    observed_mean <- mean(observed_distribution, na.rm = TRUE)
+    
+    expected_mean_distribution <- c()
+    
+    start_index <- 1
+    for (i in 1:1000) {
+      rep_index_range <- start_index:(nrow(diarrhea_outputs_binary_clean_combined) * i)
+      expected_mean_distribution <- c(expected_mean_distribution, mean(expected_distribution[rep_index_range], na.rm = TRUE))
+      
+      start_index <- start_index + nrow(diarrhea_outputs_binary_clean_combined)
     }
     
-    diarrhea_ks_out[tool, "Mean exp."] <- round(mean(diarrhea_combined_overlap[, exp_name], na.rm = TRUE), 3)
+    diarrhea_summary_out[tool, "P"] <- length(which(expected_mean_distribution > observed_mean)) / length(expected_mean_distribution)
     
-    diarrhea_ks_out[tool, "Mean obs."] <- round(mean(diarrhea_combined_overlap[, obs_name], na.rm = TRUE), 3)
+    diarrhea_summary_out[tool, "Mean exp."] <- round(mean(expected_mean_distribution, na.rm = TRUE), 3)
     
-    diarrhea_ks_out[tool, "fold.change"] <- round(diarrhea_ks_out[tool, "Mean obs."] / diarrhea_ks_out[tool, "Mean exp."], 3)
+    diarrhea_summary_out[tool, "Mean obs."] <- round(observed_mean, 3)
     
-    diarrhea_ks_out[tool, "Max overlap"] <- max(diarrhea_combined_overlap[, obs_name], na.rm = TRUE)
+    diarrhea_summary_out[tool, "fold.change"] <- round(diarrhea_summary_out[tool, "Mean obs."] / diarrhea_summary_out[tool, "Mean exp."], 3)
+    
+    diarrhea_summary_out[tool, "Max overlap"] <- max(observed_distribution, na.rm = TRUE)
     
   }
   
-  if(length(which(diarrhea_ks_out[, "P"] < 0.0001)) > 0) {
-    diarrhea_ks_out[which(diarrhea_ks_out[, "P"] < 0.0001), "P"] <- "< 1e-4"
+  if(length(which(diarrhea_summary_out[, "P"] < 0.001)) > 0) {
+    diarrhea_summary_out[which(diarrhea_summary_out[, "P"] < 0.001), "P"] <- "< 0.001"
   }
   
-  diarrhea_ks_out[, "No. sig. genera"] <- colSums(diarrhea_outputs_binary_clean_summed > 0, na.rm = TRUE)
+  diarrhea_summary_out[, "No. sig. genera"] <- colSums(diarrhea_outputs_binary_clean_summed > 0, na.rm = TRUE)
 
-  rownames(diarrhea_ks_out) <- NULL
+  rownames(diarrhea_summary_out) <- NULL
   
-  diarrhea_ks_out <- arrange(diarrhea_ks_out, desc(fold.change))
+  diarrhea_summary_out <- arrange(diarrhea_summary_out, desc(fold.change))
     
-  colnames(diarrhea_ks_out)[which(colnames(diarrhea_ks_out) == "fold.change")] <- "Fold diff."
+  colnames(diarrhea_summary_out)[which(colnames(diarrhea_summary_out) == "fold.change")] <- "Fold diff."
   
-  diarrhea_ks_out %>%
+  diarrhea_summary_out %>%
       kable(digits=5) %>%
       kable_styling() 
   
-  write.table(x = diarrhea_ks_out, file = "../Display_items/Tables/Table2_diarrhea_consistency.tsv", col.names = TRUE, row.names = FALSE, sep="\t", quote = FALSE)
+  write.table(x = diarrhea_summary_out, file = "Display_items/Tables/Table2_diarrhea_consistency.tsv", col.names = TRUE, row.names = FALSE, sep="\t", quote = FALSE)
 ```
 
 
@@ -378,66 +388,74 @@ Below are the results for each set of datasets - first as barplots, which enable
                                  theme(panel.grid.major = element_blank(),
                                         panel.grid.minor = element_blank(),
                                         strip.background = element_blank(),
-                                        panel.border = element_rect(colour = "black", fill = NA))
+                                        panel.border = element_rect(colour = "black", fill = NA)) +
+                                scale_y_continuous(limits = c(0, 100))
   
   obesity_barplots
 ```
 
 
-### ks test results
+### Empirical fold-change test results
 
-```{r obesity_observed_vs_expected_ks}
+```{r obesity_observed_vs_expected_empericial}
 
-obesity_ks_out <- data.frame(matrix(NA, nrow=ncol(obesity_outputs_binary_clean_summed), ncol=8))
-  colnames(obesity_ks_out) <- c("Tool", "No. sig. genera", "Max overlap", "Mean exp.", "Mean obs.", "fold.change", "D", "P")
-  rownames(obesity_ks_out) <- colnames(obesity_outputs_binary_clean_summed)
-  obesity_ks_out$Tool <- tool_mapfile[colnames(obesity_outputs_binary_clean_summed), "clean"]
+ obesity_summary_out <- data.frame(matrix(NA, nrow=ncol(obesity_outputs_binary_clean_summed), ncol=7))
+  colnames(obesity_summary_out) <- c("Tool", "No. sig. genera", "Max overlap", "Mean exp.", "Mean obs.", "fold.change", "P")
+  rownames(obesity_summary_out) <- colnames(obesity_outputs_binary_clean_summed)
+  obesity_summary_out$Tool <- tool_mapfile[colnames(obesity_outputs_binary_clean_summed), "clean"]
   
   for(tool in colnames(obesity_outputs_binary_clean_summed)) {
     
     exp_name <- paste(tool, "expected", sep=".") 
     obs_name <- paste(tool, "observed", sep=".")
-  
-    raw_obesity_ks_out <- ks.boot(Co = obesity_combined_overlap[, exp_name],
-                                   Tr = obesity_combined_overlap[, obs_name],
-                                   nboots = 1000,
-                                   alternative = "two.sided")
     
-    obesity_ks_out[tool, "D"] <- round(raw_obesity_ks_out$ks$statistic, 3)
+    expected_distribution <- obesity_combined_overlap[, exp_name]
+    expected_distribution[which(expected_distribution == 0)] <- NA
     
-    if(raw_obesity_ks_out$ks.boot.pvalue < 0.001) {
-        obesity_ks_out[tool, "P"] <- formatC(raw_obesity_ks_out$ks.boot.pvalue, format = "e", digits = 2)
-    } else {
-      obesity_ks_out[tool, "P"] <- round(raw_obesity_ks_out$ks.boot.pvalue, 3)
+    observed_distribution <- obesity_combined_overlap[1:nrow(obesity_outputs_binary_clean_combined), obs_name]
+    observed_distribution[which(observed_distribution == 0)] <- NA
+    
+    observed_mean <- mean(observed_distribution, na.rm = TRUE)
+    
+    expected_mean_distribution <- c()
+    
+    start_index <- 1
+    for (i in 1:1000) {
+      rep_index_range <- start_index:(nrow(obesity_outputs_binary_clean_combined) * i)
+      expected_mean_distribution <- c(expected_mean_distribution, mean(expected_distribution[rep_index_range], na.rm = TRUE))
+      
+      start_index <- start_index + nrow(obesity_outputs_binary_clean_combined)
     }
     
-    obesity_ks_out[tool, "Mean exp."] <- round(mean(obesity_combined_overlap[, exp_name], na.rm = TRUE), 3)
+    obesity_summary_out[tool, "P"] <- length(which(expected_mean_distribution > observed_mean)) / length(expected_mean_distribution)
     
-    obesity_ks_out[tool, "Mean obs."] <- round(mean(obesity_combined_overlap[, obs_name], na.rm = TRUE), 3)
+    obesity_summary_out[tool, "Mean exp."] <- round(mean(expected_mean_distribution, na.rm = TRUE), 3)
     
-    obesity_ks_out[tool, "fold.change"] <- round(obesity_ks_out[tool, "Mean obs."] / obesity_ks_out[tool, "Mean exp."], 3)
+    obesity_summary_out[tool, "Mean obs."] <- round(observed_mean, 3)
     
-    obesity_ks_out[tool, "Max overlap"] <- max(obesity_combined_overlap[, obs_name], na.rm = TRUE)
+    obesity_summary_out[tool, "fold.change"] <- round(obesity_summary_out[tool, "Mean obs."] / obesity_summary_out[tool, "Mean exp."], 3)
+    
+    obesity_summary_out[tool, "Max overlap"] <- max(observed_distribution, na.rm = TRUE)
     
   }
   
-  if(length(which(obesity_ks_out[, "P"] == 0)) > 0) {
-    obesity_ks_out[which(obesity_ks_out[, "P"] == 0), "P"] <- "< 1e-4"
+  if(length(which(obesity_summary_out[, "P"] < 0.001)) > 0) {
+    obesity_summary_out[which(obesity_summary_out[, "P"] < 0.001), "P"] <- "< 0.001"
   }
   
-  obesity_ks_out[, "No. sig. genera"] <- colSums(obesity_outputs_binary_clean_summed > 0, na.rm = TRUE)
+  obesity_summary_out[, "No. sig. genera"] <- colSums(obesity_outputs_binary_clean_summed > 0, na.rm = TRUE)
 
-  rownames(obesity_ks_out) <- NULL
+  rownames(obesity_summary_out) <- NULL
   
-  obesity_ks_out <- arrange(obesity_ks_out, desc(fold.change))
+  obesity_summary_out <- arrange(obesity_summary_out, desc(fold.change))
     
-  colnames(obesity_ks_out)[which(colnames(obesity_ks_out) == "fold.change")] <- "Fold diff."
+  colnames(obesity_summary_out)[which(colnames(obesity_summary_out) == "fold.change")] <- "Fold diff."
   
-    obesity_ks_out %>%
+  obesity_summary_out %>%
       kable(digits=5) %>%
       kable_styling() 
   
-  write.table(x = obesity_ks_out, file = "../Display_items/Tables/Supp_obesity_consistency.tsv", col.names = TRUE, row.names = FALSE, sep="\t", quote = FALSE)
+  write.table(x = obesity_summary_out, file = "Display_items/Tables/Supp_obesity_consistency.tsv", col.names = TRUE, row.names = FALSE, sep="\t", quote = FALSE)
 ```
 
 
