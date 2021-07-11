@@ -72,7 +72,7 @@ tool_names <- c(aldex2="ALDEx2", ancom="ANCOM-II", corncob="corncob", deseq2="DE
 
 
 Metadata_renames <- c(log_N="log(Sample size)", R.squared="Aitchson's Dist. Effect Size", log_R.squared="log(Aitch. dist. effect size)", Sparsity="Sparsity", Richness="Richness",
-                      log_Depth="log(Max read depth)", log_Depth_range="log(Read depth range)", CoV_Depth="Read depth variation", percent_chimera="% chimeras", filtered_out_percent = "% below prev. cut-off")
+                      log_Depth="log(Max read depth)", log_Depth_range="log(Read depth range)", CoV_Depth="Read depth variation", filtered_out_percent = "% below prev. cut-off")
 ```
 
 # Functions
@@ -258,8 +258,8 @@ names(filt_results) <- hackathon_study_ids
 unfilt_results <- lapply(hackathon_study_ids, read_hackathon_results, results_folder = "No_filt_Results")
 names(unfilt_results) <- hackathon_study_ids
 
-#saveRDS(filt_results, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/Filt_results_21_04_07.RDS")
-#saveRDS(unfilt_results, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/Unfilt_results_21_04_07.RDS")
+saveRDS(filt_results, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/Filt_results_21_04_07.RDS")
+saveRDS(unfilt_results, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/Unfilt_results_21_04_07.RDS")
 
 ```
 
@@ -329,8 +329,8 @@ for (study in hackathon_study_ids){
   }
 }
 
-#saveRDS(unfilt_study_tab, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/unfilt_study_tab_21_04_07.RDS")
-#saveRDS(filt_study_tab, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/filt_study_tab_21_04_07.RDS")
+saveRDS(unfilt_study_tab, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/unfilt_study_tab_21_04_07.RDS")
+saveRDS(filt_study_tab, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/filt_study_tab_21_04_07.RDS")
 ```
 
 # Figure 1 Analysis
@@ -456,7 +456,7 @@ Calc_Other_community_metrics <- function(List_tab){
 # Quickly calculate what percentage of ASVs were filtered out for the filtered tables.
 # Note that this is computed for the nonrare tables only as these are the only values used
 # in the manuscript for these analyses.
-Calc_richess_diff_between_filt_and_unfilt  <- function(filt_tab, unfilt_tab){
+Calc_percent_in_unfilt_only  <- function(filt_tab, unfilt_tab){
   
   prev_under_10percent.prev <- c()
 
@@ -466,7 +466,7 @@ Calc_richess_diff_between_filt_and_unfilt  <- function(filt_tab, unfilt_tab){
     
     unfilt_ASV_count <- nrow(unfilt_tab[["nonrare"]][[study]])
     
-    prev_under_10percent.prev <- c(prev_under_10percent.prev, (unfilt_ASV_count - filt_ASV_count) / unfilt_ASV_count) * 100
+    prev_under_10percent.prev <- c(prev_under_10percent.prev, ((unfilt_ASV_count - filt_ASV_count) / unfilt_ASV_count) * 100)
     
   }
   
@@ -482,8 +482,8 @@ Calc_richess_diff_between_filt_and_unfilt  <- function(filt_tab, unfilt_tab){
 filt_community_metrics <- Calc_Other_community_metrics(filt_study_tab)
 unfilt_community_metrics <- Calc_Other_community_metrics(unfilt_study_tab)
 
-unfilt_percent_under_10percent.prevalence <- Calc_richess_diff_between_filt_and_unfilt(filt_tab = filt_study_tab,
-                                                                                       unfilt_tab = unfilt_study_tab)
+unfilt_percent_under_10percent.prevalence <- Calc_percent_in_unfilt_only(filt_tab = filt_study_tab,
+                                                                       unfilt_tab = unfilt_study_tab)
 
 ### generate tables
 filt_rare_metrics_df <- do.call(rbind, filt_community_metrics[[1]])
@@ -604,13 +604,6 @@ fixed_hackathon_metadata_filt$R.squared <- aitchison_permanova[rownames(fixed_ha
 # log r2 values for visualization purposes
 fixed_hackathon_metadata_filt$log_R.squared <- log(fixed_hackathon_metadata_filt$R.squared)
 
-
-# Load in % chimera results
-percent_chimera <- read.table("/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Misc_datafiles/uchime_ref_chimera_parsing/uchime_ref_chimera_percents.tsv",
-                              header = TRUE, sep = "\t", row.names = 1)
-
-fixed_hackathon_metadata_filt$percent_chimera <- percent_chimera[rownames(fixed_hackathon_metadata_filt), "filt_nonrare"]
-
 ## attach other dataset statistics that we calculated above
 
 sort_filt_nonrare_metrics_df <- filt_nonrare_metrics_df[rownames(fixed_hackathon_metadata_filt),,drop=F]
@@ -673,7 +666,7 @@ filt_ASV_nums <- pheatmap(t(Alpha_order_filt),
                          display_numbers=t(order_raw_count_df),
                          annotation_row=fixed_hackathon_metadata_filt[, c("log(Sample size)", "log(Aitch. dist. effect size)", 
                                                                      "Sparsity", "Richness", "Read depth variation", 
-                                                                     "log(Read depth range)", "% chimeras"), drop=FALSE],
+                                                                     "log(Read depth range)"), drop=FALSE],
                          annotation_legend=FALSE,
                          legend_labels = "% sig. features",
                          treeheight_col = 0,
@@ -705,9 +698,6 @@ fixed_hackathon_metadata_unfilt$R.squared <- aitchison_permanova[rownames(fixed_
 
 #set log R2 values into metadata sheet
 fixed_hackathon_metadata_unfilt$log_R.squared <- log(fixed_hackathon_metadata_unfilt$R.squared)
-
-# Get percent chimeras
-fixed_hackathon_metadata_unfilt$percent_chimera <- percent_chimera[rownames(fixed_hackathon_metadata_unfilt), "unfilt_nonrare"]
 
 ## attach other dataset statistics
 
@@ -755,7 +745,7 @@ unfilt_ASV_nums <- pheatmap(t(Alpha_order_unfilt),
                            display_numbers=t(fix_raw_counts_unfilt),
                            annotation_row=fixed_hackathon_metadata_unfilt[, c("log(Sample size)", "log(Aitch. dist. effect size)", 
                                                                        "Sparsity", "Richness", "Read depth variation", 
-                                                                       "log(Read depth range)", "% chimeras", "% below prev. cut-off"), drop=FALSE],
+                                                                       "log(Read depth range)", "% below prev. cut-off"), drop=FALSE],
                            annotation_legend=FALSE,
                            treeheight_col = 0,
                            cluster_cols = FALSE,
@@ -795,17 +785,23 @@ fixed_hackathon_metadata_filt <- fixed_hackathon_metadata_filt[rownames(filt_sig
 filt_rhos <- list()
 filt_ps <- list()
 
+filt_dataset_characteristics <- c("log(Sample size)", "Aitchson's Dist. Effect Size", "log(Aitch. dist. effect size)",
+                                  "Sparsity", "Richness", "log(Max read depth)", "log(Read depth range)", "Read depth variation")
+
 #loop through each tool
 for(i in 1:length(colnames(filt_sig_percent_fix))){
   ## set vectors that contain the pvals and rho values between that tools results and the metadata character.
   temp_pvals <- vector()
   temp_rhos <- vector()
   
-  #go through a total of 7 different dataset characteristics
-  for(j in 1:9){
+  #go through all different dataset characteristics
+  for(filt_characteristic_i in 1:length(filt_dataset_characteristics)) {
     # run correlation on each column of metadata and each tool
-    temp_pvals[[j]] <- cor.test(filt_sig_percent_fix[,i], fixed_hackathon_metadata_filt[,(j+29)], method="spearman", exact=F)$p.value
-    temp_rhos[[j]] <- cor.test(filt_sig_percent_fix[,i], fixed_hackathon_metadata_filt[,(j+29)], method="spearman", exact=F)$estimate
+
+    temp_pvals[[filt_characteristic_i]] <- cor.test(filt_sig_percent_fix[,i], fixed_hackathon_metadata_filt[, filt_dataset_characteristics[filt_characteristic_i]],
+                                                    method="spearman", exact=F)$p.value
+    temp_rhos[[filt_characteristic_i]] <- cor.test(filt_sig_percent_fix[,i], fixed_hackathon_metadata_filt[, filt_dataset_characteristics[filt_characteristic_i]],
+                                                   method="spearman", exact=F)$estimate
   }
   ## add the results to the final table list
   filt_rhos[[i]] <- temp_rhos
@@ -830,8 +826,8 @@ filt_rhos_df <- filt_rhos_df[sort(rownames(filt_rhos_df)), ]
 filt_pvals_df <- filt_pvals_df[sort(rownames(filt_pvals_df)), ]
 
 #set column names to the correct metadata names
-colnames(filt_rhos_df) <- colnames(fixed_hackathon_metadata_filt)[30:38]
-colnames(filt_pvals_df) <- colnames(fixed_hackathon_metadata_filt)[30:38]
+colnames(filt_rhos_df) <- filt_dataset_characteristics
+colnames(filt_pvals_df) <- filt_dataset_characteristics
 
 #generate corrplot of the results using df that has rho values and then filter by df with pvals
 identical(rownames(filt_rhos_df), rownames(filt_pvals_df))
@@ -842,6 +838,10 @@ corrplot(filt_rhos_df[,-3], p.mat = filt_pvals_df[,-3], sig.level = 0.05, insig 
 
 
 ### unfilt
+unfilt_dataset_characteristics <- c("log(Sample size)", "Aitchson's Dist. Effect Size", "log(Aitch. dist. effect size)",
+                                  "Sparsity", "Richness", "log(Max read depth)", "log(Read depth range)",
+                                  "Read depth variation", "% below prev. cut-off")
+
 unfilt_sig_percent_fix <- unfilt_sig_percent[,-1]
 
 #fix dataset names
@@ -858,10 +858,12 @@ for(i in 1:length(colnames(unfilt_sig_percent_fix))){
   temp_pvals_unfilt <- vector()
   temp_rhos_unfilt <- vector()
   
-  for(j in 1:10){
-    # run correlation of column
-    temp_pvals_unfilt[[j]] <- cor.test(unfilt_sig_percent_fix[,i], fixed_hackathon_metadata_unfilt[,(j+29)], method="spearman", exact=F)$p.value
-    temp_rhos_unfilt[[j]] <- cor.test(unfilt_sig_percent_fix[,i], fixed_hackathon_metadata_unfilt[,(j+29)], method="spearman", exact=F)$estimate
+  #go through all different dataset characteristics
+  for(unfilt_characteristic_i in 1:length(unfilt_dataset_characteristics)) {
+    temp_pvals_unfilt[[unfilt_characteristic_i]] <- cor.test(unfilt_sig_percent_fix[,i], fixed_hackathon_metadata_unfilt[, unfilt_dataset_characteristics[unfilt_characteristic_i]],
+                                                             method="spearman", exact=F)$p.value
+    temp_rhos_unfilt[[unfilt_characteristic_i]] <- cor.test(unfilt_sig_percent_fix[,i], fixed_hackathon_metadata_unfilt[, unfilt_dataset_characteristics[unfilt_characteristic_i]],
+                                                            method="spearman", exact=F)$estimate
   }
   
   unfilt_rhos[[i]] <- temp_rhos_unfilt
@@ -881,8 +883,8 @@ rownames(unfilt_pvals_df) <- tool_rename[rownames(unfilt_pvals_df)]
 unfilt_rhos_df <- unfilt_rhos_df[sort(rownames(unfilt_rhos_df)), ]
 unfilt_pvals_df <- unfilt_pvals_df[sort(rownames(unfilt_pvals_df)), ]
 
-colnames(unfilt_rhos_df) <- colnames(fixed_hackathon_metadata_unfilt)[30:39]
-colnames(unfilt_pvals_df) <- colnames(fixed_hackathon_metadata_unfilt)[30:39]
+colnames(unfilt_rhos_df) <- unfilt_dataset_characteristics
+colnames(unfilt_pvals_df) <- unfilt_dataset_characteristics
 
 
 corrplot(as.matrix(unfilt_rhos_df[,-3]), p.mat = unfilt_pvals_df[,-3], sig.level = 0.05, insig = "blank", full_col = FALSE)
