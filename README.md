@@ -99,5 +99,5 @@ However, we also included several analyses to help gauge the false positive rate
 
 #### Expected Output
 
-  * We have included the expected results from running the Human-ALL dataset (MALL dataset). This can be found in the Expected_MALL_output folder.
+  * We have included the expected results from running the Human-ALL dataset (MALL dataset). This can be found in the Misc_datafiles/Expected_MALL_output folder.
   * Running this dataset should take ~20 minutes on a modern cpu using a single core. This was tested on linux ubuntu 16.04

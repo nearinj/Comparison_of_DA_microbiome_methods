@@ -22,7 +22,7 @@ for (study in diarrhea_studies) {
 
 # Fix genera labels, including stripping full taxonomy from Duvallet datasets.
 # Also, Lefse converted several genera names to the wrong format.
-fixed_lefse_ids <- read.table("/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/mapfiles/diarrhea_lefse_misformatted_ids.txt",
+fixed_lefse_ids <- read.table("/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Misc_datafiles/mapfiles/diarrhea_lefse_misformatted_ids.txt",
                               header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 
 fixed_lefse_ids <- fixed_lefse_ids[-which(duplicated(fixed_lefse_ids$raw)), ]
@@ -146,7 +146,7 @@ for (study in diarrhea_studies) {
 
 tool_sampling_p <- list()
   
-num_rep <- 100000
+num_rep <- 1000 * nrow(diarrhea_outputs_binary_clean_summed)
 tool_samplings <- data.frame(matrix(0, nrow = num_rep, ncol = ncol(diarrhea_outputs_binary_clean_summed)))
 colnames(tool_samplings) <- colnames(diarrhea_outputs_binary_clean_summed)
   
@@ -197,13 +197,9 @@ for (tool in colnames(diarrhea_outputs_binary_clean_summed)) {
 
 combined_overlap <- combined_overlap[, sort(colnames(combined_overlap))]
 
-# Ignore all cases of 0
-combined_overlap[combined_overlap ==  0] <- NA
-
-
 # Save key prepped tables.
 saveRDS(object = diarrhea_outputs_binary_clean_combined,
-        file = "/home/gavin/projects/hackathon/consistency_analysis_RDS_out/diarrhea_outputs_binary_clean_combined.rds")
+        file = "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Misc_datafiles/consistency_analysis_RDS_out/diarrhea_outputs_binary_clean_combined.rds")
 
 saveRDS(object = combined_overlap,
-        file = "/home/gavin/projects/hackathon/consistency_analysis_RDS_out/diarrhea_combined_overlap.rds")
+        file = "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Misc_datafiles/consistency_analysis_RDS_out/diarrhea_combined_overlap.rds")
