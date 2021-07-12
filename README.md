@@ -10,11 +10,18 @@ However, we also included several analyses to help gauge the false positive rate
 
 #### Repository organization
 
-* *Analyis_scripts* contains R notebooks describing the key analyses run to produce the results presented in our manuscript. These are split up by each type of analysis (which is mainly indicated by figure number).
+* _**Analyis_scripts**_ contains R notebooks describing the key analyses run to produce the results presented in our manuscript. These are split up by each type of analysis (which is mainly indicated by figure number).
 
-* *Figures* contains PDFs of the manuscript figures.
+* _**Figures**_ contains PDFs of the manuscript figures.
 
-* *Pipeline_scripts*: Contains all bash and R scripts for running each tool on each dataset. The idea with these scripts was to make it simple to run all tools automatically on each dataset and to easily add additional datasets without more overhead. The key script is "run_all_tools.sh" for running all tools on a given dataset.
+* _**Misc_datafiles**_ contains several different datafiles:
+  * Example output of differential abundance tools (_Expected_MALL_output_)
+  * Intermediate files for genera consistency analysis (_consistency_analysis_RDS_out_)
+  * Mapfiles, which primarily are there to enable quick conversion between working and clean study and tool names (_mapfiles_)
+  * Chimera checking output files (_uchime_ref_chimera_parsing_)
+  * Results of PERMANOVA tests based on Aitchison distance (_aitchison_permanova_results.tsv_)
+
+* _**Pipeline_scripts**_ contains all bash and R scripts for running each tool on each dataset. The idea with these scripts was to make it simple to run all tools automatically on each dataset and to easily add additional datasets without more overhead. The key script is "run_all_tools.sh" for running all tools on a given dataset.
   
   
 #### Running the analysis
