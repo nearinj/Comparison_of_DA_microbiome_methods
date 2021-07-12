@@ -54,7 +54,9 @@ However, we also included several analyses to help gauge the false positive rate
     * run_FP_unfilt_EXT.sh --> runs an additional 90 replicates for the unfilt FP analysis on all tools except for ANCOM, ALDEx2, and corncob.
   
 #### Docker Image  
-  A docker image with the correct versions is currently being designed to assist with this. 
+  A docker image with the correct versions of all the tools is available at https://hub.docker.com/r/dockerdkd/hackathon2021.
+  For more information on how to access and use the docker image check out this wiki page.
+ 
   
 #### Analysis scripts
   Additional packages were used during the analysis of the resulting tables from the "run_all_tools.sh" script
