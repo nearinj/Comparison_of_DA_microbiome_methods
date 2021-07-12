@@ -1,0 +1,303 @@
+---
+title: "Discriminatory Analysis"
+author: "Jacob T. Nearing"
+date: "7/6/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/")
+
+library(ROCR)
+library(pheatmap)
+
+Data_set_names <- c(ArcticFireSoils="Soil - Fires",
+                         ArcticFreshwaters="Freshwater - Arctic",
+                         ArcticTransects="Soil - Arctic",
+                         art_scher="Human - RA",
+                         asd_son= "Human - ASD",
+                         BISCUIT= "Human - CD (1)",
+                         Blueberry= "Soil - Blueberry",
+                         cdi_schubert="Human - C. diff (1)",
+                         cdi_vincent="Human - C. diff (2)",
+                         Chemerin="Mouse Facilities",
+                         crc_baxter="Human - CC (1)",
+                         crc_zeller="Human - CC (2)",
+                         edd_singh="Human - Inf.",
+                         Exercise="Mouse - Exercised",
+                         glass_plastic_oberbeckmann="Marine - Plastic (4)",
+                         GWMC_ASIA_NA="WWSR - Continents",
+                         GWMC_HOT_COLD="WWSR - Temp.",
+                         hiv_dinh="Human - HIV (1)",
+                         hiv_lozupone="Human - HIV (2)",
+                         hiv_noguerajulian="Human - HIV (3)",
+                         ibd_gevers="Human - CD (2)",
+                         ibd_papa="Human - IBD",
+                         Ji_WTP_DS="Freshwater - Treat.",
+                         MALL="Human - ALL",
+                         ob_goodrich="Human - OB (1)",
+                         ob_ross="Human - OB (2)",
+                         ob_turnbaugh="Human - OB (3)",
+                         ob_zhu="Human - OB (4)",
+                         ###"ob_zupancic",
+                         Office="Built - Office",
+                         par_scheperjans="Human - Par.",
+                         sed_plastic_hoellein="Marine - Plastic (2)",
+                         sed_plastic_rosato="Marine - Plastic (5)",
+                         seston_plastic_mccormick="River - Plastic",
+                         sw_plastic_frere="Marine - Plastic (1)",
+                         sw_sed_detender="Marine - Sediment",
+                          t1d_alkanani="Human - T1D (1)",
+                         t1d_mejialeon="Human - T1D (2)",
+                         wood_plastic_kesy="Marine - Plastic (3)")
+
+tool_names <- c(aldex2="ALDEx2", ancom="ANCOM-II", corncob="corncob", deseq2="DESeq2", edger="edgeR", lefse="LEfSe", 
+                limma_voom_TMM="limma voom (TMM)", limma_voom_TMMwsp="limma voom (TMMwsp)", maaslin2="MaAsLin2",
+                maaslin2rare="MaAsLin2 (rare)", metagenomeSeq="metagenomeSeq", ttestrare="t-test (rare)", 
+                wilcoxonclr="Wilcoxon (CLR)", wilcoxonrare="Wilcoxon (rare)")
+
+
+## function to read in all the metadata files
+read_metadata <- function(study_list){
+  ret_meta <- list()
+  
+  for(i in 1:length(study_list)){
+    
+    meta_file <- list.files(study_list[i], pattern="*_meta*")
+    meta_file_name <- paste(study_list[i], meta_file, sep="/")
+    message(meta_file_name)
+    ret_meta[[study_list[i]]] <- read.table(meta_file_name, header=T, sep="\t", comment.char="", quote="", check.names = F, row.names = 1)
+  }
+  return(ret_meta)
+}
+```
+
+## load in data
+
+```{r}
+filt_results <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Filt_results_21_04_07.RDS")
+unfilt_results <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Unfilt_results_21_04_07.RDS")
+
+unfilt_study_tab  <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/unfilt_study_tab_21_04_07.RDS")
+filt_study_tab <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/filt_study_tab_21_04_07.RDS")
+
+## load in data classes
+hackathon_study_ids <- c("ArcticFireSoils",
+                         "ArcticFreshwaters",
+                         "ArcticTransects",
+                         "art_scher",
+                         "asd_son",
+                         "BISCUIT",
+                         "Blueberry",
+                         "cdi_schubert",
+                         "cdi_vincent",
+                         "Chemerin",
+                         "crc_baxter",
+                         "crc_zeller",
+                         "edd_singh",
+                         "Exercise",
+                         "glass_plastic_oberbeckmann",
+                         "GWMC_ASIA_NA",
+                         "GWMC_HOT_COLD",
+                         "hiv_dinh",
+                         "hiv_lozupone",
+                         "hiv_noguerajulian",
+                         "ibd_gevers",
+                         "ibd_papa",
+                         "Ji_WTP_DS",
+                         "MALL",
+                         "ob_goodrich",
+                         "ob_ross",
+                         "ob_turnbaugh",
+                         "ob_zhu",
+                         ###"ob_zupancic",
+                         "Office",
+                         "par_scheperjans",
+                         "sed_plastic_hoellein",
+                         "sed_plastic_rosato",
+                         "seston_plastic_mccormick",
+                         "sw_plastic_frere",
+                         "sw_sed_detender",
+                          "t1d_alkanani",
+                         "t1d_mejialeon",
+                         "wood_plastic_kesy")
+
+
+metadata <- read_metadata(hackathon_study_ids)
+```
+
+## test
+
+First lets try this on a single dataset
+```{r}
+## first function takes in p-value table and the corresponding table
+## we will first just do R.A. and than we will add in other normalizations
+get_discrim <- function(p_tab, study_tab, meta, norm_type="R.A."){
+  
+  #set all significant hits to value of 2
+  p_tab_fix <- p_tab
+  
+  ## 2 represents a significant hit
+  p_tab_fix[p_tab_fix < 0.05 ] <- 2
+  
+  ## anything that is not 2 (sig hit) we set as 0 (i.e. negative result)
+  p_tab_fix[p_tab_fix != 2 ] <- 0
+  
+  # anything taht was 2 (sig hit) we set as 1 (i.e. positive result)
+  p_tab_fix[p_tab_fix == 2] <- 1
+  
+  ## value of 0 is non-sig, value of 1 is sig
+  message("set up p-tabs")
+  ## this list will contain lists for tool and the resulting AUROC
+  disc_res <- list()
+  ### we have to go through in column of p_tab
+  for(i in 1:length(colnames(p_tab_fix))){
+    
+    ## for this tool we need to get the ID of all sig hits
+    message("entered loop")
+    sig_feats <- rownames(p_tab_fix)[which(p_tab_fix[, i] == 1)]
+    message(length(sig_feats))
+    tool <- colnames(p_tab_fix)[i]
+    ## okay for each sig feat
+    
+ 
+    
+    
+    #for now we won't worry about it but eventually depending on tool name we will have to do different normalization on the table
+    message("normalizing table")
+    if(norm_type=="R.A"){
+          study_tab_norm <- sweep(study_tab, 2, colSums(study_tab), '/')
+    }
+    ### for now we will just have R.A. until we start adding more norm types
+    else if(norm_type=="CLR"){
+      study_tab_norm <- data.frame(apply(study_tab + 1, 2, function(x) {log(x) - mean (log(x))} ), check.names = F)
+    }else{
+      message("Please pick a normalization method")
+      stop()
+    }
+    
+    #okay now we need to take each sig feat and make a prediction
+    # vector that contains auroc_res
+    auroc_res <- vector()
+    
+    if(!identical(colnames(study_tab_norm), rownames(meta))){
+      rows_to_keep <- intersect(colnames(study_tab_norm), rownames(meta))
+      meta <- meta[rows_to_keep,,drop=F]
+      study_tab_norm <- study_tab_norm[,rows_to_keep]
+    }
+    message(tool)
+    if(length(sig_feats)==0){
+      message("No hits for this tool")
+      disc_res[[tool]] <- NULL
+    }else{
+      message(length(sig_feats))
+      for(i in 1:length(sig_feats)){
+        test_data <- as.numeric(study_tab_norm[sig_feats[i],])
+        #return(list(test_data, meta))
+        ### one issue is that the prediction assumes that a higher number is indicative of the second class
+        ### this is obviously not what we want in this analysis as the microbe could be up or down in either class
+        ### we will need to fix this when calculating the auroc performance
+        ### as such we will subtract the result from 0.5 and take the abs and than add 0.5 back. 
+        ### this will give us classification performance in either direction.
+        test_pred <- prediction(predictions = test_data, labels = meta[,1])
+        test_perf <- performance(test_pred, measure="auc")
+        test_result <- abs(0.5 - as.numeric(test_perf@y.values[1])) + 0.5
+        auroc_res <- c(auroc_res, test_result)
+      
+      }
+    }
+    disc_res[[tool]] <- auroc_res
+    
+  }
+  return(disc_res)
+}
+
+# we will do it on rarified data to begin with b/c why not!
+test_test <- get_discrim(p_tab = filt_results[[4]][[2]], study_tab = filt_study_tab[[2]][[4]], meta = metadata[[4]], norm_type = "CLR")
+test_test[[1]]
+## 16th seems to be all NA? (I bet its because it was removed in the rarified data so it cannot be tested
+## OHHHH lets run it with non-rar data)
+test <- prediction(predictions = test_test[[1]], labels = test_test[[2]]$comparison)
+test <- performance(test, measure = "auc")
+test
+```
+
+
+## Generate AUROC for R.A. data
+```{r}
+AUROC_R.A_res <- list()
+
+for(i in names(filt_results)){
+  AUROC_R.A_res[[i]] <- get_discrim(filt_results[[i]][[2]], study_tab = filt_study_tab[[2]][[i]],
+                                         metadata[[i]], norm_type = "R.A")
+  
+}
+saveRDS(AUROC_R.A_res, "~/GitHub_Repos/Clean_Hackathon/Data/AUROC_RA_res.RDS")
+## failed on art_scher
+```
+
+## Generate AUROC for CLR data
+```{r}
+AUROC_CLR_res <- list()
+
+
+for(i in names(filt_results)){
+  AUROC_CLR_res[[i]] <- get_discrim(filt_results[[i]][[2]], study_tab = filt_study_tab[[2]][[i]],
+                                         metadata[[i]], norm_type = "CLR")
+  
+}
+saveRDS(AUROC_CLR_res, "~/GitHub_Repos/Clean_Hackathon/Data/AUROC_CLR_res.RDS")
+```
+
+## heatmap generation 
+
+### RA heatmap
+Heat map will be of mean
+```{r}
+mean_AUROC_RA <- list()
+AUROC_R.A_res <- readRDS("~/GitHub_Repos/Clean_Hackathon/Data/AUROC_RA_res.RDS")
+
+for(i in 1:length(AUROC_R.A_res)){
+    mean_vals <- vector()
+    # get mean for each tool and put it into vector.
+    for(j in 1:length(AUROC_R.A_res[[i]])){
+      val <- mean(AUROC_R.A_res[[i]][[j]])
+      mean_vals <- c(mean_vals, val)
+    }
+    mean_AUROC_RA[[i]] <- mean_vals
+}
+
+mean_AUROC_RA[[1]]
+
+
+mean_AUROC_RA_df <- do.call(rbind, mean_AUROC_RA)
+colnames(mean_AUROC_RA_df) <- c("ALDEx2", "ANCOM-II", "corncob", "DESeq2", "edgeR", "LEfSe", "MaAsLin2", "MaAsLin2 (rare)", 
+                                 "metagenomeSeq", "t-test (rare)", "Wilcoxon (CLR)", "Wilcoxon (rare)", "limma voom (TMM)",
+                                 "limma voom (TMMwsp)")
+
+
+rownames(mean_AUROC_RA_df) <- names(AUROC_R.A_res)
+flip_mean_AUROC_RA_df <- data.frame(t(mean_AUROC_RA_df), check.rows = F, check.names = F)
+
+colnames(flip_mean_AUROC_RA_df) <- Data_set_names[colnames(flip_mean_AUROC_RA_df)]
+colnames(flip_mean_AUROC_RA_df)
+ordered_flip_mean_AUROC_RA_df <- flip_mean_AUROC_RA_df[sort(rownames(flip_mean_AUROC_RA_df)),]
+scaled_ordered_flip_mean_AUROC_RA_df <- scale(ordered_flip_mean_AUROC_RA_df, center=T, scale=T)
+
+Unscaled_AUROC_RA_heat <- pheatmap(t(ordered_flip_mean_AUROC_RA_df),
+                 cluster_cols = F, na_col = "black",
+                 main="Raw")
+
+### then another one that is standardized
+Scaled_AUROC_RA_heat <- pheatmap(t(scaled_ordered_flip_mean_AUROC_RA_df),
+                                 cluster_cols = F, na_col = "black",
+                                 main="Scaled")
+
+combined_plot <- cowplot::plot_grid(Unscaled_AUROC_RA_heat[[4]], Scaled_AUROC_RA_heat[[4]],
+                                    ncol=1)
+combined_plot
+```
+
+### heatmap CLR

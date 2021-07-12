@@ -177,6 +177,17 @@ depth=0
 ALDEX_SKIP=F
 CORNCOB_SKIP=F
 ANCOM_SKIP=F
+DESEQ2_SKIP=F
+LEFSE_SKIP=F
+WILCOX_RARE_SKIP=F
+WILCOX_CLR_SKIP=F
+MAASLIN_RARE_SKIP=F
+MAASLIN_SKIP=F
+METAGENOME_SKIP=F
+EDGER_SKIP=F
+TTEST_RARE_SKIP=F
+LIMMA_TMM_SKIP=F
+LIMMA_TMMWSP_SKIP=F
 while [ "$1" != "" ]; do
     case $1 in
         -A | --ASV_table )           shift
@@ -209,7 +220,39 @@ while [ "$1" != "" ]; do
 	--ANCOM_SKIP) shift
 		ANCOM_SKIP=$1
 		;;
-			    
+	--DESEQ2_SKIP) shift
+		DESEQ2_SKIP=$1
+		;;
+	--LEFSE_SKIP) shift
+		LEFSE_SKIP=$1
+		;;
+	--WILCOX_RARE_SKIP) shift
+		WILCOX_RARE_SKIP=$1
+		;;
+	--WILCOX_CLR_SKIP) shift
+		WILCOX_CLR_SKIP=$1
+		;;
+	--MAASLIN_RARE_SKIP) shift
+		MAASLIN_RARE_SKIP=$1
+		;;
+	--MAASLIN_SKIP) shift
+		MAASLIN_SKIP=$1
+		;;
+	--METAGENOME_SKIP) shift
+		METAGENOME_SKIP=$1
+		;;
+	--EDGER_SKIP) shift
+		EDGER_SKIP=$1
+		;;
+	--TTEST_RARE_SKIP) shift
+		TTEST_RARE_SKIP=$1
+		;;
+	--LIMMA_TMM_SKIP) shift
+		LIMMA_TMM_SKIP=$1
+		;;
+	--LIMMA_TMMWSP_SKIP) shift
+		LIMMA_TMMWSP_SKIP=$1
+		;;	    
         * )                     usage
                                 exit 1
     esac
@@ -269,14 +312,18 @@ if [ $ALDEX_SKIP != T ]; then
 fi
 
 current=$SECONDS
-Run_DeSeq2
-duration=$(( SECONDS - current))
-echo "Deseq2 took " $duration" seconds" >> $time_file
+if [ $DESEQ2_SKIP != T ]; then
+	Run_DeSeq2
+	duration=$(( SECONDS - current))
+	echo "Deseq2 took " $duration" seconds" >> $time_file
+fi
 
 current=$SECONDS
-Run_Lefse		       	
-duration=$(( SECONDS - current))
-echo "Lefse took "$duration" seconds" >> $time_file
+if [ $LEFSE_SKIP != T ]; then
+	Run_Lefse		       	
+	duration=$(( SECONDS - current))
+	echo "Lefse took "$duration" seconds" >> $time_file
+fi
 
 current=$SECONDS
 if [ $CORNCOB_SKIP != T ]; then
@@ -284,25 +331,34 @@ if [ $CORNCOB_SKIP != T ]; then
 	duration=$(( SECONDS - current))
 	echo "Corncob took "$duration" seconds" >> $time_file
 fi
-current=$SECONDS
-Run_Wilcoxin_rare
-duration=$(( SECONDS - current))
-echo "Wilcoxon rare took "$duration" seconds" >> $time_file
 
 current=$SECONDS
-Run_Wilcoxin_CLR
-duration=$(( SECONDS - current))
-echo "Wilcoxon CLR took "$duration" seconds" >> $time_file
+if [ $WILCOX_RARE_SKIP != T ]; then
+	Run_Wilcoxin_rare
+	duration=$(( SECONDS - current))
+	echo "Wilcoxon rare took "$duration" seconds" >> $time_file
+fi
 
 current=$SECONDS
-Run_Maaslin2_rare
-duration=$(( SECONDS - current))
-echo "Maaslin2 rare took "$duration" seconds" >> $time_file
+if [ $WILCOX_CLR_SKIP != T ]; then
+	Run_Wilcoxin_CLR
+	duration=$(( SECONDS - current))
+	echo "Wilcoxon CLR took "$duration" seconds" >> $time_file
+fi
 
 current=$SECONDS
-Run_Maaslin2
-duration=$(( SECONDS - current))
-echo "Maaslin2 took "$duration" seconds" >> $time_file
+if [ $MAASLIN_RARE_SKIP != T ]; then
+	Run_Maaslin2_rare
+	duration=$(( SECONDS - current))
+	echo "Maaslin2 rare took "$duration" seconds" >> $time_file
+fi
+
+current=$SECONDS
+if [ $MAASLIN_SKIP != T ]; then
+	Run_Maaslin2
+	duration=$(( SECONDS - current))
+	echo "Maaslin2 took "$duration" seconds" >> $time_file
+fi
 
 current=$SECONDS
 if [ $ANCOM_SKIP != T ]; then
@@ -312,26 +368,36 @@ if [ $ANCOM_SKIP != T ]; then
 fi
 
 current=$SECONDS
-Run_metagenomeSeq
-duration=$(( SECONDS - current))
-echo "metagenomeSeq took "$duration" seconds" >> $time_file
+if [ $METAGENOME_SKIP != T ]; then
+	Run_metagenomeSeq
+	duration=$(( SECONDS - current))
+	echo "metagenomeSeq took "$duration" seconds" >> $time_file
+fi
 
 current=$SECONDS
-Run_edgeR
-duration=$(( SECONDS - current))
-echo "edgeR took "$duration" seconds" >> $time_file
+if [ $EDGER_SKIP != T ]; then
+	Run_edgeR
+	duration=$(( SECONDS - current))
+	echo "edgeR took "$duration" seconds" >> $time_file
+fi
 
 current=$SECONDS
-Run_t_test_rare
-duration=$(( SECONDS - current))
-echo "t test rare took "$duration" seconds" >> $time_file
+if [ $TTEST_RARE_SKIP != T ]; then
+	Run_t_test_rare
+	duration=$(( SECONDS - current))
+	echo "t test rare took "$duration" seconds" >> $time_file
+fi
 
 current=$SECONDS
-Run_limma_voom_TMM
-duration=$(( SECONDS - current))
-echo "Limma_voom_tmm took "$duration " seconds" >> $time_file
+if [ $LIMMA_TMM_SKIP != T ]; then
+	Run_limma_voom_TMM
+	duration=$(( SECONDS - current))
+	echo "Limma_voom_tmm took "$duration " seconds" >> $time_file
+fi
 
 current=$SECONDS
-Run_limma_voom_TMMwsp
-duration=$(( SECONDS - current))
-echo "Limma_voom_TMMwsp took "$duration " seconds" >> $time_file
+if [ $LIMMA_TMMWSP_SKIP != T ]; then
+	Run_limma_voom_TMMwsp
+	duration=$(( SECONDS - current))
+	echo "Limma_voom_TMMwsp took "$duration " seconds" >> $time_file
+fi
