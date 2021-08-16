@@ -1,0 +1,246 @@
+---
+title: "Top_feature_consistency"
+author: "Jacob T. Nearing"
+date: "7/29/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(cowplot)
+
+
+tool_names <- c(aldex2="ALDEx2", ancom="ANCOM-II", corncob="corncob", deseq2="DESeq2", edger="edgeR", lefse="LEfSe", 
+                limma_voom_TMM="limma voom (TMM)", limma_voom_TMMwsp="limma voom (TMMwsp)", maaslin2="MaAsLin2",
+                maaslin2rare="MaAsLin2 (rare)", metagenomeSeq="metagenomeSeq", ttestrare="t-test (rare)", 
+                wilcoxonclr="Wilcoxon (CLR)", wilcoxonrare="Wilcoxon (rare)")
+display_items_out <- "/home/jacob/GitHub_Repos/Clean_Hackathon/Display_items/"
+
+```
+
+# Load in data
+```{r}
+filt_results <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Filt_results_21_04_07.RDS")
+unfilt_results <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Unfilt_results_21_04_07.RDS")
+```
+
+# Data Prep.
+
+## Functions
+Function to extract the names of the top X feats for each tool from a p-val table.
+```{r}
+get_top_feats <- function(p_val_tab, maxrank=20){
+  
+  Tool_top_feats <- list()
+  for(i in 1:length(colnames(p_val_tab))){
+    
+    
+    tool <- colnames(p_val_tab)[i]
+    if(tool=="ancom"){
+      p_val_vect <- p_val_tab[,i]
+      names(p_val_vect) <- rownames(p_val_tab)
+
+      #sort in decreasing order for ancom.
+      sorted_p_val_vect <- sort(p_val_vect, decreasing=T)
+
+      top_feats <- names(sorted_p_val_vect)[1:maxrank]
+
+      Tool_top_feats[[tool]] <- top_feats
+    }else{
+      p_val_vect <- p_val_tab[,i]
+      names(p_val_vect) <- rownames(p_val_tab)
+    
+      #sort in increasing order (lowest value is of highest rank)
+      sorted_p_val_vect <- sort(p_val_vect, decreasing=F)
+    
+      top_feats <- names(sorted_p_val_vect)[1:maxrank]
+    
+      Tool_top_feats[[tool]] <- top_feats
+    }
+
+  }
+  
+  return(Tool_top_feats)
+}
+
+generate_data_table <- function(top_feat_list){
+  
+  top_feat_df <- do.call(cbind, top_feat_list)
+  look_up_tab <- table(top_feat_df)
+  
+  count_df <- apply(top_feat_df, 2, FUN=function(x) look_up_tab[x])
+  
+  return(count_df)
+}
+
+#takes in a dataframe that contains multiple ASV consistency scores and determines the occurence
+# of that consistency score for each tool
+generate_consist_occur <- function(count_df){
+  
+  ret_data <- list()
+  
+  for(i in 1:length(colnames(count_df))){
+    
+    tool <- colnames(count_df)[i]
+    
+    occur_obs <- table(count_df[,i])
+    
+    ret_data[[tool]] <- occur_obs
+    
+    
+  }
+  #melt the data
+  
+  ret_data_df <- reshape2::melt(ret_data)
+  colnames(ret_data_df) <- c("Consistancy", "Count", "Tool")
+  return(ret_data_df)
+}
+
+get_comb_sizes <- function(feat_list){
+  
+  m1 <- make_comb_mat(feat_list, remove_empty_comb_set = F)
+  
+  sizes <- comb_size(m1)
+  
+  return(sizes)
+}
+```
+
+## Testing above functions
+```{r}
+#these all have the same rank so we should get all 10s
+test_p_tab <- data.frame(matrix(1:10000, 10000, 10))
+rownames(test_p_tab) <- paste("ASV", seq(1,10000))
+colnames(test_p_tab) <- paste("Tool", seq(1,10))
+
+test_p_tab_feats <- get_top_feats(test_p_tab, maxrank = 20)
+test_p_tab_feats[1]
+#shoudl return them in order
+test_p_tab_feats_neg <- get_top_feats(-(test_p_tab), maxrank=20)
+test_p_tab_feats_neg[1]
+
+
+test_p_tab_counts <- generate_data_table(test_p_tab_feats)
+View(test_p_tab_counts)
+table(test_p_tab_counts)
+
+## works as expected. lets try something else now!
+
+test_p_tab2 <- data.frame(matrix(1:1000, 1000, 14))
+rownames(test_p_tab2) <- paste("ASV", seq(1,1000))
+colnames(test_p_tab2) <- paste("Tool", seq(1,14))
+test_p_tab2[,2] <- 1000:1
+test_p_tab2[,3] <- c(1:10, 1000:11)
+test_p_tab2[,4] <- c(1:15, 1000:16)
+
+test_p_tab2_feats <- get_top_feats(test_p_tab2, maxrank = 20)
+test_p_tab2_feats[[2]]
+test_p_tab2_feats[[3]]
+test_p_tab2_feats[[4]]
+test_p_tab2_feats_counts <- generate_data_table(test_p_tab2_feats)
+View(test_p_tab2_feats_counts)
+table(test_p_tab2_feats_counts)
+## works correctly!
+```
+
+
+
+## Filter Analysis
+```{r}
+#go through each df and run the top feats
+## we need to replace the values in the ancom table with the W stat... the only problem is that for every value but ancom they are sorted from smallest to largest...
+
+
+
+## we will use the ancom W stat to rank the ASVs from that tool.
+
+filt_results_ancom_fix <- filt_results
+for(i in 1:length(filt_results_ancom_fix)){
+  #replace ancom values with the W stat...
+  filt_results_ancom_fix[[i]][[2]][rownames(filt_results[[i]][[1]][[2]]),"ancom"] <- filt_results[[i]][[1]][[2]]$W
+  
+}
+
+
+filt_top_feat_lists <- list()
+for(i in 1:length(filt_results)){
+  dataset <- names(filt_results_ancom_fix)[i]
+  filt_top_feat_lists[[dataset]] <- get_top_feats(filt_results_ancom_fix[[i]][[2]], maxrank = 20)
+}
+
+filt_top_feat_counts <- lapply(filt_top_feat_lists, FUN=generate_data_table)
+### we need to go through each dataset and count the number of times each observations of score X shows up for each tool
+filt_top_feat_count_melt <- lapply(filt_top_feat_counts, FUN=generate_consist_occur)
+
+for(i in 1:length(filt_top_feat_count_melt)){
+  filt_top_feat_count_melt[[i]]$dataset <- names(filt_top_feat_count_melt)[i]
+}
+
+filt_comp_tab <- do.call(rbind, filt_top_feat_count_melt)
+#make sure the levels are in correct order and not alphabetical.
+filt_comp_tab$Consistancy <- factor(filt_comp_tab$Consistancy, levels = c(1:14))
+
+#rename tools to nicer publication names
+filt_comp_tab$Tool <- tool_names[filt_comp_tab$Tool]
+
+
+filt_final_plot <- ggplot(filt_comp_tab, aes(x=Consistancy, y=Count)) + facet_grid(rows = vars(Tool), switch="y") + stat_summary(geom="bar", fun.y=mean) + stat_summary(geom="errorbar", fun.data = mean_se) + xlab("No. of tools that called ASV in top 20") + 
+  theme(strip.background = element_blank(), strip.text.y.left=element_text(angle=0)) + coord_cartesian(ylim=c(0,12)) + scale_y_continuous(position = "right", breaks = seq(from=1,to=12,by=2)) + ggtitle("Filtered")
+filt_final_plot
+
+means <- aggregate(filt_comp_tab$Count, by=list(filt_comp_tab$Consistancy, filt_comp_tab$Tool), FUN=mean)
+View(means)
+```
+
+## Unfilter Analysis
+```{r}
+unfilt_results_fix_ancom <- unfilt_results
+
+for(i in 1:length(unfilt_results_fix_ancom)){
+  #replace ancom values with the W stat...
+  unfilt_results_fix_ancom[[i]][[2]][rownames(unfilt_results_fix_ancom[[i]][[1]][[2]]), "ancom"] <- unfilt_results_fix_ancom[[i]][[1]][[2]]$W
+  
+}
+
+unfilt_top_feat_lists <- list()
+for(i in 1:length(unfilt_results_fix_ancom)){
+  
+  dataset <- names(unfilt_results_fix_ancom)[i]
+  unfilt_top_feat_lists[[dataset]] <- get_top_feats(unfilt_results_fix_ancom[[i]][[2]], maxrank = 20)
+}
+
+unfilt_top_feat_counts <- lapply(unfilt_top_feat_lists, FUN=generate_data_table)
+
+unfilt_top_feat_count_melt <- lapply(unfilt_top_feat_counts, FUN=generate_consist_occur)
+
+for(i in 1:length(unfilt_top_feat_count_melt)){
+  unfilt_top_feat_count_melt[[i]]$dataset <- names(unfilt_top_feat_count_melt)[i]
+}
+
+unfilt_comp_tab <- do.call(rbind, unfilt_top_feat_count_melt)
+
+unfilt_comp_tab$Consistancy <- factor(unfilt_comp_tab$Consistancy, levels = c(1:14))
+
+unfilt_comp_tab$Tool <- tool_names[unfilt_comp_tab$Tool]
+
+unfilt_final_plot <- ggplot(unfilt_comp_tab, aes(x=Consistancy, y=Count)) + facet_grid(rows = vars(Tool), switch="y") + stat_summary(geom="bar", fun.y=mean) + stat_summary(geom="errorbar", fun.data = mean_se) + xlab("No. of tools that called ASV in top 20") + 
+  theme(strip.background = element_blank(), strip.text.y.left=element_text(angle=0)) + coord_cartesian(ylim=c(0,12)) + scale_y_continuous(position = "right", breaks = seq(from=1,to=12,by=2)) + ggtitle("Unfiltered")
+unfilt_final_plot
+
+means <- aggregate(unfilt_comp_tab$Count, by=list(unfilt_comp_tab$Consistancy, unfilt_comp_tab$Tool), FUN=mean)
+View(means)
+```
+
+## Final plot
+```{r}
+final_plot <- plot_grid(filt_final_plot, unfilt_final_plot, labels=c("A", "B"))
+final_plot
+
+
+ggsave(filename=paste(display_items_out, "Supp_figures", "Supplemental_top_20_overlap.pdf", sep="/"),
+       plot = final_plot, width = 9, height=13, units="in", dpi=600)
+
+ggsave(filename=paste(display_items_out, "Supp_figures", "Supplemental_top_20_overlap.png", sep="/"),
+       plot = final_plot, width = 9, height=13, units="in", dpi=150)
+```

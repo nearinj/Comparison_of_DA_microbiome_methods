@@ -253,7 +253,8 @@ while [ "$1" != "" ]; do
 	--LIMMA_TMMWSP_SKIP) shift
 		LIMMA_TMMWSP_SKIP=$1
 		;;	    
-        * )                     usage
+        * )                     echo $1
+				usage
                                 exit 1
     esac
     shift

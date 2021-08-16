@@ -617,14 +617,11 @@ library(ggplot2)
 mean_RA_filt_plot <- ggplot(mean_RA_sig_data_filt, aes(x=tool_name, y=value)) + geom_boxplot(outlier.shape = NA) +
   theme_classic() + ylab("Relative abundance %") + 
   theme(axis.text = element_text(size=12, color="black"), axis.text.x = element_text(angle=90)) +
-  theme(axis.title = element_text(size=16, color="black")) + ylim(c(0,0.25)) +
+  theme(axis.title = element_text(size=16, color="black")) +
   theme(axis.title.x = element_blank()) +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
-
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + coord_cartesian(ylim=c(0,0.25))
 
 mean_RA_filt_plot
-
-
 
 ### Unfiltered data
 
@@ -757,9 +754,9 @@ mean_RA_sig_data_unfilt$tool_name <- tool_name_vec_unfilt
 mean_RA_unfilt_plot <- ggplot(mean_RA_sig_data_unfilt, aes(x=tool_name, y=value)) + geom_boxplot(outlier.shape = NA) +
   theme_classic() + ylab("Relative abundance %") + 
   theme(axis.text = element_text(size=12, color="black"), axis.text.x = element_text(angle=90)) +
-  theme(axis.title = element_text(size=16, color="black")) + ylim(c(0,0.25)) +
+  theme(axis.title = element_text(size=16, color="black")) +
   theme(axis.title.x = element_blank()) +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + coord_cartesian(ylim=c(0,0.25))
 
 mean_RA_unfilt_plot
 ## lost many features due to them being outliers... 
@@ -777,8 +774,8 @@ mean_RA_sig_data_comb <- rbind(mean_RA_sig_data_unfilt, mean_RA_sig_data_filt)
 mean_RA_plot <- ggplot(mean_RA_sig_data_comb, aes(x=tool_name, y=value)) + geom_boxplot(outlier.shape = NA) +
   theme_cowplot() + ylab("Relative abundance %") +xlab("Method") + 
   theme(axis.text = element_text(size=12, color="black"), axis.text.x = element_text(angle=90)) +
-  theme(axis.title = element_text(size=16, color="black")) + ylim(c(0,0.25)) + facet_grid(~ Filt) +
-  theme(strip.background = element_blank())
+  theme(axis.title = element_text(size=16, color="black")) + facet_grid(~ Filt) +
+  theme(strip.background = element_blank()) + coord_cartesian(ylim=c(0,0.25))
 
 mean_RA_plot
 

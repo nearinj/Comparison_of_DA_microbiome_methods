@@ -18,7 +18,7 @@ library(ggbeeswarm)
 
 ### Folders where final figures are written
 ### Make sure this is pointed to your home directory
-display_items_out <- "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Display_items"
+display_items_out <- "/home/jacob/GitHub_Repos/Clean_Hackathon/Display_items/"
 
 Data_set_names <- c(ArcticFireSoils="Soil - Fires",
                          ArcticFreshWater="Freshwater - Arctic",

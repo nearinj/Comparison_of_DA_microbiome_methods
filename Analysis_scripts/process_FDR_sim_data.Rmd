@@ -205,12 +205,12 @@ Filtered_FD_data <- list()
 setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13//Hackathon/Studies/Office/False_Discovery_Testing/results_filt/")
 
 
-Office_filt_results <- lapply(c(1:10), read_hackathon_results)
+Office_filt_results <- lapply(c(1:100), read_hackathon_results)
 
 #get adj_p for each table run
 
 Office_filt_p_tabs <- list()
-for(i in 1:10){
+for(i in 1:100){
  Office_filt_p_tabs[[i]] <- Office_filt_results[[i]]$adjP_table
   
 }
@@ -225,11 +225,11 @@ Filtered_FD_data[["Office"]] <- Office_filt_p_tabs
 ```{r}
 setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/ArcticFreshwaters/False_Discovery_Testing/results_filt/")
 
-Arctic_results_filt <- lapply(c(1:10), read_hackathon_results)
+Arctic_results_filt <- lapply(c(1:100), read_hackathon_results)
 
 Arctic_filt_p_tabs <- list()
 
-for(i in 1:10){
+for(i in 1:100){
   
   Arctic_filt_p_tabs[[i]] <- Arctic_results_filt[[i]]$adjP_table
 }
@@ -244,11 +244,11 @@ Filtered_FD_data[["ArcticFreshWaters"]] <- Arctic_filt_p_tabs
 setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Blueberry/False_Discovery_Testing/results_filt/")
 
 
-Blueb_filt_results <- lapply(c(1:10), read_hackathon_results)
+Blueb_filt_results <- lapply(c(1:100), read_hackathon_results)
 
 Blueb_filt_p_tabs <- list()
 
-for(i in 1:10){
+for(i in 1:100){
   
   Blueb_filt_p_tabs[[i]] <- Blueb_filt_results[[i]]$adjP_table
 }
@@ -261,7 +261,7 @@ Filtered_FD_data[["Blueberry"]] <- Blueb_filt_p_tabs
 ```{r}
 setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/ob_goodrich/False_Discovery_Testing/results_filt/")
 
-goodrich_filt_results <- lapply(c(1:10), read_hackathon_results)
+goodrich_filt_results <- lapply(c(1:100), read_hackathon_results)
 
 goodrich_filt_p_tabs <- list()
 
@@ -279,11 +279,11 @@ Filtered_FD_data[["ob_goodrich"]] <- goodrich_filt_p_tabs
 ```{r}
 setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/hiv_noguerajulian/False_Discovery_Testing/results_filt/")
 
-hiv_nog_filt_results <- lapply(c(1:10), read_hackathon_results)
+hiv_nog_filt_results <- lapply(c(1:100), read_hackathon_results)
 
 hiv_nog_filt_p_tabs <- list()
 
-for(i in 1:10){
+for(i in 1:100){
   
   hiv_nog_filt_p_tabs[[i]] <- hiv_nog_filt_results[[i]]$adjP_table
   
@@ -296,11 +296,11 @@ Filtered_FD_data[["hiv_noguerajulian"]] <- hiv_nog_filt_p_tabs
 ```{r}
 setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Ji_WTP_DS/False_Discovery_Testing/results_filt/")
 
-JI_WTP_filt_results <- lapply(c(1:10), read_hackathon_results)
+JI_WTP_filt_results <- lapply(c(1:100), read_hackathon_results)
 
 JI_WTP_filt_p_tabs <- list()
 
-for(i in 1:10){
+for(i in 1:100){
   
   JI_WTP_filt_p_tabs[[i]] <- JI_WTP_filt_results[[i]]$adjP_table
   
@@ -313,11 +313,11 @@ Filtered_FD_data[["Ji_WTP_DS"]] <- JI_WTP_filt_p_tabs
 ```{r}
 setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/cdi_schubert/False_Discovery_Testing/results_filt/")
 
-schubert_filt_results <- lapply(c(1:10), read_hackathon_results)
+schubert_filt_results <- lapply(c(1:100), read_hackathon_results)
 
 schubert_filt_p_tabs <- list()
 
-for(i in 1:10){
+for(i in 1:100){
   
   schubert_filt_p_tabs[[i]] <- schubert_filt_results[[i]]$adjP_table
   
@@ -330,11 +330,11 @@ Filtered_FD_data[["cdi_schubert"]] <- schubert_filt_p_tabs
 ```{r}
 setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/sw_sed_detender/False_Discovery_Testing/results_filt/")
 
-sw_sed_filt_results <- lapply(c(1:10), read_hackathon_results)
+sw_sed_filt_results <- lapply(c(1:100), read_hackathon_results)
 
 sw_sed_filt_p_tabs <- list()
 
-for(i in 1:10){
+for(i in 1:100){
   
   sw_sed_filt_p_tabs[[i]] <- sw_sed_filt_results[[i]]$adjP_table
 }
