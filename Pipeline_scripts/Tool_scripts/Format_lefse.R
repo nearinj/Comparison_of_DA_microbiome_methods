@@ -60,8 +60,11 @@ if(all.equal(rownames(flip_ASV_table), rownames(groupings)) == F){
 
 flip_ASV_table <- cbind(groupings[,1], flip_ASV_table)
 colnames(flip_ASV_table)[1] <- "Groupings"
+flip_ASV_table <- cbind(rownames(groupings), flip_ASV_table)
+colnames(flip_ASV_table)[1] <- "id"
+
 ret_tab <- data.frame(t(flip_ASV_table), check.names = F)
 
-write.table(ret_tab, file=args[3], quote=FALSE, sep="\t", col.names = NA)
+write.table(ret_tab, file=args[3], quote=FALSE, sep="\t", col.names = F)
 
 message("Lefse formatted table written")
