@@ -833,7 +833,14 @@ colnames(filt_pvals_df) <- filt_dataset_characteristics
 identical(rownames(filt_rhos_df), rownames(filt_pvals_df))
 identical(colnames(filt_rhos_df), colnames(filt_pvals_df))
 
-corrplot(filt_rhos_df[,-3], p.mat = filt_pvals_df[,-3], sig.level = 0.05, insig = "blank", full_col = FALSE)
+corrplot(filt_rhos_df[,-3],
+         p.mat = filt_pvals_df[,-3],
+         sig.level = 0.05,
+         insig = "blank",
+         full_col = FALSE,
+         tl.col = "black",
+         col = colorRampPalette(c("blue","white","red"))(200))
+
 # Saved manually as 8.5x11 inches as Main_figures/Figure2B_Corrplot_Filt_raw.pdf
 
 
@@ -886,8 +893,14 @@ unfilt_pvals_df <- unfilt_pvals_df[sort(rownames(unfilt_pvals_df)), ]
 colnames(unfilt_rhos_df) <- unfilt_dataset_characteristics
 colnames(unfilt_pvals_df) <- unfilt_dataset_characteristics
 
+corrplot(as.matrix(unfilt_rhos_df[,-3]),
+         p.mat = unfilt_pvals_df[,-3],
+         sig.level = 0.05,
+         insig = "blank",
+         full_col = FALSE,
+         tl.col = "black",
+         col = colorRampPalette(c("blue","white","red"))(200))
 
-corrplot(as.matrix(unfilt_rhos_df[,-3]), p.mat = unfilt_pvals_df[,-3], sig.level = 0.05, insig = "blank", full_col = FALSE)
 # Saved manually as 8.5x11 inches as Main_figures/Figure2A_Corrplot_Unfilt_raw.pdf
 ```
 

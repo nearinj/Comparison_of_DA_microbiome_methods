@@ -12,7 +12,6 @@ library(ggplot2)
 library(vegan)
 library(ggbeeswarm)
 
-display_items_out <- "/home/jacob/GitHub_Repos/Clean_Hackathon/Display_items/"
 ```
 
 ## Functions
@@ -115,6 +114,8 @@ read_in_groupings <- function(x){
   return(groupings_list)
 }
 ```
+
+
 ## Load in data
 
 ### Load in FP results
@@ -157,32 +158,32 @@ sw_sed_detender_per_sig_un <- get_percent_sig(sw_sed_detender_data_comb)
 
 ```{r}
 
-ArcticFreshWater_unfilt_tab <- read_in_table("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/ArcticFreshwaters/False_Discovery_Testing/results_nonfilt/1/fixed_non_rare_tables/ArcticFreshwaters_ASVs_table.tsv")
+ArcticFreshWater_unfilt_tab <- read_in_table("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/ArcticFreshwaters/False_Discovery_Testing/results_nonfilt/1/fixed_non_rare_tables/ArcticFreshwaters_ASVs_table.tsv")
 
-Blueberry_unfilt_tab <- read_in_table("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Blueberry/False_Discovery_Testing/results_nonfilt/1/fixed_non_rare_tables/Blueberry_ASVs_table.tsv")
+Blueberry_unfilt_tab <- read_in_table("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Blueberry/False_Discovery_Testing/results_nonfilt/1/fixed_non_rare_tables/Blueberry_ASVs_table.tsv")
 
-ob_goodrich_unfilt_tab <- read_in_table("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/ob_goodrich/False_Discovery_Testing/results_nonfilt/1/fixed_non_rare_tables/ob_goodrich_ASVs_table.tsv")
+ob_goodrich_unfilt_tab <- read_in_table("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/ob_goodrich/False_Discovery_Testing/results_nonfilt/1/fixed_non_rare_tables/ob_goodrich_ASVs_table.tsv")
 
-hiv_noguerajulian_unfilt_tab <- read_in_table("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/hiv_noguerajulian/False_Discovery_Testing/results_nonfilt/1/fixed_non_rare_tables/hiv_noguerajulian_ASVs_table.tsv")
+hiv_noguerajulian_unfilt_tab <- read_in_table("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/hiv_noguerajulian/False_Discovery_Testing/results_nonfilt/1/fixed_non_rare_tables/hiv_noguerajulian_ASVs_table.tsv")
 
-Ji_WTP_DS_unfilt_tab <- read_in_table("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Ji_WTP_DS/False_Discovery_Testing/results_nonfilt/1/fixed_non_rare_tables/Ji_WTP_DS_ASVs_table.tsv")
+Ji_WTP_DS_unfilt_tab <- read_in_table("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Ji_WTP_DS/False_Discovery_Testing/results_nonfilt/1/fixed_non_rare_tables/Ji_WTP_DS_ASVs_table.tsv")
 
-Office_unfilt_tab <- read_in_table("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Office/False_Discovery_Testing/results_nonfilt/1/fixed_non_rare_tables/Office_ASVs_table.tsv")
+Office_unfilt_tab <- read_in_table("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Office/False_Discovery_Testing/results_nonfilt/1/fixed_non_rare_tables/Office_ASVs_table.tsv")
 
-cdi_schubert_unfilt_tab <- read_in_table("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/cdi_schubert/False_Discovery_Testing/results_nonfilt/1/fixed_non_rare_tables/cdi_schubert_ASVs_table.tsv")
+cdi_schubert_unfilt_tab <- read_in_table("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/cdi_schubert/False_Discovery_Testing/results_nonfilt/1/fixed_non_rare_tables/cdi_schubert_ASVs_table.tsv")
 
-sw_sed_detender_unfilt_tab <- read_in_table("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/sw_sed_detender/False_Discovery_Testing/results_nonfilt/1/fixed_non_rare_tables/sw_sed_detender_ASVs_table.tsv")
+sw_sed_detender_unfilt_tab <- read_in_table("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/sw_sed_detender/False_Discovery_Testing/results_nonfilt/1/fixed_non_rare_tables/sw_sed_detender_ASVs_table.tsv")
 
 
 ## load in groupings for each dataset....
-ArcticFreshWaters_groupings <- read_in_groupings("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/ArcticFreshwaters/False_Discovery_Testing/nonfilt_tabs/")
-Blueberry_groupings <- read_in_groupings("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Blueberry/False_Discovery_Testing/nonfilt_tabs/")
-ob_goodrich_groupings <- read_in_groupings("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/ob_goodrich/False_Discovery_Testing/nonfilt_tabs/")  
-hiv_noguerajulian_groupings <- read_in_groupings("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/hiv_noguerajulian/False_Discovery_Testing/nonfilt_tabs/")
-Ji_WTP_DS_groupings <- read_in_groupings("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Ji_WTP_DS/False_Discovery_Testing/nonfilt_tabs/")
-Office_groupings <- read_in_groupings("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Office/False_Discovery_Testing/nonfilt_tabs/")
-cdi_schubert_groupings <- read_in_groupings("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/cdi_schubert/False_Discovery_Testing/nonfilt_tabs/")
-sw_sed_detender_groupings <- read_in_groupings("~/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/sw_sed_detender/False_Discovery_Testing/nonfilt_tabs/")
+ArcticFreshWaters_groupings <- read_in_groupings("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/ArcticFreshwaters/False_Discovery_Testing/nonfilt_tabs/")
+Blueberry_groupings <- read_in_groupings("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Blueberry/False_Discovery_Testing/nonfilt_tabs/")
+ob_goodrich_groupings <- read_in_groupings("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/ob_goodrich/False_Discovery_Testing/nonfilt_tabs/")  
+hiv_noguerajulian_groupings <- read_in_groupings("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/hiv_noguerajulian/False_Discovery_Testing/nonfilt_tabs/")
+Ji_WTP_DS_groupings <- read_in_groupings("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Ji_WTP_DS/False_Discovery_Testing/nonfilt_tabs/")
+Office_groupings <- read_in_groupings("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Office/False_Discovery_Testing/nonfilt_tabs/")
+cdi_schubert_groupings <- read_in_groupings("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/cdi_schubert/False_Discovery_Testing/nonfilt_tabs/")
+sw_sed_detender_groupings <- read_in_groupings("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/sw_sed_detender/False_Discovery_Testing/nonfilt_tabs/")
 
 ```
 
