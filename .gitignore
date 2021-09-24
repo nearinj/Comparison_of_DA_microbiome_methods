@@ -1,3 +1,6 @@
 Data/
 Analysis_scripts/*files
 Analysis_scripts/*html
+Pipeline_scripts/Run_scripts/LEFSE_stuff/
+Pipeline_scripts/Run_scripts/OLD_STUFF/
+Pipeline_scripts/Run_scripts/FP_runs/EXT_2/

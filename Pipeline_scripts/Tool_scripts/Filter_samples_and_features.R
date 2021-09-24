@@ -47,6 +47,7 @@ ASV_table_1 <- remove_rare_features(ASV_table_1, as.numeric(args[[2]]))
 
 
 ### rarify table based on depth
+set.seed(199)
 ASV_table_2 <- data.frame(t(GUniFrac::Rarefy(t(ASV_table_1), depth=as.numeric(args[[5]]))$otu.tab.rff), check.rows = F,
                           check.names = F)
 

@@ -21,7 +21,7 @@ setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/")
 
 ### Folders where final figures are written
 ### Make sure this is pointed to your home directory
-display_items_out <- "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Display_items/"
+display_items_out <- "/home/jacob/GitHub_Repos/Clean_Hackathon/Display_items/"
 
 ###updated dataset names
 Data_set_names <- c(ArcticFireSoils="Soil - Fires",
@@ -476,7 +476,41 @@ Calc_percent_in_unfilt_only  <- function(filt_tab, unfilt_tab){
 }
 
 ```
+#### Function_testing
 
+```{r, eval=F}
+test_list <- list()
+test_list[["rare"]] <- list()
+test_list[["nonrare"]] <- list()
+
+test_list[["rare"]][["dataset1"]] <- matrix(0:1, nrow=10,ncol=10)
+test_list[["nonrare"]][["dataset1"]] <- matrix(1, nrow=10, ncol=10)
+
+test_list[["rare"]][["dataset2"]] <- matrix(c(1,1000), nrow=10, ncol=10)
+test_list[["nonrare"]][["dataset2"]] <- matrix(c(0,1,500,1000), nrow=10, ncol=10)
+
+test_list[["rare"]][["dataset3"]] <- matrix(1, nrow=50, ncol=10)
+test_list[["nonrare"]][["dataset3"]] <- matrix(1, nrow=100, ncol=10)
+
+
+test_results <- Calc_Other_community_metrics(test_list)
+test_results
+
+
+test_list_filt <- test_list
+
+test_percent <- Calc_percent_in_unfilt_only(test_list, test_list_filt)
+test_percent
+
+## good returns as expected.
+
+test_list_filt[["nonrare"]][["dataset3"]] <- matrix(1, nrow=50, ncol=10)
+
+test_percent2 <- Calc_percent_in_unfilt_only(test_list_filt, test_list)
+test_percent2
+## returns 50 list rows in dataset3 as expected!
+
+```
 ### Calculate
 ```{r cal_dataset_char}
 filt_community_metrics <- Calc_Other_community_metrics(filt_study_tab)
@@ -504,10 +538,16 @@ scale_unfilt_nonrare_metrics_df <- scale(unfilt_nonrare_metrics_df)
 sig_counts <- data.frame(matrix(NA,
                                 nrow=length(names(filt_results)),
                                 ncol=ncol(filt_results[[1]]$adjP_table) + 1))
+#set rownames to datasets
 rownames(sig_counts) <- names(filt_results)
+
+#set colnames to tool names
 colnames(sig_counts) <- c("dataset", colnames(filt_results[[1]]$adjP_table))
+
+#set dataset name
 sig_counts$dataset <- rownames(sig_counts)
 
+#set up dataframes to hold sig counts for filt and unfilt
 filt_sig_counts <- sig_counts
 filt_sig_percent <- sig_counts
 
@@ -517,14 +557,18 @@ unfilt_sig_percent <- sig_counts
 for(study in rownames(filt_sig_counts)) {
   for(tool_name in colnames(filt_sig_counts)) {
     
+    #skip over dataset column
     if(tool_name == "dataset") { next }
 
     if(! tool_name %in% colnames(filt_results[[study]]$adjP_table)) {
       filt_sig_counts[study, tool_name] <- NA
       filt_sig_percent[study, tool_name] <- NA
+      stop("Error tool name was not found in the result lookup table!!!!")
       next
     }
     
+    #get number of significant features
+    #note that we loaded in ANCOM so that sig results were coded as 0 and non-sig was 1
     filt_sig_counts[study, tool_name] <- length(which(filt_results[[study]]$adjP_table[, tool_name] < 0.05))
     
     # For rarified pipelines get total # ASVs from wilcoxonrare and for non-rarified get it from wilcoxonclr table.
@@ -536,7 +580,7 @@ for(study in rownames(filt_sig_counts)) {
   }
 }
 
-
+#same as above but for unfilt datasets
 for(study in rownames(unfilt_sig_counts)) {
   for(tool_name in colnames(unfilt_sig_counts)) {
     
@@ -545,6 +589,7 @@ for(study in rownames(unfilt_sig_counts)) {
     if(! tool_name %in% colnames(unfilt_results[[study]]$adjP_table)) {
       unfilt_sig_counts[study, tool_name] <- NA
       unfilt_sig_percent[study, tool_name] <- NA
+      stop("Error tool name was not found in the result lookup table!!!!")
       next
     }
     
@@ -578,6 +623,7 @@ unfilt_mean_percent <- print(sort(colSums(unfilt_sig_percent[, -1], na.rm = TRUE
 
 ### HeatMaps
 
+Generate Heatmaps that appear as Figure1 in the manuscript
 #### Filter
 ```{r}
 filt_sig_percent_scaled <- data.frame(scale(t(filt_sig_percent[, -1]), center = TRUE, scale = TRUE))
@@ -677,6 +723,8 @@ filt_ASV_nums <- pheatmap(t(Alpha_order_filt),
 ```
 
 #### UnFilter
+
+Unfiltered heatmap that appears in Figure1 of the manuscript
 ```{r}
 unfilt_sig_percent_scaled <- data.frame(scale(t(unfilt_sig_percent[, -1]), center = TRUE, scale = TRUE))
 

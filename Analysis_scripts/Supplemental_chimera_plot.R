@@ -6,7 +6,7 @@ library(cowplot)
 library(ggplot2)
 library(reshape2)
 
-display_items_out <- "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Display_items/"
+display_items_out <- "/home/jacob/GitHub_Repos/Clean_Hackathon/Display_items/"
 
 setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/")
 
@@ -171,4 +171,5 @@ chimera_plot <- plot_grid(chimera_percent_plot, chimera_spearman_plot_w_blank,
 
 ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_chimeras.pdf", sep="/"),
         plot = chimera_plot, width = 5, height=7.5, units="in", dpi=600)
+ 
  

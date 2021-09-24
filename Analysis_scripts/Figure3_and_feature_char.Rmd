@@ -83,10 +83,6 @@ for(study in names(unfilt_results)){
 
 
 
-### remove dataset that Aldex2 didn't work on as this will obstruct the analysis
-### Either that or just set that column to NA... HMMMM
-### I think for now we will just remove that dataset
-
 Adj_p_all_unfilt <- do.call(rbind, Adj_p_tabs_unfilt)
 
 Adj_p_all_unfilt[Adj_p_all_unfilt < 0.05] <- 2
@@ -133,14 +129,16 @@ Feature_count_tab_filt <- Feature_count_tab_filt[-row_to_remove, ]
 #   }
 # }
 # 
-# saveRDS(Feature_count_tab_filt, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_21_04_07.RDS")
+# saveRDS(Feature_count_tab_filt, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_21_09_22.RDS")
 
-Feature_count_tab_filt <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_21_04_07.RDS")
+Feature_count_tab_filt <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_21_09_22.RDS")
 
 
 ### get in ggplot format.
-## for now we will remove NAs
-plot_info_barplot <- reshape2::melt(Feature_count_tab_filt, na.rm=T)
+## for now we will remove NAs... although there should not be any
+which(is.na(Feature_count_tab_filt))
+plot_info_barplot <- reshape2::melt(Feature_count_tab_filt)
+
 ### remove any with 0 which represents a feature that was significant by one tool but not found by that tool...
 ### we are not interested in this grouping for this analysis 
 remove_row <- which(plot_info_barplot$value==0)
@@ -187,16 +185,19 @@ Feature_count_tab_unfilt <- Feature_count_tab_unfilt[-remove_rows,]
 #   }
 # }
 # 
-# saveRDS(Feature_count_tab_unfilt, file="/home/jacob/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_unfilt_21_04_07.RDS")
+# saveRDS(Feature_count_tab_unfilt, file="/home/jacob/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_unfilt_21_09_22.RDS")
 
-Feature_count_tab_unfilt <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_unfilt_21_04_07.RDS")
+Feature_count_tab_unfilt <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Feature_count_tab_unfilt_21_09_22.RDS")
 plot_info_barplot_unfilt <- reshape2::melt(Feature_count_tab_unfilt, na.rm=T)
+
+
 remove_row <- which(plot_info_barplot_unfilt$value==0)
 no_zero_unfilt <- plot_info_barplot_unfilt[-remove_row,]
 
 
 feat_sum_unfilt <- Feature_count_tab_unfilt
 feat_sum_unfilt[feat_sum_unfilt > 0 ] <- 1
+
 Tool_total_feats_found_unfilt <- as.data.frame(colSums(feat_sum_unfilt))
 Tool_total_feats_found_unfilt$variable <- rownames(Tool_total_feats_found_unfilt)
 
@@ -207,16 +208,19 @@ merged_no_zero_unfilt$log_total_hits <- log(merged_no_zero_unfilt$total_hits)
 
 
 
-
+#clean up tool names
 merged_no_zero_unfilt$clean_variable <- tool_names[merged_no_zero_unfilt$variable]
 merged_no_zero_filt$clean_variable <- tool_names[merged_no_zero_filt$variable]
 
 
 
 ### need to make a new data.frame that has the total counts for each tool and each value
-wide_filt_tab <- reshape2::dcast(merged_no_zero_filt, variable ~ value)
-## convert to R.A
+wide_filt_tab <- reshape2::dcast(merged_no_zero_filt, variable ~ value, fun.aggregate = length)
+## gets the number of entrys for each value for that variable
+
+## convert the counts to RA to get the RA of scores for each tool
 wide_filt_tab_RA2 <- wide_filt_tab
+
 #convert this to the proportions of hits in each "score" category"
 wide_filt_tab_RA2[,-1] <- sweep(wide_filt_tab_RA2[,-1], 1, rowSums(wide_filt_tab_RA2[,-1]), '/')*100
 
@@ -477,16 +481,16 @@ print(c("sd:", sd(filt_bars_high_summed$value)))
 
 filt_study_tab_RA <- lapply(filt_study_tab[["nonrare"]], function(x) sweep(x, 2, colSums(x), '/'))
 
-## now we need to get the average value for each row
+## now we need to get the average value for each row (mean RA of each ASV)
 
 filt_study_tab_mean_RA <- lapply(filt_study_tab_RA, function(x) rowMeans(x))
 
 
-### combined them
+### combined all datasets together
 filt_study_tab_all_mean <- do.call(c, filt_study_tab_mean_RA)
 
 
-
+### Dp same as above for rarified tables
 filt_study_tab_RA_rare <- lapply(filt_study_tab[["rare"]], function(x) sweep(x, 2, colSums(x), '/'))
 
 ## now we need to get the average value for each row
@@ -505,6 +509,8 @@ filt_sig_abundance <- Adj_p_all_filt
 
 ### replace Na with 0s for now
 filt_sig_abundance[is.na(filt_sig_abundance)] <- 0
+
+#convert to matrix to speed up processing time.
 filt_sig_abundance <- as.matrix(filt_sig_abundance)
 
 # library(doParallel)
@@ -521,12 +527,16 @@ filt_sig_abundance <- as.matrix(filt_sig_abundance)
 # 
 # identical(rownames(filt_sig_abundance), names(filt_study_tab_all_mean))
 # 
+# length(filt_study_tab_all_mean)
+# length(rownames(filt_sig_abundance))
 # #we can rearrange the filt_study_tab_all_mean to match the same order as filt_sig_abundance
 # ordered_filt_study_tab_all_mean <- filt_study_tab_all_mean[rownames(filt_sig_abundance)]
 # 
 # identical(rownames(filt_sig_abundance), names(ordered_filt_study_tab_all_mean))
+# 
 # ### now they are in the same order
 # 
+# #remove rarified tools as they will be processed seperately
 # filt_sig_abundance_nonrare <- filt_sig_abundance[,-c(6,8,10,12)]
 # 
 # filt_sig_abundance_final_nonrare <- foreach(ITER=iter(filt_sig_abundance_nonrare, by="col"), .combine=cbind) %dopar% {
@@ -547,7 +557,7 @@ filt_sig_abundance <- as.matrix(filt_sig_abundance)
 # filt_sig_abundance_rare <- filt_sig_abundance[,rare_tools]
 # 
 # ## lets get the intersection here
-# 
+# # to only get the abundances from rarified tools
 # keep_rows <- intersect(rownames(filt_sig_abundance_rare), names(filt_study_tab_all_mean_rare))
 # 
 # ordered_filt_sig_abundance_rare <- filt_sig_abundance_rare[keep_rows,]
@@ -570,23 +580,26 @@ filt_sig_abundance <- as.matrix(filt_sig_abundance)
 # }
 # 
 # ## merge and clean
-# 
 # filt_sig_abundance_final_merged <- merge(filt_sig_abundance_final_rare, filt_sig_abundance_final_nonrare, all=T, by=0)
+# 
+# 
 # rownames(filt_sig_abundance_final_merged) <- filt_sig_abundance_final_merged$Row.names
 # filt_sig_abundance_final_merged <- filt_sig_abundance_final_merged[,-1]
-# 
-# saveRDS(filt_sig_abundance_final_merged, "/home/jacob/GitHub_Repos/Clean_Hackathon/Data/filt_sig_abundance_21_04_08.RDS")
+
+#saveRDS(filt_sig_abundance_final_merged, "/home/jacob/GitHub_Repos/Clean_Hackathon/Data/filt_sig_abundance_21_09_22.RDS")
 
 
-filt_sig_abundance <- data.frame(readRDS("/home/jacob/GitHub_Repos/Clean_Hackathon/Data/filt_sig_abundance_21_04_08.RDS"))
+filt_sig_abundance <- data.frame(readRDS("/home/jacob/GitHub_Repos/Clean_Hackathon/Data/filt_sig_abundance_21_09_22.RDS"))
 
 
 filt_sig_abundance[filt_sig_abundance==0] <- NA
+#value of zero represents an ASV that was not found to be significant by that tool. So we can safely set all those to NA
+
 
 length(which(filt_sig_abundance$aldex2 != 0))
 length(which(Feature_count_tab_filt$aldex2 != 0))
+## Quick sanity check
 
-## these are the same so this is good.
 
 boxplot(filt_sig_abundance*100, outline = F)
 
@@ -602,11 +615,14 @@ divisor_sum_filt <- apply(filt_sig_abundance, 2, function(x) x <- length(which(x
 Mean_RA_filt <- Total_sum_filt/divisor_sum_filt
 Mean_RA_filt*100
 
+## these should match up with Tool_total_feats_found
 
 ### Make a nice ggplot
 
 mean_RA_sig_data_filt <- reshape2::melt(filt_sig_abundance)
+
 mean_RA_sig_data_filt$value <- mean_RA_sig_data_filt$value*100
+#conver to RA
 
 mean_RA_sig_data_filt$variable <- as.character(mean_RA_sig_data_filt$variable)
 tool_name_vec_filt <- tool_names[mean_RA_sig_data_filt$variable]
@@ -622,6 +638,8 @@ mean_RA_filt_plot <- ggplot(mean_RA_sig_data_filt, aes(x=tool_name, y=value)) + 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + coord_cartesian(ylim=c(0,0.25))
 
 mean_RA_filt_plot
+
+#note we will get a warning for removingf the outliers (they are outside the range of the ylimits)
 
 ### Unfiltered data
 
@@ -662,7 +680,7 @@ unfilt_sig_abundance[is.na(unfilt_sig_abundance)] <- 0
 unfilt_sig_abundance <- as.matrix(unfilt_sig_abundance)
 
 ### hmmm this was very slow
-
+# 
 # library(doParallel)
 # library(doMC)
 # 
@@ -714,10 +732,10 @@ unfilt_sig_abundance <- as.matrix(unfilt_sig_abundance)
 # rownames(unfilt_sig_abundance_final_merged) <- unfilt_sig_abundance_final_merged$Row.names
 # unfilt_sig_abundance_final_merged <- unfilt_sig_abundance_final_merged[,-1]
 # 
-# saveRDS(unfilt_sig_abundance_final_merged, file="/home/jacob/GitHub_Repos/Clean_Hackathon/Data/unfilt_sig_abundance_21_04_08.RDS")
+saveRDS(unfilt_sig_abundance_final_merged, file="/home/jacob/GitHub_Repos/Clean_Hackathon/Data/unfilt_sig_abundance_21_09_22.RDS")
 
 
-unfilt_sig_abundance <- data.frame(readRDS("/home/jacob/GitHub_Repos/Clean_Hackathon/Data/unfilt_sig_abundance_21_04_08.RDS"))
+unfilt_sig_abundance <- data.frame(readRDS("/home/jacob/GitHub_Repos/Clean_Hackathon/Data/unfilt_sig_abundance_21_09_22.RDS"))
 
 ## set non-sig abundances to NA
 unfilt_sig_abundance[unfilt_sig_abundance==0] <- NA
@@ -762,7 +780,7 @@ mean_RA_unfilt_plot
 ## lost many features due to them being outliers... 
 
 
-### odd behaviour from cowplot here :/ 
+
 
 ### plot with both of them
 

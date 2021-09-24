@@ -265,7 +265,7 @@ goodrich_filt_results <- lapply(c(1:100), read_hackathon_results)
 
 goodrich_filt_p_tabs <- list()
 
-for(i in 1:10){
+for(i in 1:100){
   
   goodrich_filt_p_tabs[[i]] <- goodrich_filt_results[[i]]$adjP_table
   
@@ -343,7 +343,7 @@ Filtered_FD_data[["sw_sed_detender"]] <- sw_sed_filt_p_tabs
 
 #### Save list
 ```{r}
-saveRDS(Filtered_FD_data, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_filt_21_04_08.RDS")
+saveRDS(Filtered_FD_data, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_filt_21_09_17.RDS")
 ```
 
 ### Unfiltered
@@ -369,6 +369,7 @@ for(i in 1:10){
 }
 
 Unfiltered_FD_data[["ArcticFreshWaters"]] <- arcticfresh_nonfilt_p_tabs
+
 
 
 setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/ArcticFreshwaters/False_Discovery_Testing/results_nonfilt_ext/")
@@ -443,6 +444,44 @@ setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/ob_go
 
 goodrich_nonfilt_ext <- lapply(c(1:90), read_hackathon_results)
 
+## need to rerun aldex due to running out of memory when it ran originally...
+## the following runs:
+# 11 (done)
+# 12 (done)
+# 24  (done)
+# 27 (done)
+# 34 (done)
+# 36 (done)
+# 37 (done)
+# 38 (done)
+# 41 (done)
+# 43 (done)
+# 45 (done)
+# 46 (done)
+# 47 (done)
+# 49 (done)
+# 50 (done)
+# 53 (done)
+# 56 (done) 
+# 57 (done)
+# 58 (done)
+# 59 (done)
+# 60 (done)
+# 61 (done)
+# 62 (done)
+# 63 (done)
+# 64 (done)
+# 65 (done)
+# 66 (done)
+# 67 (done)
+# 68 (done)
+# 69 (done)
+# 70 (done)
+# 71 (done)
+# 72 (done)
+# 73 (done)
+# 74 (done), 75 (done), 76 (done), 77 (done), 78 (done), 79 (done), 80 (done), 81 (done), 82 (done), 83 (done), 84 (done), 85 (done), 86 (done), 87 , 88, 89
+
 goodrich_nonfilt_p_tabs_ext <- list()
 
 for(i in 1:90){
@@ -458,6 +497,8 @@ Unfiltered_FD_data_ext[["ob_goodrich"]] <- goodrich_nonfilt_p_tabs_ext
 ```
 
 #### hiv_noguerajulian
+
+Need to run Ancom and Cornco on this dataset
 
 ```{r}
 setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/hiv_noguerajulian/False_Discovery_Testing/results_nonfilt/")
@@ -478,7 +519,7 @@ setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/hiv_n
 
 
 hiv_nog_nonfilt_ext <- lapply(c(1:90), read_hackathon_results)
-
+#ancom and corncob need to be run on this dataset...
 
 hiv_nog_nonfilt_p_tabs_ext <- list()
 
@@ -494,6 +535,8 @@ Unfiltered_FD_data_ext[["hiv_noguerajulian"]] <- hiv_nog_nonfilt_p_tabs_ext
 ```
 
 #### Ji_WTP_DS
+
+Need to run all three
 
 ```{r}
 setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Ji_WTP_DS/False_Discovery_Testing/results_nonfilt/")
@@ -529,6 +572,11 @@ Unfiltered_FD_data_ext[["Ji_WTP_DS"]] <- JI_WTP_nonfilt_p_tabs_ext
 ```
 
 #### Office
+
+
+Need to run all three
+
+
 ```{r}
 setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/Office/False_Discovery_Testing/results_nonfilt/")
 
@@ -563,6 +611,10 @@ Unfiltered_FD_data_ext[["Office"]] <- Office_nonfilt_p_tabs_ext
 ```
 
 #### cdi_schubert
+
+Need to run all three
+
+
 ```{r}
 setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/cdi_schubert/False_Discovery_Testing/results_nonfilt/")
 
@@ -597,6 +649,10 @@ Unfiltered_FD_data_ext[["cdi_schubert"]] <- schubert_nonfilt_p_tabs_ext
 ```
 
 #### sw_sed_detender
+
+Need to run all three
+
+
 ```{r}
 setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/sw_sed_detender/False_Discovery_Testing/results_nonfilt/")
 
