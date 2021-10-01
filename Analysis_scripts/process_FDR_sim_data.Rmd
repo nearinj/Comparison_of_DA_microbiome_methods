@@ -444,43 +444,7 @@ setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/ob_go
 
 goodrich_nonfilt_ext <- lapply(c(1:90), read_hackathon_results)
 
-## need to rerun aldex due to running out of memory when it ran originally...
-## the following runs:
-# 11 (done)
-# 12 (done)
-# 24  (done)
-# 27 (done)
-# 34 (done)
-# 36 (done)
-# 37 (done)
-# 38 (done)
-# 41 (done)
-# 43 (done)
-# 45 (done)
-# 46 (done)
-# 47 (done)
-# 49 (done)
-# 50 (done)
-# 53 (done)
-# 56 (done) 
-# 57 (done)
-# 58 (done)
-# 59 (done)
-# 60 (done)
-# 61 (done)
-# 62 (done)
-# 63 (done)
-# 64 (done)
-# 65 (done)
-# 66 (done)
-# 67 (done)
-# 68 (done)
-# 69 (done)
-# 70 (done)
-# 71 (done)
-# 72 (done)
-# 73 (done)
-# 74 (done), 75 (done), 76 (done), 77 (done), 78 (done), 79 (done), 80 (done), 81 (done), 82 (done), 83 (done), 84 (done), 85 (done), 86 (done), 87 , 88, 89
+
 
 goodrich_nonfilt_p_tabs_ext <- list()
 

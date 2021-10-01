@@ -64,6 +64,8 @@ tool_names <- c(aldex2="ALDEx2", ancom="ANCOM-II", corncob="corncob", deseq2="DE
                 limma_voom_TMM="limma voom (TMM)", limma_voom_TMMwsp="limma voom (TMMwsp)", maaslin2="MaAsLin2",
                 maaslin2rare="MaAsLin2 (rare)", metagenomeSeq="metagenomeSeq", ttestrare="t-test (rare)", 
                 wilcoxonclr="Wilcoxon (CLR)", wilcoxonrare="Wilcoxon (rare)")
+
+
 ```
 
 # Introduction
@@ -75,20 +77,30 @@ The below code parses simulation replicates where we do not expect to see differ
 # Creating summary dataframes
 
 ```{r}
+
+get_total_feats <- function(df_list, rare=FALSE){
+  
+  rare_tools <- c("lefse", "maaslin2rare", "ttestrare", "wilcoxonrare")
+  
+  if(!rare){
+    total_feats <- nrow(df_list[[1]])
+  }else{
+    total_feats <- colSums(!is.na(df_list[[1]][, rare_tools]))
+  }
+  
+  return(total_feats)
+}
+
 ### get percent significant for each tool
 get_percent_sig <- function(df_list){
   
   rare_tools <- c("lefse", "maaslin2rare", "ttestrare", "wilcoxonrare")
-
   total_feats <- nrow(df_list[[1]])
   
+  #since each of these tools should return a value if they are tested we can get the number of tested features counting 
+  # the number of non-NA values
   rare_nonNA_val <- colSums(!is.na(df_list[[1]][, rare_tools]))
   
-  if (length(which(duplicated(rare_nonNA_val))) == 3) {
-    total_rar_feats <- as.numeric(rare_nonNA_val[1])
-  } else {
-    stop("Unable to figure out how many rarefied features there were.")
-  }
   
   ### first convert DF to binary 1 and 0 representing sig and nonsig features.
   temp_sig_list <- list()
@@ -119,11 +131,14 @@ get_percent_sig <- function(df_list){
     ## the problem is to get this data we would need to load in the large list so we will manually
     for(j in 1:length(num_hits)){
       #check if it is rarified tool
-      if(names(num_hits)[j]=="lefse" | 
-         names(num_hits)[j]=="maaslin2rare" | 
-         names(num_hits)[j]=="ttestrare" |
-         names(num_hits)[j]=="wilcoxonrare"){
-          num_hits[j] <- num_hits[j]/total_rar_feats
+      if(names(num_hits)[j]=="lefse"){
+        num_hits[j] <- num_hits[j]/rare_nonNA_val[1]
+      }else if(names(num_hits)[j]=="maaslin2rare"){
+        num_hits[j] <- num_hits[j]/rare_nonNA_val[2]
+      }else if(names(num_hits)[j]=="ttestrare"){
+        num_hits[j] <- num_hits[j]/rare_nonNA_val[3]
+      }else if(names(num_hits)[j]=="wilcoxonrare"){
+        num_hits[j] <- num_hits[j]/rare_nonNA_val[4]
       }else{
            num_hits[j] <- num_hits[j]/total_feats
          }
@@ -145,11 +160,12 @@ get_percent_sig <- function(df_list){
 
 ## Filtered
 ```{r}
-Filtered_FD_data <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_filt_21_04_08.RDS")
+Filtered_FD_data <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_filt_21_09_17.RDS")
 
-Office_per_sig <- get_percent_sig(Filtered_FD_data[["Office"]])
 
 ArcticFreshWaters_per_sig <- get_percent_sig(Filtered_FD_data[["ArcticFreshWaters"]])
+
+Office_per_sig <- get_percent_sig(Filtered_FD_data[["Office"]])
 
 Blueberry_per_sig <- get_percent_sig(Filtered_FD_data[["Blueberry"]])
 
@@ -182,6 +198,25 @@ Mean_raw_sig <- data.frame(ArcticFreshWater = colMeans(ArcticFreshWaters_per_sig
                                     Ji_WTP_DS = colMeans(Ji_WTP_DS_per_sig[[1]]),
                                     Schubert = colMeans(cdi_schubert_per_sig[[1]]),
                                     Sw_sed_detender = colMeans(sw_sed_detender_per_sig[[1]]))
+
+SD_filt_percent_sig <- data.frame(ArcticFreshWater = apply(ArcticFreshWaters_per_sig[[2]], 2, sd),
+                                    Office = apply(Office_per_sig[[2]], 2, sd),
+                                    Blueberry = apply(Blueberry_per_sig[[2]], 2, sd),
+                                    Goodrich = apply(ob_goodrich_per_sig[[2]], 2, sd),
+                                    Hiv_noguerajulian = apply(hiv_noguerajulian_per_sig[[2]], 2, sd),
+                                    Ji_WTP_DS = apply(Ji_WTP_DS_per_sig[[2]], 2, sd),
+                                    Schubert = apply(cdi_schubert_per_sig[[2]], 2, sd),
+                                    Sw_sed_detender = apply(sw_sed_detender_per_sig[[2]], 2, sd))
+
+Median_filt_percent_sig <- data.frame(ArcticFreshWater = apply(ArcticFreshWaters_per_sig[[2]], 2, median),
+                                    Office = apply(Office_per_sig[[2]], 2, median),
+                                    Blueberry = apply(Blueberry_per_sig[[2]], 2, median),
+                                    Goodrich = apply(ob_goodrich_per_sig[[2]], 2, median),
+                                    Hiv_noguerajulian = apply(hiv_noguerajulian_per_sig[[2]], 2, median),
+                                    Ji_WTP_DS = apply(Ji_WTP_DS_per_sig[[2]], 2, median),
+                                    Schubert = apply(cdi_schubert_per_sig[[2]], 2, median),
+                                    Sw_sed_detender = apply(sw_sed_detender_per_sig[[2]], 2, median))
+
 
 # Sort rownames
 Mean_filt_percent_sig <- Mean_filt_percent_sig[sort(rownames(Mean_filt_percent_sig)), ]
@@ -222,24 +257,42 @@ Unfiltered_FD_data <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/F
 
 Unfiltered_FD_data_ext <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_ext_21_04_08.RDS")
 
+Unfilt_total_feats <- get_total_features(unfilt_study_tab)
 
-## combine the data lists together
+
+## Has 100 reps for all tools
 ArcticFreshWater_FD_data_comb  <- c(Unfiltered_FD_data[["ArcticFreshWaters"]], Unfiltered_FD_data_ext[["ArcticFreshWaters"]])
+
+#Has 100 reps for all tools
 Blueberry_FD_data_comb <- c(Unfiltered_FD_data[["Blueberry"]], Unfiltered_FD_data_ext[["Blueberry"]])
+
+#Has 100 reps for all tools
 ob_goodrich_data_comb <- c(Unfiltered_FD_data[["ob_goodrich"]], Unfiltered_FD_data_ext[["ob_goodrich"]])
+
+#Has 100 reps for all tools except ancom and corncob
 hiv_noguerajulian_data_comb <- c(Unfiltered_FD_data[["hiv_noguerajulian"]], Unfiltered_FD_data_ext[["hiv_noguerajulian"]])
+
+#All other datasets have 100 reps for all tools except ancom, aldex2 and corncob
 Ji_WTP_DS_data_comb <- c(Unfiltered_FD_data[["Ji_WTP_DS"]], Unfiltered_FD_data_ext[["Ji_WTP_DS"]])
+
 Office_data_comb <- c(Unfiltered_FD_data[["Office"]], Unfiltered_FD_data_ext[["Office"]])
+
 cdi_schubert_data_comb <- c(Unfiltered_FD_data[["cdi_schubert"]], Unfiltered_FD_data_ext[["cdi_schubert"]])
+
 sw_sed_detender_data_comb <- c(Unfiltered_FD_data[["sw_sed_detender"]], Unfiltered_FD_data_ext[["sw_sed_detender"]])
+
+
 
 ArcticFreshWaters_per_sig_un <- get_percent_sig(ArcticFreshWater_FD_data_comb)
 
+
 Blueberry_per_sig_un <- get_percent_sig(Blueberry_FD_data_comb)
+
 
 ob_goodrich_per_sig_un <- get_percent_sig(ob_goodrich_data_comb)
 
 hiv_noguerajulian_per_sig_un <- get_percent_sig(hiv_noguerajulian_data_comb)
+
 
 Ji_WTP_DS_per_sig_un <- get_percent_sig(Ji_WTP_DS_data_comb)
 
@@ -307,18 +360,19 @@ unfiltered_heatmap_panel
 Heatmap to be saved and then edited outside of R so that the colour key is labelled and only shown once for both plots.
 
 ```{r}
-Figure4_plot <- cowplot::plot_grid(ggplotify::as.ggplot(unfiltered_heatmap_panel),
+Figure4_plot_old <- cowplot::plot_grid(ggplotify::as.ggplot(unfiltered_heatmap_panel),
                                    ggplotify::as.ggplot(filtered_heatmap_panel),
                                    nrow=1, labels = c("A", "B"))
 
-Figure4_plot
+Figure4_plot_old
 
-ggsave(filename=paste(display_items_out, "Main_figures", "Figure4_FDR_heatmaps_raw.pdf", sep="/"),
-       plot = Figure4_plot, width = 9, height=3.5, units="in", dpi=600)
+ggsave(filename=paste(display_items_out, "Misc_figures", "OLD_Figure4_FDR_heatmaps_raw.pdf", sep="/"),
+       plot = Figure4_plot_old, width = 9, height=3.5, units="in", dpi=600)
 ```
 
 
 # Supplementary boxplot figures
+This plots were originally supplementay but we have decided to include them as main figures.
 
 ```{r}
 qual_col <- c("grey", #ALDEx2
@@ -351,7 +405,19 @@ filt_percent_sig$Dataset <- as.character(filt_percent_sig$Dataset)
 
 filt_percent_sig$Tool <- factor(tool_names[filt_percent_sig$Tool])
 filt_percent_sig$Tool <- factor(filt_percent_sig$Tool, levels = rev(levels(filt_percent_sig$Tool)))
+
+#get total number of sig features
+total_filt_feats <- lapply(Filtered_FD_data, get_total_feats)
+
+names(total_filt_feats) <- c("Office", "ArcticFreshWater", "Blueberry", "Goodrich", "Hiv_noguerajulian",
+                             "Ji_WTP_DS", "Schubert", "Sw_sed_detender")
+
+matchs <- match(filt_percent_sig$Dataset, names(total_filt_feats))
+
+
 filt_percent_sig$Dataset <- Data_set_names[filt_percent_sig$Dataset]
+
+filt_percent_sig$Dataset_num <- paste(filt_percent_sig$Dataset, total_filt_feats[matchs], sep="\n  ASVs: ")
 
 
 filt_percent_sig_boxplots <- ggplot(filt_percent_sig, aes(y = Tool, x = Percent_sig, fill = Tool)) +
@@ -362,7 +428,7 @@ filt_percent_sig_boxplots <- ggplot(filt_percent_sig, aes(y = Tool, x = Percent_
                                     ylab("") +
                                     theme(legend.position = "none") +
                                     theme(plot.title = element_text(hjust = 0.5)) +
-                                    facet_wrap(. ~ Dataset, nrow = 2) +
+                                    facet_wrap(. ~ Dataset_num, nrow = 2, labeller = labeller(type = label_parsed)) +
                                     scale_x_continuous(trans = scales::pseudo_log_trans(base = 10),
                                                        breaks = c(0, 1, 2, 5, 10, 30, 100),
                                                        limits = c(0, 100)) +
@@ -390,8 +456,18 @@ unfilt_percent_sig$Dataset <- as.character(unfilt_percent_sig$Dataset)
 
 unfilt_percent_sig$Tool <- factor(tool_names[unfilt_percent_sig$Tool])
 unfilt_percent_sig$Tool <- factor(unfilt_percent_sig$Tool, levels = rev(levels(unfilt_percent_sig$Tool)))
+
+#get total number of ASVs tested
+total_unfilt_feats <- lapply(Unfiltered_FD_data, get_total_feats)
+names(total_unfilt_feats) <- c("ArcticFreshWater", "Blueberry", "Goodrich", "Hiv_noguerajulian", "Ji_WTP_DS", "Office", "Schubert", "Sw_sed_detender")
+
+matchs_unfilt <- match(unfilt_percent_sig$Dataset, names(total_unfilt_feats))
+
+
+
 unfilt_percent_sig$Dataset <- Data_set_names[unfilt_percent_sig$Dataset]
 
+unfilt_percent_sig$Dataset_num <- paste(unfilt_percent_sig$Dataset, total_unfilt_feats[matchs_unfilt], sep="\n  ASVs: ")
 
 unfilt_percent_sig <- unfilt_percent_sig[-which(is.na(unfilt_percent_sig$Percent_sig)), ]
 
@@ -403,7 +479,7 @@ unfilt_percent_sig_boxplots <- ggplot(unfilt_percent_sig, aes(y = Tool, x = Perc
                                     ylab("") +
                                     theme(legend.position = "none") +
                                     theme(plot.title = element_text(hjust = 0.5)) +
-                                    facet_wrap(. ~ Dataset, nrow = 2) +
+                                    facet_wrap(. ~ Dataset_num, nrow = 2) +
                                     scale_x_continuous(trans = scales::pseudo_log_trans(base = 10),
                                                        breaks = c(0, 1, 2, 5, 10, 30, 100),
                                                        limits = c(0, 100)) +
@@ -415,17 +491,28 @@ filt_percent_sig_boxplots
 
 unfilt_percent_sig_boxplots
 
-ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_FDR_filt_boxplots.png", sep="/"),
-       plot = filt_percent_sig_boxplots, width = 10, height=7, units="in", dpi=300)
 
-ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_FDR_filt_boxplots.pdf", sep="/"),
+New_Figure4 <- plot_grid(unfilt_percent_sig_boxplots, filt_percent_sig_boxplots, labels=c("A", "B"), nrow=2)
+New_Figure4
+
+
+ggsave(filename=paste(display_items_out, "Main_figures", "FDR_boxplots_Figure4.png", sep="/"),
+       plot = New_Figure4, width = 10, height=7, units="in", dpi=300)
+
+ggsave(filename=paste(display_items_out, "Main_figures", "FDR_boxplots_Figure4.pdf", sep="/"),
        plot = filt_percent_sig_boxplots, width = 10, height=7, units="in", dpi=600)
 
-ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_FDR_unfilt_boxplots.png", sep="/"),
-       plot = unfilt_percent_sig_boxplots, width = 10, height=7, units="in", dpi=300)
+#ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_FDR_filt_boxplots.png", sep="/"),
+       #plot = filt_percent_sig_boxplots, width = 10, height=7, units="in", dpi=300)
 
-ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_FDR_unfilt_boxplots.pdf", sep="/"),
-       plot = unfilt_percent_sig_boxplots, width = 10, height=7, units="in", dpi=600)
+#ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_FDR_filt_boxplots.pdf", sep="/"),
+       #plot = filt_percent_sig_boxplots, width = 10, height=7, units="in", dpi=600)
+
+#ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_FDR_unfilt_boxplots.png", sep="/"),
+       #plot = unfilt_percent_sig_boxplots, width = 10, height=7, units="in", dpi=300)
+
+#ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_FDR_unfilt_boxplots.pdf", sep="/"),
+       #plot = unfilt_percent_sig_boxplots, width = 10, height=7, units="in", dpi=600)
 
 ```
 
