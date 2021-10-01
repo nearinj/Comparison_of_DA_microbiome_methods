@@ -21,7 +21,7 @@ setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/")
 
 ### Folders where final figures are written
 ### Make sure this is pointed to your home directory
-display_items_out <- "/home/jacob/GitHub_Repos/Clean_Hackathon/Display_items/"
+display_items_out <- "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Display_items"
 
 ###updated dataset names
 Data_set_names <- c(ArcticFireSoils="Soil - Fires",
@@ -258,8 +258,8 @@ names(filt_results) <- hackathon_study_ids
 unfilt_results <- lapply(hackathon_study_ids, read_hackathon_results, results_folder = "No_filt_Results")
 names(unfilt_results) <- hackathon_study_ids
 
-saveRDS(filt_results, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/Filt_results_21_04_07.RDS")
-saveRDS(unfilt_results, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/Unfilt_results_21_04_07.RDS")
+#saveRDS(filt_results, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/Filt_results_21_04_07.RDS")
+#saveRDS(unfilt_results, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/Unfilt_results_21_04_07.RDS")
 
 ```
 
@@ -329,8 +329,8 @@ for (study in hackathon_study_ids){
   }
 }
 
-saveRDS(unfilt_study_tab, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/unfilt_study_tab_21_04_07.RDS")
-saveRDS(filt_study_tab, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/filt_study_tab_21_04_07.RDS")
+#saveRDS(unfilt_study_tab, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/unfilt_study_tab_21_04_07.RDS")
+#saveRDS(filt_study_tab, "/home/jacob/GitHub_Repos/Hackathon_testing/Data/filt_study_tab_21_04_07.RDS")
 ```
 
 # Figure 1 Analysis
@@ -637,8 +637,9 @@ rownames(hackathon_metadata_filt) <- hackathon_metadata_filt$Dataset.Name
 ## fixed prefix refers to the removal of this dataset
 fixed_hackathon_metadata_filt <- hackathon_metadata_filt[-which(rownames(hackathon_metadata_filt) == "ob_zupancic"), ]
 
-## getting sample sizes from metadata sheet..
-fixed_hackathon_metadata_filt$log_N <- log(fixed_hackathon_metadata_filt$Sample.Size)
+## Get sample sizes based on number of columns per dataset.
+dataset_sample_sizes <- sapply(filt_study_tab$nonrare, ncol)
+fixed_hackathon_metadata_filt$log_N <- log(dataset_sample_sizes[rownames(fixed_hackathon_metadata_filt)])
 
 #load in permanova results from atichsons distance with a 1 pseudocount
 aitchison_permanova <- read.table("/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Misc_datafiles/aitchison_permanova_results.tsv",
@@ -735,8 +736,9 @@ rownames(hackathon_metadata_unfilt) <- hackathon_metadata_unfilt$Dataset.Name
 #remove ob_zupanic
 fixed_hackathon_metadata_unfilt <- hackathon_metadata_unfilt[-which(rownames(hackathon_metadata_unfilt) == "ob_zupancic"), ]
 
-## getting sample sizes from metadata sheet....
-fixed_hackathon_metadata_unfilt$log_N <- log(fixed_hackathon_metadata_unfilt$Sample.Size)
+## Get sample sizes based on number of columns per dataset.
+dataset_sample_sizes <- sapply(unfilt_study_tab$nonrare, ncol)
+fixed_hackathon_metadata_unfilt$log_N <- log(dataset_sample_sizes[rownames(fixed_hackathon_metadata_unfilt)])
 
 ## Get r2 values
 aitchison_permanova <- read.table("/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Misc_datafiles/aitchison_permanova_results.tsv", header = TRUE, sep = "\t", row.names = 1)
