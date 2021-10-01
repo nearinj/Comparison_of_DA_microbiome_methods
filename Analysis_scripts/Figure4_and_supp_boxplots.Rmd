@@ -500,7 +500,7 @@ ggsave(filename=paste(display_items_out, "Main_figures", "FDR_boxplots_Figure4.p
        plot = New_Figure4, width = 10, height=7, units="in", dpi=300)
 
 ggsave(filename=paste(display_items_out, "Main_figures", "FDR_boxplots_Figure4.pdf", sep="/"),
-       plot = filt_percent_sig_boxplots, width = 10, height=7, units="in", dpi=600)
+       plot = New_Figure4, width = 10, height=7, units="in", dpi=600)
 
 #ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_FDR_filt_boxplots.png", sep="/"),
        #plot = filt_percent_sig_boxplots, width = 10, height=7, units="in", dpi=300)
