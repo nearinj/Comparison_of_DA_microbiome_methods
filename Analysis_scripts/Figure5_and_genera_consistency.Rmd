@@ -51,6 +51,103 @@ obesity_combined_overlap <- readRDS(file = "/home/gavin/github_repos/hackathon/C
 
 ```
 
+```{r save_plotting_data}
+diarrhea_combined_overlap_obs <- diarrhea_combined_overlap[, grep("observed", colnames(diarrhea_combined_overlap))]
+diarrhea_combined_overlap_obs <- diarrhea_combined_overlap_obs[1:nrow(diarrhea_outputs_binary_clean_combined), ]
+colnames(diarrhea_combined_overlap_obs) <- gsub(".observed", "", colnames(diarrhea_combined_overlap_obs))
+rownames(diarrhea_combined_overlap_obs) <- rownames(diarrhea_outputs_binary_clean_combined)
+
+## Quick check that the output file matches the expected observed table.
+# tool_names <- gsub("cdi_schubert.", "", grep("cdi_schubert", colnames(diarrhea_outputs_binary_clean_combined), value = TRUE))
+# diarrhea_tool_genera_sums <- data.frame(matrix(0, nrow = nrow(diarrhea_outputs_binary_clean_combined), ncol = ncol(diarrhea_combined_overlap_obs)))
+# rownames(diarrhea_tool_genera_sums) <- rownames(diarrhea_outputs_binary_clean_combined)
+# colnames(diarrhea_tool_genera_sums) <- tool_names
+# for (tool_name in tool_names) {
+#    diarrhea_tool_genera_sums[, tool_name] <- rowSums(diarrhea_outputs_binary_clean_combined[, grep(paste(tool_name, "$", sep = ""), colnames(diarrhea_outputs_binary_clean_combined))])
+# }
+# all.equal(diarrhea_tool_genera_sums, diarrhea_combined_overlap_obs)
+
+diarrhea_combined_overlap_obs_orig_col <- colnames(diarrhea_combined_overlap_obs)
+diarrhea_combined_overlap_obs$genus <- rownames(diarrhea_combined_overlap_obs)
+diarrhea_combined_overlap_obs <- diarrhea_combined_overlap_obs[, c("genus", diarrhea_combined_overlap_obs_orig_col)]
+
+write.table(x = diarrhea_combined_overlap_obs,
+            file = "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Plotting_data/Main_Figures/Figure5_and_Table2_genera_diarrhea_observed_consistency.csv",
+            col.names = TRUE, row.names = FALSE, quote = FALSE, sep = ",")
+
+
+diarrhea_combined_overlap_expected <- diarrhea_combined_overlap[, grep("expected", colnames(diarrhea_combined_overlap))]
+colnames(diarrhea_combined_overlap_expected) <- gsub(".expected", "", colnames(diarrhea_combined_overlap_expected))
+
+diarrhea_combined_overlap_expected_rep_info <- c()
+
+# Make rownames so it's easier to understand table.
+for (rep_i in 1:1000) {
+ for (genus_i in 1:nrow(diarrhea_combined_overlap_obs)) {
+   diarrhea_combined_overlap_expected_rep_info <- c(diarrhea_combined_overlap_expected_rep_info, paste("rep", as.character(rep_i), "_genus", as.character(genus_i), sep = ""))
+ }
+}
+
+diarrhea_combined_overlap_expected_orig_col <- colnames(diarrhea_combined_overlap_expected)
+diarrhea_combined_overlap_expected$replicate_info <- diarrhea_combined_overlap_expected_rep_info
+
+diarrhea_combined_overlap_expected <- diarrhea_combined_overlap_expected[, c("replicate_info", diarrhea_combined_overlap_expected_orig_col)]
+
+write.table(x = diarrhea_combined_overlap_expected,
+            file = "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Plotting_data/Main_Figures/Figure5_and_Table2_genera_diarrhea_expected_consistency.csv",
+            col.names = TRUE, row.names = FALSE, quote = FALSE, sep = ",")
+
+
+
+
+obesity_combined_overlap_obs <- obesity_combined_overlap[, grep("observed", colnames(obesity_combined_overlap))]
+obesity_combined_overlap_obs <- obesity_combined_overlap_obs[1:nrow(obesity_outputs_binary_clean_combined), ]
+colnames(obesity_combined_overlap_obs) <- gsub(".observed", "", colnames(obesity_combined_overlap_obs))
+rownames(obesity_combined_overlap_obs) <- rownames(obesity_outputs_binary_clean_combined)
+
+## Quick check that the output file matches the expected observed table.
+# tool_names <- gsub("goodrich.", "", grep("goodrich", colnames(obesity_outputs_binary_clean_combined), value = TRUE))
+# obesity_tool_genera_sums <- data.frame(matrix(0, nrow = nrow(obesity_outputs_binary_clean_combined), ncol = ncol(obesity_combined_overlap_obs)))
+# rownames(obesity_tool_genera_sums) <- rownames(obesity_outputs_binary_clean_combined)
+# colnames(obesity_tool_genera_sums) <- tool_names
+# for (tool_name in tool_names) {
+#    obesity_tool_genera_sums[, tool_name] <- rowSums(obesity_outputs_binary_clean_combined[, grep(paste(tool_name, "$", sep = ""), colnames(obesity_outputs_binary_clean_combined))])
+# }
+# all.equal(obesity_tool_genera_sums, obesity_combined_overlap_obs)
+
+obesity_combined_overlap_obs_orig_col <- colnames(obesity_combined_overlap_obs)
+obesity_combined_overlap_obs$genus <- rownames(obesity_combined_overlap_obs)
+obesity_combined_overlap_obs <- obesity_combined_overlap_obs[, c("genus", obesity_combined_overlap_obs_orig_col)]
+
+write.table(x = obesity_combined_overlap_obs,
+            file = "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Plotting_data/Supp_figures/SuppTable3_genera_obesity_observed_consistency.csv",
+            col.names = TRUE, row.names = FALSE, quote = FALSE, sep = ",")
+
+
+obesity_combined_overlap_expected <- obesity_combined_overlap[, grep("expected", colnames(obesity_combined_overlap))]
+colnames(obesity_combined_overlap_expected) <- gsub(".expected", "", colnames(obesity_combined_overlap_expected))
+
+obesity_combined_overlap_expected_rep_info <- c()
+
+# Make rownames so it's easier to understand table.
+for (rep_i in 1:1000) {
+ for (genus_i in 1:nrow(obesity_combined_overlap_obs)) {
+   obesity_combined_overlap_expected_rep_info <- c(obesity_combined_overlap_expected_rep_info, paste("rep", as.character(rep_i), "_genus", as.character(genus_i), sep = ""))
+ }
+}
+
+obesity_combined_overlap_expected_orig_col <- colnames(obesity_combined_overlap_expected)
+obesity_combined_overlap_expected$replicate_info <- obesity_combined_overlap_expected_rep_info
+
+obesity_combined_overlap_expected <- obesity_combined_overlap_expected[, c("replicate_info", obesity_combined_overlap_expected_orig_col)]
+
+write.table(x = obesity_combined_overlap_expected,
+            file = "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Plotting_data/Supp_figures/SuppTable3_genera_obesity_expected_consistency.csv",
+            col.names = TRUE, row.names = FALSE, quote = FALSE, sep = ",")
+
+
+```
+
 # Tool summaries {.tabset}
 
 ## Diarrhea
