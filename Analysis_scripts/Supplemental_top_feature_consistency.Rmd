@@ -9,6 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(ggplot2)
 library(cowplot)
+library(dplyr)
 
 
 tool_names <- c(aldex2="ALDEx2", ancom="ANCOM-II", corncob="corncob", deseq2="DESeq2", edger="edgeR", lefse="LEfSe", 
@@ -85,15 +86,30 @@ generate_consist_occur <- function(count_df){
     tool <- colnames(count_df)[i]
     
     occur_obs <- table(count_df[,i])
+    #need to check if this vector is full if it is not we need to replace
+
+    missing_vals <- setdiff(1:14, names(occur_obs))
+    current_nums <- names(occur_obs)
+    for(i in missing_vals){
     
-    ret_data[[tool]] <- occur_obs
+      occur_obs <- c(occur_obs, 0)
+    
+    }
+    names(occur_obs) <- as.character(c(current_nums, missing_vals))
+    occur_obs <- occur_obs[order(as.numeric(names(occur_obs)))]
+    
+    #consistancy is the number of tools that called that feature
+    occur_obs_df <- data.frame(Consistancy=names(occur_obs),
+                                 Count=occur_obs)
+
+    ret_data[[tool]] <- occur_obs_df
     
     
   }
   #melt the data
-  
+
   ret_data_df <- reshape2::melt(ret_data)
-  colnames(ret_data_df) <- c("Consistancy", "Count", "Tool")
+  colnames(ret_data_df) <- c("Consistancy", "variable", "Count", "Tool")
   return(ret_data_df)
 }
 
@@ -170,6 +186,7 @@ for(i in 1:length(filt_results)){
 }
 
 filt_top_feat_counts <- lapply(filt_top_feat_lists, FUN=generate_data_table)
+
 ### we need to go through each dataset and count the number of times each observations of score X shows up for each tool
 filt_top_feat_count_melt <- lapply(filt_top_feat_counts, FUN=generate_consist_occur)
 
@@ -189,8 +206,23 @@ filt_final_plot <- ggplot(filt_comp_tab, aes(x=Consistancy, y=Count)) + facet_gr
   theme(strip.background = element_blank(), strip.text.y.left=element_text(angle=0)) + coord_cartesian(ylim=c(0,12)) + scale_y_continuous(position = "right", breaks = seq(from=1,to=12,by=2)) + ggtitle("Filtered")
 filt_final_plot
 
-means <- aggregate(filt_comp_tab$Count, by=list(filt_comp_tab$Consistancy, filt_comp_tab$Tool), FUN=mean)
-View(means)
+filt_means <- aggregate(filt_comp_tab$Count, by=list(filt_comp_tab$Consistancy, filt_comp_tab$Tool), FUN=mean)
+
+#get % of features only found by that tool
+dplyr::filter(filt_means, Group.1=="1") %>% arrange(x)
+
+#get % of features found by all tools on average
+dplyr::filter(filt_means, Group.1=="14") %>% arrange(x)
+
+filt_SDs <- aggregate(filt_comp_tab$Count, by=list(filt_comp_tab$Consistancy, filt_comp_tab$Tool), FUN=sd)
+
+#SDs for 1
+dplyr::filter(filt_SDs, Group.1=="1") %>% arrange(x)
+
+#Sd for all features
+dplyr::filter(filt_SDs, Group.1=="14") %>% arrange(x)
+
+write.csv2(filt_final_plot$data, "~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/top_20_consistency_filt.csv")
 ```
 
 ## Unfilter Analysis
@@ -228,8 +260,21 @@ unfilt_final_plot <- ggplot(unfilt_comp_tab, aes(x=Consistancy, y=Count)) + face
   theme(strip.background = element_blank(), strip.text.y.left=element_text(angle=0)) + coord_cartesian(ylim=c(0,12)) + scale_y_continuous(position = "right", breaks = seq(from=1,to=12,by=2)) + ggtitle("Unfiltered")
 unfilt_final_plot
 
-means <- aggregate(unfilt_comp_tab$Count, by=list(unfilt_comp_tab$Consistancy, unfilt_comp_tab$Tool), FUN=mean)
-View(means)
+unfilt_means <- aggregate(unfilt_comp_tab$Count, by=list(unfilt_comp_tab$Consistancy, unfilt_comp_tab$Tool), FUN=mean)
+
+
+
+#get % of features found by all tools on average
+dplyr::filter(unfilt_means, Group.1=="14") %>% arrange(x)
+
+#SD
+unfilt_SD <- aggregate(unfilt_comp_tab$Count, by=list(unfilt_comp_tab$Consistancy, unfilt_comp_tab$Tool), FUN=sd)
+
+
+dplyr::filter(unfilt_SD, Group.1=="14") %>% arrange(x)
+
+write.csv2(unfilt_final_plot$data, "~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/top_20_consistency_unfilt.csv")
+
 ```
 
 ## Final plot

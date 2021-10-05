@@ -361,4 +361,6 @@ ggsave(filename=paste(display_items_out, "Supp_figures", "Read_depth_FP_analysis
 
 ggsave(filename=paste(display_items_out, "Supp_figures", "Read_depth_FP_analysis.png", sep="/"),
        plot = box_FP_res, width = 12, height=10, units="in", dpi=100)
+
+write.csv(box_FP_res$data, "~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/FDR_Read_depth.csv")
 ```

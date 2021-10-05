@@ -491,16 +491,19 @@ filt_percent_sig_boxplots
 
 unfilt_percent_sig_boxplots
 
+#write plotting data
+write.csv2(unfilt_percent_sig_boxplots$data, "~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure4_FDR_boxplots_unfilt.csv")
+write.csv2(unfilt_percent_sig_boxplots$data, "~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure4_FDR_boxplots_filt.csv")
 
 New_Figure4 <- plot_grid(unfilt_percent_sig_boxplots, filt_percent_sig_boxplots, labels=c("A", "B"), nrow=2)
 New_Figure4
 
 
 ggsave(filename=paste(display_items_out, "Main_figures", "FDR_boxplots_Figure4.png", sep="/"),
-       plot = New_Figure4, width = 10, height=7, units="in", dpi=300)
+       plot = New_Figure4, width = 10, height=10, units="in", dpi=300)
 
 ggsave(filename=paste(display_items_out, "Main_figures", "FDR_boxplots_Figure4.pdf", sep="/"),
-       plot = New_Figure4, width = 10, height=7, units="in", dpi=600)
+       plot = New_Figure4, width = 10, height=10, units="in", dpi=600)
 
 #ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_FDR_filt_boxplots.png", sep="/"),
        #plot = filt_percent_sig_boxplots, width = 10, height=7, units="in", dpi=300)

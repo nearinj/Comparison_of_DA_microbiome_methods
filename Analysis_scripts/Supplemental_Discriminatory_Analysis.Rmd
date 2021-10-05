@@ -20,6 +20,8 @@ library(doParallel)
 library(ggplot2)
 library(reshape2)
 library(cowplot)
+library(dplyr)
+
 
 library(RColorBrewer)
 library(ggbeeswarm)
@@ -324,7 +326,7 @@ saveRDS(unfilt_AUROC_all_clr, "~/GitHub_Repos/Clean_Hackathon/Data/unfilt_AUROC_
 Function for generating heatmaps
 ```{r}
 
-get_median_heat <- function(p_list, AUROC_list, dataset_names, tool_rename, main=""){
+get_median_heat <- function(p_list, AUROC_list, dataset_names, tool_rename, main="", return_data=FALSE){
   
   sig_AUROCs <- list()
   for(i in 1:length(AUROC_list)){
@@ -354,8 +356,13 @@ get_median_heat <- function(p_list, AUROC_list, dataset_names, tool_rename, main
 
   #round to 2 digits
   ordered_flip_median_vals <- round(ordered_flip_median_vals, digits = 2)
+  
+  if(return_data){
+    return(ordered_flip_median_vals)  
+  }
   #add blank character for NA values
   ordered_flip_median_vals[is.na(ordered_flip_median_vals)] <- "\u0020"
+
 
   #flip matrix so rows are datasets and columns are tools
   Scaled_heatmap <- pheatmap(t(scaled_orded_flip_median_vals),
@@ -382,6 +389,10 @@ AUROC_FILT_all_RA <- readRDS("~/GitHub_Repos/Clean_Hackathon/Data/filt_AUROC_all
 Scaled_filt_heatmap_RA <- get_median_heat(filt_results, AUROC_FILT_all_RA, dataset_names = Data_set_names, tool_rename = tool_names,
                                           main="Filtered RA. median AUROC sig. ASVs")
 
+
+filt_heat_data <- get_median_heat(filt_results, AUROC_FILT_all_RA, dataset_names = Data_set_names, tool_rename = tool_names,
+                                          main="Filtered RA. median AUROC sig. ASVs", return_data = T)
+write.csv2(filt_heat_data, "~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/Supplemental_AUROC_heatmap_filt_RA.csv")
 ```
 
 #### heatmap CLR
@@ -391,6 +402,11 @@ AUROC_FILT_all_CLR <- readRDS("~/GitHub_Repos/Clean_Hackathon/Data/filt_AUROC_al
 
 Scaled_filt_heatmap_CLR <- get_median_heat(filt_results, AUROC_FILT_all_CLR, dataset_names = Data_set_names, tool_rename = tool_names,
                                            main="Filtered CLR median AUROC sig. ASVs")
+
+filt_heat_data_CLR <- get_median_heat(filt_results, AUROC_FILT_all_CLR, dataset_names = Data_set_names, tool_rename = tool_names,
+                                           main="Filtered CLR median AUROC sig. ASVs", return_data = T)
+
+write.csv2(filt_heat_data_CLR, "~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/Supplemental_AUROC_heatmap_filt_CLR.csv")
 ```
 
 ### UnFilt
@@ -606,63 +622,119 @@ test_plot
 ```
 
 ### Data Analysis
+
+#### load data
 ```{r}
 filt_AUROC_all <- readRDS("~/GitHub_Repos/Clean_Hackathon/Data/filt_AUROC_all.RDS")
 unfilt_AUROC_all <- readRDS("~/GitHub_Repos/Clean_Hackathon/Data/unfilt_AUROC_all.RDS")
 filt_AUROC_all_clr <- readRDS("~/GitHub_Repos/Clean_Hackathon/Data/filt_AUROC_all_CLR.RDS")
 unfilt_AUROC_all_clr <- readRDS("~/GitHub_Repos/Clean_Hackathon/Data/unfilt_AUROC_All_CLR.RDS")
+```
 
-
-
-
+#### 0.7 RA Filt
+```{r}
 plot_07 <- generate_plot_AUROC_plot(filt_results, filt_AUROC_all, cutoff=0.7) + ggtitle("RA. 0.7 AUROC") + theme(axis.text.x = element_text(angle=35, vjust=.65),
                                                                                                                  axis.title.x = element_blank())
-plot_07
 
 median_07_filt <- aggregate(plot_07$data$value, by=list(plot_07$data$Var2, plot_07$data$type), FUN=function(x) median(x, na.rm=T))
-View(median_07_filt)
+#median precision
+dplyr::filter(median_07_filt, Group.2=="Precision") %>% arrange(x)
+#median recall
+dplyr::filter(median_07_filt, Group.2=="Recall") %>% arrange(x)
 
+
+SD_07_filt <- aggregate(plot_07$data$value, by=list(plot_07$data$Var2, plot_07$data$type), FUN=function(x) sd(x, na.rm=T))
+#sd precision
+dplyr::filter(SD_07_filt, Group.2=="Precision") %>% arrange(x)
+
+#write out csv file that contains plotting data
+write.csv2(plot_07$data, "~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/AUC_boxplots_RA_07.csv")
+```
+
+#### 0.9 RA Filt
+````{r}
 plot_09 <- generate_plot_AUROC_plot(filt_results, filt_AUROC_all, cutoff=0.9) + ggtitle("RA. 0.9 AUROC") + theme(axis.text.x = element_text(angle=35, vjust=.65))
-plot_09
+
 
 
 median_09_filt <- aggregate(plot_09$data$value, by=list(plot_09$data$Var2, plot_09$data$type), FUN=function(x) median(x, na.rm=T))
-View(median_09_filt)
+#get median precision
+dplyr::filter(median_09_filt, Group.2=="Precision") %>% arrange(x)
+
+#get median recall
+dplyr::filter(median_09_filt, Group.2=="Recall") %>% arrange(x)
 
 
+#write csv used to plot data
+write.csv2(plot_09$data, "~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/AUC_boxplots_RA_09.csv")
+#generate RA part of supplemental figure
 filt_RA <- plot_grid(plot_07, plot_09, ncol=1)
+```
 
-plot_07_unfilt_RA <- generate_plot_AUROC_plot(unfilt_results, unfilt_AUROC_all) + ggtitle("RA. 0.7 AUROC")
-
-
-plot_09_unfilt_RA <- generate_plot_AUROC_plot(unfilt_results, unfilt_AUROC_all, cutoff=0.9) + ggtitle("RA. 0.9 AUROC")
-
-unfilt_RA <- plot_grid(plot_07_unfilt_RA, plot_09_unfilt_RA, ncol=1)
-
-
+#### 0.7 CLR filt
+```{r}
 plot_07_CLR <- generate_plot_AUROC_plot(filt_results, filt_AUROC_all_clr, cutoff=0.7) + ggtitle("CLR. 0.7 AUROC") + theme(axis.text.x = element_text(angle=35, vjust=.65), axis.title.x = element_blank())
 
-plot_07_CLR
+
 plot_07_CLR_data <- aggregate(plot_07_CLR$data$value, by=list(plot_07_CLR$data$Var2, plot_07_CLR$data$type), FUN=function(x) median(x, na.rm=T))
+#get median precision
+dplyr::filter(plot_07_CLR_data, Group.2=="Precision") %>% arrange(x)
+#get median recall
+dplyr::filter(plot_07_CLR_data, Group.2=="Recall") %>% arrange(x)
+#get median F1
+dplyr::filter(plot_07_CLR_data, Group.2=="F1 Score") %>% arrange(x)
 
+SD_plot_07_CLR_data <- aggregate(plot_07_CLR$data$value, by=list(plot_07_CLR$data$Var2, plot_07_CLR$data$type), FUN=function(x) sd(x, na.rm=T))
+#get SD
+dplyr::filter(SD_plot_07_CLR_data, Group.2=="Precision") %>% arrange(x)
 
+#write csv used to plot data
+write.csv2(plot_07_CLR$data, "~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/AUC_boxplots_CLR_07.csv")
+```
+
+#### 0.9 CLR Filt
+```{r}
 plot_09_CLR <- generate_plot_AUROC_plot(filt_results, filt_AUROC_all_clr, cutoff=0.9) + ggtitle("CLR. 0.9 AUROC") + theme(axis.text.x = element_text(angle=35, vjust=.65))
 
-plot_09_CLR
+
 filt_CLR <- plot_grid(plot_07_CLR, plot_09_CLR, ncol=1)
 
 plot_09_CLR_data <- aggregate(plot_09_CLR$data$value, by=list(plot_09_CLR$data$Var2, plot_09_CLR$data$type), FUN=function(x) median(x, na.rm=T))
+#median recall
+dplyr::filter(plot_09_CLR_data, Group.2=="Recall") %>% arrange(x)
 
+#median Precision
+dplyr::filter(plot_09_CLR_data, Group.2=="Precision") %>% arrange(x)
+
+#write plotting data
+write.csv2(plot_09_CLR$data, "~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/AUC_boxplots_CLR_09.csv")
+```
+
+#### Unfilt
+These plots were not including in the manuscript due to length resitrictions. That being said they show similar trends as the filtered data. 
+##### 0.7 RA UnFilt
+````{r}
+plot_07_unfilt_RA <- generate_plot_AUROC_plot(unfilt_results, unfilt_AUROC_all) + ggtitle("RA. 0.7 AUROC")
+```
+
+##### 0.9 RA UnFilt
+```{r}
+plot_09_unfilt_RA <- generate_plot_AUROC_plot(unfilt_results, unfilt_AUROC_all, cutoff=0.9) + ggtitle("RA. 0.9 AUROC")
+
+unfilt_RA <- plot_grid(plot_07_unfilt_RA, plot_09_unfilt_RA, ncol=1)
+```
+
+
+##### 0.7 CLR Unfilt
+```{r}
 plot_07_unfilt_CLR <- generate_plot_AUROC_plot(unfilt_results, unfilt_AUROC_all_clr, cutoff = 0.7) + ggtitle("AUROC Cutoff 0.7")
+```
+
+##### 0.9 CLR Unfilt
+```{r}
 plot_09_unfilt_CLR <- generate_plot_AUROC_plot(unfilt_results, unfilt_AUROC_all_clr, cutoff = 0.9) + ggtitle("AUROC Cutoff 0.9")
 
 unfilt_CLR <- plot_grid(plot_07_unfilt_CLR, plot_09_unfilt_CLR, ncol=1)
-
-
-final_sup_fig <-plot_grid(filt_RA, filt_CLR, labels=c("A", "B"))
-final_sup_fig
-
-final_sup_fig_unfilt <- plot_grid(unfilt_RA, unfilt_CLR, labels=c("A","B"))
 ```
 
 ### Final Figure Generation
