@@ -26,6 +26,11 @@ tool_name_mapfile <- read.table("/home/gavin/github_repos/hackathon/Comparison_o
                                  header = TRUE, sep = ",", stringsAsFactors = FALSE, row.names = 1)
 
 
+# Save chimera %'s to file in plotting data folder (i.e., convert to csv).
+chimera_percents_csv <- chimera_percents
+chimera_percents_csv$dataset <- rownames(chimera_percents_csv)
+chimera_percents_csv <- chimera_percents_csv[, c("dataset", "filt_rare", "filt_nonrare", "unfilt_rare", "unfilt_nonrare")]
+
 # Get significant ASVs
 sig_counts <- data.frame(matrix(NA,
                                 nrow=length(names(unfilt_results)),
