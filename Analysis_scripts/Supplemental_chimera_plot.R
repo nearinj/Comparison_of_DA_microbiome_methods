@@ -29,7 +29,11 @@ tool_name_mapfile <- read.table("/home/gavin/github_repos/hackathon/Comparison_o
 # Save chimera %'s to file in plotting data folder (i.e., convert to csv).
 chimera_percents_csv <- chimera_percents
 chimera_percents_csv$dataset <- rownames(chimera_percents_csv)
-chimera_percents_csv <- chimera_percents_csv[, c("dataset", "filt_rare", "filt_nonrare", "unfilt_rare", "unfilt_nonrare")]
+chimera_percents_csv <- chimera_percents_csv[, c("dataset", "unfilt_nonrare", "filt_nonrare")]
+colnames(chimera_percents_csv) <- c("Dataset", "Unfiltered", "Filtered")
+write.table(x = chimera_percents_csv,
+            file = "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Plotting_data/Supp_figures/SuppFigure1_chimera_percents.csv",
+            sep = ",", row.names = FALSE, col.names = TRUE, quote = FALSE)
 
 # Get significant ASVs
 sig_counts <- data.frame(matrix(NA,
