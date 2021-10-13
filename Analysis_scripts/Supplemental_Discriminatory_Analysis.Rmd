@@ -392,7 +392,8 @@ Scaled_filt_heatmap_RA <- get_median_heat(filt_results, AUROC_FILT_all_RA, datas
 
 filt_heat_data <- get_median_heat(filt_results, AUROC_FILT_all_RA, dataset_names = Data_set_names, tool_rename = tool_names,
                                           main="Filtered RA. median AUROC sig. ASVs", return_data = T)
-write.csv2(filt_heat_data, "~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/Supplemental_AUROC_heatmap_filt_RA.csv")
+write.table(x=filt_heat_data, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/Supplemental_AUROC_heatmap_filt_RA.csv", col.names = NA,
+            row.names = T, quote=F, sep=",")
 ```
 
 #### heatmap CLR
@@ -406,7 +407,8 @@ Scaled_filt_heatmap_CLR <- get_median_heat(filt_results, AUROC_FILT_all_CLR, dat
 filt_heat_data_CLR <- get_median_heat(filt_results, AUROC_FILT_all_CLR, dataset_names = Data_set_names, tool_rename = tool_names,
                                            main="Filtered CLR median AUROC sig. ASVs", return_data = T)
 
-write.csv2(filt_heat_data_CLR, "~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/Supplemental_AUROC_heatmap_filt_CLR.csv")
+write.table(x=filt_heat_data_CLR, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/Supplemental_AUROC_heatmap_filt_CLR.csv", col.names = NA,
+            row.names = T, quote=F, sep=",")
 ```
 
 ### UnFilt
@@ -648,7 +650,8 @@ SD_07_filt <- aggregate(plot_07$data$value, by=list(plot_07$data$Var2, plot_07$d
 dplyr::filter(SD_07_filt, Group.2=="Precision") %>% arrange(x)
 
 #write out csv file that contains plotting data
-write.csv2(plot_07$data, "~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/AUC_boxplots_RA_07.csv")
+write.table(x=plot_07$data, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/AUC_boxplots_RA_07.csv", col.names = NA, 
+            row.names = T, quote=F, sep=",")
 ```
 
 #### 0.9 RA Filt
@@ -666,7 +669,8 @@ dplyr::filter(median_09_filt, Group.2=="Recall") %>% arrange(x)
 
 
 #write csv used to plot data
-write.csv2(plot_09$data, "~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/AUC_boxplots_RA_09.csv")
+write.table(x=plot_09$data, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/AUC_boxplots_RA_09.csv", col.names = NA,
+            row.names = T, quote=F, sep=",")
 #generate RA part of supplemental figure
 filt_RA <- plot_grid(plot_07, plot_09, ncol=1)
 ```
@@ -689,7 +693,8 @@ SD_plot_07_CLR_data <- aggregate(plot_07_CLR$data$value, by=list(plot_07_CLR$dat
 dplyr::filter(SD_plot_07_CLR_data, Group.2=="Precision") %>% arrange(x)
 
 #write csv used to plot data
-write.csv2(plot_07_CLR$data, "~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/AUC_boxplots_CLR_07.csv")
+write.table(x=plot_07_CLR$data, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/AUC_boxplots_CLR_07.csv",  col.names = NA,
+            row.names = T, quote=F, sep=",")
 ```
 
 #### 0.9 CLR Filt
@@ -707,7 +712,8 @@ dplyr::filter(plot_09_CLR_data, Group.2=="Recall") %>% arrange(x)
 dplyr::filter(plot_09_CLR_data, Group.2=="Precision") %>% arrange(x)
 
 #write plotting data
-write.csv2(plot_09_CLR$data, "~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/AUC_boxplots_CLR_09.csv")
+write.table(x=plot_09_CLR$data, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/AUC_boxplots_CLR_09.csv", col.names = NA,
+            row.names = T, quote=F, sep=",")
 ```
 
 #### Unfilt

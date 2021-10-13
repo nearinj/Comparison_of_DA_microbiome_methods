@@ -492,8 +492,11 @@ filt_percent_sig_boxplots
 unfilt_percent_sig_boxplots
 
 #write plotting data
-write.csv2(unfilt_percent_sig_boxplots$data, "~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure4_FDR_boxplots_unfilt.csv")
-write.csv2(unfilt_percent_sig_boxplots$data, "~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure4_FDR_boxplots_filt.csv")
+write.table(x=unfilt_percent_sig_boxplots$data, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure4_FDR_boxplots_unfilt.csv", col.names = NA,
+            row.names=T, quote=F, sep=",")
+
+write.table(x=unfilt_percent_sig_boxplots$data, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure4_FDR_boxplots_filt.csv", col.names = NA,
+            row.names=T, quote=F, sep=",")
 
 New_Figure4 <- plot_grid(unfilt_percent_sig_boxplots, filt_percent_sig_boxplots, labels=c("A", "B"), nrow=2)
 New_Figure4

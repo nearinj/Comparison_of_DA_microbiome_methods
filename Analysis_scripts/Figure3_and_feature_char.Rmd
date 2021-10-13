@@ -263,6 +263,12 @@ Unfilt_bars <- ggplot(unfilt_bars_data_join, aes(x=as.numeric(Score), y=value, w
     scale_fill_continuous(high = "#132B43", low = "#56B1F7", breaks=seq(100000,500000, by=100000))
 
 Unfilt_bars
+
+
+write.table(x=long_filt_melt_join, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure3B.csv", col.names=NA,
+            row.names=T, quote=F, sep=",")
+write.table(x=unfilt_bars_data_join, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure3A.csv", col.names = NA,
+            row.names=T, quote=F, sep=",")
 ```
 
 ## PCoA of Binary Distances for each tool
@@ -353,6 +359,10 @@ ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_PCOA_Filt.pdf", s
 ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_PCOA_Filt.png", sep="/"),
        plot = supp_filtered, width = 10, height=10, units="in", dpi=100)
 
+#write distance matrix for figure3C-D and the supplemental figures
+
+write.table(x=as.matrix(dataset_binary_dist), file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure3C_bin_dist.csv", col.names = NA,
+            row.names = T, quote=F, sep=",")
 ```
 
 
@@ -435,7 +445,8 @@ ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_PCOA_Unfilt.pdf",
 ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_PCOA_Unilt.png", sep="/"),
        plot = supp_unfiltered, width = 10, height=10, units="in", dpi=100)
 
-
+write.table(x=as.matrix(dataset_binary_dist_unfilt), file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure3D_bin_dist.csv",
+            col.names = NA, row.names = T, quote=F, sep=",")
 ```
 
 ```{r}
@@ -513,38 +524,39 @@ filt_sig_abundance[is.na(filt_sig_abundance)] <- 0
 #convert to matrix to speed up processing time.
 filt_sig_abundance <- as.matrix(filt_sig_abundance)
 
-# library(doParallel)
-# library(doMC)
-# 
-# registerDoMC(cores=14)
-# getDoParWorkers()
-# 
-# 
-# #iterate through the columns
-# #we need to do something special to iters that are from rare tools
-# 
-# rare_tools <- colnames(filt_sig_abundance)[c(6,8,10,12)]
-# 
-# identical(rownames(filt_sig_abundance), names(filt_study_tab_all_mean))
-# 
-# length(filt_study_tab_all_mean)
-# length(rownames(filt_sig_abundance))
-# #we can rearrange the filt_study_tab_all_mean to match the same order as filt_sig_abundance
-# ordered_filt_study_tab_all_mean <- filt_study_tab_all_mean[rownames(filt_sig_abundance)]
-# 
-# identical(rownames(filt_sig_abundance), names(ordered_filt_study_tab_all_mean))
-# 
-# ### now they are in the same order
-# 
-# #remove rarified tools as they will be processed seperately
-# filt_sig_abundance_nonrare <- filt_sig_abundance[,-c(6,8,10,12)]
-# 
+library(doParallel)
+library(doMC)
+
+registerDoMC(cores=14)
+getDoParWorkers()
+
+
+#iterate through the columns
+#we need to do something special to iters that are from rare tools
+
+rare_tools <- colnames(filt_sig_abundance)[c(6,8,10,12)]
+
+identical(rownames(filt_sig_abundance), names(filt_study_tab_all_mean))
+
+length(filt_study_tab_all_mean)
+length(rownames(filt_sig_abundance))
+#we can rearrange the filt_study_tab_all_mean to match the same order as filt_sig_abundance
+ordered_filt_study_tab_all_mean <- filt_study_tab_all_mean[rownames(filt_sig_abundance)]
+
+identical(rownames(filt_sig_abundance), names(ordered_filt_study_tab_all_mean))
+
+### now they are in the same order
+
+#remove rarified tools as they will be processed seperately
+filt_sig_abundance_nonrare <- filt_sig_abundance[,-c(6,8,10,12)]
+# #if its significant set it to tis mean RA value else set it to NA
 # filt_sig_abundance_final_nonrare <- foreach(ITER=iter(filt_sig_abundance_nonrare, by="col"), .combine=cbind) %dopar% {
 #    for(i in 1:length(ITER)){
 # 
 #      if(ITER[i]==1){
 #        ITER[i] <- ordered_filt_study_tab_all_mean[i]
-#      }
+#      }else
+#        ITER[i] <- NA
 #    }
 #   ITER
 # }
@@ -574,7 +586,8 @@ filt_sig_abundance <- as.matrix(filt_sig_abundance)
 # 
 #      if(ITER[i]==1){
 #        ITER[i] <- ordered_filt_study_tab_all_mean_rare[i]
-#      }
+#      }else
+#       ITER[i] <- NA
 #    }
 #   ITER
 # }
@@ -590,7 +603,7 @@ filt_sig_abundance <- as.matrix(filt_sig_abundance)
 
 
 filt_sig_abundance <- data.frame(readRDS("/home/jacob/GitHub_Repos/Clean_Hackathon/Data/filt_sig_abundance_21_09_22.RDS"))
-
+#NA represents 
 
 filt_sig_abundance[filt_sig_abundance==0] <- NA
 #value of zero represents an ASV that was not found to be significant by that tool. So we can safely set all those to NA
@@ -789,6 +802,11 @@ mean_RA_sig_data_filt$Filt <- "Filtered"
 
 mean_RA_sig_data_comb <- rbind(mean_RA_sig_data_unfilt, mean_RA_sig_data_filt)
 
+
+#NA's represent rows where that tool didn't find it sig but other tools did. We can remove them.
+remove_rows <- which(is.na(mean_RA_sig_data_comb$value))
+mean_RA_sig_data_comb <- mean_RA_sig_data_comb[-remove_rows, ]
+
 mean_RA_plot <- ggplot(mean_RA_sig_data_comb, aes(x=tool_name, y=value)) + geom_boxplot(outlier.shape = NA) +
   theme_cowplot() + ylab("Relative abundance %") +xlab("Method") + 
   theme(axis.text = element_text(size=12, color="black"), axis.text.x = element_text(angle=90)) +
@@ -801,6 +819,8 @@ mean_RA_plot
 ggsave(filename=paste(display_items_out, "Supp_figures", "Significant_Feats_Abundance.pdf", sep="/"),
        plot = mean_RA_plot, width = 15, height=6, units="in", dpi=600)
 
+write.table(x=mean_RA_sig_data_comb, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/Supp_Fig2AB_mean_RA_sig_hits.csv", col.names = NA,
+            row.names = T, quote=F, sep=",")
 ```
 
 
@@ -844,6 +864,12 @@ filt_sig_count <- ggplot(Tool_total_feats_found_filt, aes(x=Tool_rename, y=value
   theme(strip.background = element_blank()) +
   theme(axis.title.x = element_blank()) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+write.table(x=Tool_total_feats_found_unfilt, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/Supp_Fig2C_unfilt_total_hits.csv",
+            col.names = NA, row.names = T, quote=F, sep=",")
+
+write.table(x=Tool_total_feats_found_filt, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/Supp_Fig2D_filt_total_hits.csv",
+            col.names = NA, row.names = T, quote = F, sep=",")
 ```
 
 ```{r}

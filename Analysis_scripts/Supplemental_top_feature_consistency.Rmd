@@ -17,13 +17,193 @@ tool_names <- c(aldex2="ALDEx2", ancom="ANCOM-II", corncob="corncob", deseq2="DE
                 maaslin2rare="MaAsLin2 (rare)", metagenomeSeq="metagenomeSeq", ttestrare="t-test (rare)", 
                 wilcoxonclr="Wilcoxon (CLR)", wilcoxonrare="Wilcoxon (rare)")
 display_items_out <- "/home/jacob/GitHub_Repos/Clean_Hackathon/Display_items/"
+setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/")
 
 ```
 
 # Load in data
 ```{r}
-filt_results <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Filt_results_21_04_07.RDS")
-unfilt_results <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/Unfilt_results_21_04_07.RDS")
+
+read_table_and_check_line_count <- function(filepath, ...) {
+  # Function to read in table and to check whether the row count equals the expected line count of the file.
+  
+  exp_count <- as.numeric(sub(pattern = " .*$", "", system(command = paste("wc -l", filepath, sep=" "), intern = TRUE)))
+  
+  df <- read.table(filepath, ...)
+  
+  if(length(grep("^V", colnames(df))) != ncol(df)) {
+    exp_count <- exp_count - 1
+  }
+  
+  if(exp_count != nrow(df)) {
+    stop(paste("Expected ", as.character(exp_count), " lines, but found ", as.character(nrow(df))))
+  } else {
+    return(df) 
+  }
+}
+
+#modified functiuon so we can read in the uncorrected values
+read_hackathon_results <- function(study,
+                                   results_folder="Fix_Results_0.1") {
+  
+  da_tool_filepath <- list()
+  da_tool_filepath[["aldex2"]] <- paste(study, results_folder, "Aldex_out/Aldex_res.tsv", sep = "/")
+  da_tool_filepath[["ancom"]] <- paste(study, results_folder, "ANCOM_out/Ancom_res.tsv", sep = "/")
+  da_tool_filepath[["corncob"]] <- paste(study, results_folder, "Corncob_out/Corncob_results.tsv_uncor", sep = "/")
+  da_tool_filepath[["deseq2"]] <- paste(study, results_folder, "Deseq2_out/Deseq2_results.tsv", sep = "/")
+  da_tool_filepath[["edger"]] <- paste(study, results_folder, "edgeR_out/edgeR_res.tsv", sep = "/")
+  da_tool_filepath[["lefse"]] <- paste(study, results_folder, "Lefse_out/Lefse_results.tsv", sep = "/")
+  da_tool_filepath[["maaslin2"]] <- paste(study, results_folder, "Maaslin2_out/all_results.tsv", sep = "/")
+  da_tool_filepath[["maaslin2rare"]] <- paste(study, results_folder, "Maaslin2_rare_out/all_results.tsv", sep = "/")
+  da_tool_filepath[["metagenomeSeq"]] <- paste(study, results_folder, "metagenomeSeq_out/mgSeq_res.tsv", sep = "/")
+  da_tool_filepath[["ttestrare"]] <- paste(study, results_folder, "t_test_rare_out/t_test_res.tsv", sep = "/")
+  da_tool_filepath[["wilcoxonclr"]] <- paste(study, results_folder, "Wilcoxon_CLR_out/Wil_CLR_results.tsv", sep = "/")
+  da_tool_filepath[["wilcoxonrare"]] <- paste(study, results_folder, "Wilcoxon_rare_out/Wil_rare_results.tsv", sep = "/")
+  da_tool_filepath[["limma_voom_TMM"]] <- paste(study, results_folder, "limma_voom_tmm_out/limma_voom_tmm_res.tsv", sep="/")
+  da_tool_filepath[["limma_voom_TMMwsp"]] <- paste(study, results_folder, "Limma_voom_TMMwsp/limma_voom_tmmwsp_res.tsv", sep="/")
+  
+  adjP_colname <- list()
+  adjP_colname[["aldex2"]] <- "wi.ep"
+  adjP_colname[["ancom"]] <- "detected_0.9"
+  adjP_colname[["corncob"]] <- "x"
+  adjP_colname[["deseq2"]] <- "pvalue"
+  adjP_colname[["edger"]] <- "PValue"
+  adjP_colname[["lefse"]] <- "V5"
+  adjP_colname[["maaslin2"]] <- "pval"
+  adjP_colname[["maaslin2rare"]] <- "pval"
+  adjP_colname[["metagenomeSeq"]] <- "pvalues"
+  adjP_colname[["ttestrare"]] <- "x"
+  adjP_colname[["wilcoxonclr"]] <- "x"
+  adjP_colname[["wilcoxonrare"]] <- "x"
+  adjP_colname[["limma_voom_TMM"]] <- "P.Value"
+  adjP_colname[["limma_voom_TMMwsp"]] <- "P.Value"
+  # Read in results files and run sanity check that results files have expected number of lines
+  da_tool_results <- list()
+  
+  missing_tools <- c()
+  
+  for(da_tool in names(da_tool_filepath)) {
+    
+    if(! (file.exists(da_tool_filepath[[da_tool]]))) {
+       missing_tools <- c(missing_tools, da_tool)
+       message(paste("File ", da_tool_filepath[[da_tool]], " not found. Skipping.", sep=""))
+       next
+    }
+    
+    if(da_tool %in% c("ancom", "maaslin2", "maaslin2rare")) {
+      da_tool_results[[da_tool]] <- read_table_and_check_line_count(da_tool_filepath[[da_tool]], sep="\t", row.names=2, header=TRUE)
+    } else if(da_tool == "lefse") {
+      da_tool_results[[da_tool]] <- read_table_and_check_line_count(da_tool_filepath[[da_tool]], sep="\t", row.names=1, header=FALSE, stringsAsFactors=FALSE)
+      rownames(da_tool_results[[da_tool]]) <- gsub("^f_", "", rownames(da_tool_results[[da_tool]]))
+    } else {
+      da_tool_results[[da_tool]] <- read_table_and_check_line_count(da_tool_filepath[[da_tool]], sep="\t", row.names=1, header=TRUE)
+    }
+  }
+  
+  # Combine corrected P-values into same table.
+  all_rows <- c()
+  
+   for(da_tool in names(adjP_colname)) {
+     all_rows <- c(all_rows, rownames(da_tool_results[[da_tool]]))
+   }
+  all_rows <- all_rows[-which(duplicated(all_rows))]
+
+  adjP_table <- data.frame(matrix(NA, ncol=length(names(da_tool_results)), nrow=length(all_rows)))
+  colnames(adjP_table) <- names(da_tool_results)
+  rownames(adjP_table) <- all_rows
+  
+  for(da_tool in colnames(adjP_table)) {
+ 
+    if(da_tool %in% missing_tools) {
+       next
+    }
+    
+    if(da_tool == "lefse") {
+     
+        tmp_lefse <- da_tool_results[[da_tool]][, adjP_colname[[da_tool]]]
+        tmp_lefse[which(tmp_lefse == "-")] <- NA
+        adjP_table[rownames(da_tool_results[[da_tool]]), da_tool] <- as.numeric(tmp_lefse)
+
+        lefse_tested_asvs <- rownames(da_tool_results$wilcoxonrare)[which(! is.na(da_tool_results$wilcoxonrare))]
+        lefse_NA_asvs <- rownames(da_tool_results$lefse)[which(is.na(tmp_lefse))]
+  
+        adjP_table[lefse_NA_asvs[which(lefse_NA_asvs %in% lefse_tested_asvs)], da_tool] <- 1
+        
+    } else if(da_tool == "ancom") {
+      
+      sig_ancom_hits <- which(da_tool_results[[da_tool]][, adjP_colname[[da_tool]]])
+      ancom_results <- rep(1, length(da_tool_results[[da_tool]][, adjP_colname[[da_tool]]]))
+      ancom_results[sig_ancom_hits] <- 0
+      adjP_table[rownames(da_tool_results[[da_tool]]), da_tool] <- ancom_results
+    
+    } else if(da_tool %in% c("wilcoxonclr", "wilcoxonrare", "ttestrare")) {
+      
+      # Need to perform FDR-correction on these outputs.
+      adjP_table[rownames(da_tool_results[[da_tool]]), da_tool] <- da_tool_results[[da_tool]][, adjP_colname[[da_tool]]]
+    
+    } else {
+      adjP_table[rownames(da_tool_results[[da_tool]]), da_tool] <- da_tool_results[[da_tool]][, adjP_colname[[da_tool]]]
+    }
+  }
+
+  return(list(raw_tables=da_tool_results,
+              adjP_table=adjP_table))
+  
+}
+
+
+
+### need to re-run corncob to get the uncorrected-pals.
+```
+
+```{r}
+hackathon_study_ids <- c("ArcticFireSoils",
+                         "ArcticFreshwaters",
+                         "ArcticTransects",
+                         "art_scher",
+                         "asd_son",
+                         "BISCUIT",
+                         "Blueberry",
+                         "cdi_schubert",
+                         "cdi_vincent",
+                         "Chemerin",
+                         "crc_baxter",
+                         "crc_zeller",
+                         "edd_singh",
+                         "Exercise",
+                         "glass_plastic_oberbeckmann",
+                         "GWMC_ASIA_NA",
+                         "GWMC_HOT_COLD",
+                         "hiv_dinh",
+                         "hiv_lozupone",
+                         "hiv_noguerajulian",
+                         "ibd_gevers",
+                         "ibd_papa",
+                         "Ji_WTP_DS",
+                         "MALL",
+                         "ob_goodrich",
+                         "ob_ross",
+                         "ob_turnbaugh",
+                         "ob_zhu",
+                         ###"ob_zupancic",
+                         "Office",
+                         "par_scheperjans",
+                         "sed_plastic_hoellein",
+                         "sed_plastic_rosato",
+                         "seston_plastic_mccormick",
+                         "sw_plastic_frere",
+                         "sw_sed_detender",
+                          "t1d_alkanani",
+                         "t1d_mejialeon",
+                         "wood_plastic_kesy")
+
+filt_results_uncor <- lapply(hackathon_study_ids, read_hackathon_results)
+names(filt_results_uncor) <- hackathon_study_ids
+
+
+unfilt_results_uncor <- lapply(hackathon_study_ids, read_hackathon_results, results_folder = "No_filt_Results")
+names(unfilt_results_uncor) <- hackathon_study_ids
+
 ```
 
 # Data Prep.
@@ -42,21 +222,39 @@ get_top_feats <- function(p_val_tab, maxrank=20){
       p_val_vect <- p_val_tab[,i]
       names(p_val_vect) <- rownames(p_val_tab)
 
+      #for each tool we need to first shuffle the order and then sort it
+      #this is important during radix sort as order is preserved and we could end up with cases were
+      #if all elements are equal (i.e. all non-sig) the tools will argee b/c they simply are checked in the same
+      #order
+      p_val_vect <- sample(p_val_vect)
       #sort in decreasing order for ancom.
-      sorted_p_val_vect <- sort(p_val_vect, decreasing=T)
+      sorted_p_val_vect <- sort(p_val_vect, decreasing=T, method="quick")
 
       top_feats <- names(sorted_p_val_vect)[1:maxrank]
+      if(length(which(sorted_p_val_vect==sorted_p_val_vect[maxrank]))!=1){
+          message(tool, " has ", length(which(sorted_p_val_vect==sorted_p_val_vect[maxrank])), " similar")
+        #stop("there are multiple rank 20 features with the same p-val!!!")
+      }
 
       Tool_top_feats[[tool]] <- top_feats
     }else{
       p_val_vect <- p_val_tab[,i]
       names(p_val_vect) <- rownames(p_val_tab)
     
+      #for each tool we need to first shuffle the order and then sort it
+      #this is important during radix sort as order is preserved and we could end up with cases were
+      #if all elements are equal (i.e. all non-sig) the tools will argee b/c they simply are sorted in the same
+      #order
+      p_val_vect <- sample(p_val_vect)
+      
       #sort in increasing order (lowest value is of highest rank)
-      sorted_p_val_vect <- sort(p_val_vect, decreasing=F)
+      sorted_p_val_vect <- sort(p_val_vect, decreasing=F, method="quick")
     
       top_feats <- names(sorted_p_val_vect)[1:maxrank]
-    
+      if(length(which(sorted_p_val_vect==sorted_p_val_vect[maxrank]))!=1){
+        message(tool, " has ", length(which(sorted_p_val_vect==sorted_p_val_vect[maxrank])), " similar")
+        #stop("there are multiple rank 20 features with the same p-val!!!")
+      }
       Tool_top_feats[[tool]] <- top_feats
     }
 
@@ -132,15 +330,35 @@ colnames(test_p_tab) <- paste("Tool", seq(1,10))
 
 test_p_tab_feats <- get_top_feats(test_p_tab, maxrank = 20)
 test_p_tab_feats[1]
+
 #shoudl return them in order
 test_p_tab_feats_neg <- get_top_feats(-(test_p_tab), maxrank=20)
 test_p_tab_feats_neg[1]
 
+#test if all values are o
+test_p_tab_zero <- data.frame(matrix(0, 10000, 10))
+rownames(test_p_tab_zero) <- paste("ASV", seq(1,10000))
+colnames(test_p_tab_zero) <- paste("Tool", seq(1,10))
+
+#in this example we will have 7 values tied at the 20th rank.
+test_p_tab_ten <- data.frame(matrix(c(1:18,19,19, 19, 19, 19, 19, 19), 25, 10))
+rownames(test_p_tab_ten) <- paste("ASV", seq(1,25))
+colnames(test_p_tab_ten) <- paste("Tool", seq(1,10))
+
+#returns random asvs when there is a tie... this is the best behavior i think.
+test_p_tab_ten_feats <- get_top_feats(test_p_tab_ten, maxrank = 20)
+test_p_tab_ten_feats
+
+
+test_p_tab_feats <- get_top_feats(test_p_tab_zero, maxrank = 20)
+test_p_tab_feats
 
 test_p_tab_counts <- generate_data_table(test_p_tab_feats)
 View(test_p_tab_counts)
 table(test_p_tab_counts)
 
+test_p_tab_tab_counts <- generate_data_table(test_p_tab_ten_feats)
+View(test_p_tab_tab_counts)
 ## works as expected. lets try something else now!
 
 test_p_tab2 <- data.frame(matrix(1:1000, 1000, 14))
@@ -171,29 +389,36 @@ table(test_p_tab2_feats_counts)
 
 ## we will use the ancom W stat to rank the ASVs from that tool.
 
-filt_results_ancom_fix <- filt_results
+filt_results_ancom_fix <- filt_results_uncor
 for(i in 1:length(filt_results_ancom_fix)){
   #replace ancom values with the W stat...
-  filt_results_ancom_fix[[i]][[2]][rownames(filt_results[[i]][[1]][[2]]),"ancom"] <- filt_results[[i]][[1]][[2]]$W
+  #grab asv name
+  asv_name <- rownames(filt_results_uncor[[i]][[1]][[2]])
+  
+  filt_results_ancom_fix[[i]][[2]][asv_name,"ancom"] <- filt_results_uncor[[i]][[1]][[2]][asv_name, "W"]
   
 }
 
 
 filt_top_feat_lists <- list()
-for(i in 1:length(filt_results)){
+for(i in 1:length(filt_results_uncor)){
   dataset <- names(filt_results_ancom_fix)[i]
+  message(dataset)
   filt_top_feat_lists[[dataset]] <- get_top_feats(filt_results_ancom_fix[[i]][[2]], maxrank = 20)
 }
+
 
 filt_top_feat_counts <- lapply(filt_top_feat_lists, FUN=generate_data_table)
 
 ### we need to go through each dataset and count the number of times each observations of score X shows up for each tool
 filt_top_feat_count_melt <- lapply(filt_top_feat_counts, FUN=generate_consist_occur)
 
+#set dataset names
 for(i in 1:length(filt_top_feat_count_melt)){
   filt_top_feat_count_melt[[i]]$dataset <- names(filt_top_feat_count_melt)[i]
 }
 
+#Consistency is the number of tools that called that feature
 filt_comp_tab <- do.call(rbind, filt_top_feat_count_melt)
 #make sure the levels are in correct order and not alphabetical.
 filt_comp_tab$Consistancy <- factor(filt_comp_tab$Consistancy, levels = c(1:14))
@@ -227,7 +452,7 @@ write.csv2(filt_final_plot$data, "~/GitHub_Repos/Clean_Hackathon/Plotting_data/S
 
 ## Unfilter Analysis
 ```{r}
-unfilt_results_fix_ancom <- unfilt_results
+unfilt_results_fix_ancom <- unfilt_results_uncor
 
 for(i in 1:length(unfilt_results_fix_ancom)){
   #replace ancom values with the W stat...

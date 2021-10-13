@@ -89,3 +89,4 @@ results <- corncob::differentialTest(formula= my_formula,
 
 
 write.table(results$p_fdr, file=args[[3]], sep="\t", col.names = NA, quote=F)
+write.table(results$p, file=paste0(args[[3]], "_uncor", sep=""), sep="\t", col.names = NA, quote=F)
