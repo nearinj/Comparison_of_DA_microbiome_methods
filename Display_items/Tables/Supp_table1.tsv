@@ -1,0 +1,15 @@
+Tool	No. sig. genera	Max overlap	Mean exp.	Mean obs.	Fold diff.	P
+MaAsLin2 (rare)	8	2	1.019	1.25	1.227	0.003
+MaAsLin2	20	3	1.071	1.25	1.167	0.004
+t-test (rare)	6	2	1.012	1.167	1.153	0.015
+ALDEx2	24	3	1.064	1.167	1.097	0.025
+limma voom (TMMwsp)	34	3	1.127	1.235	1.096	0.036
+corncob	34	3	1.136	1.206	1.062	0.135
+LEfSe	51	3	1.215	1.275	1.049	0.151
+limma voom (TMM)	44	3	1.164	1.205	1.035	0.207
+Wilcoxon (rare)	22	2	1.062	1.091	1.027	0.249
+edgeR	68	3	1.327	1.338	1.008	0.415
+Wilcoxon (CLR)	47	3	1.167	1.17	1.003	0.449
+DESeq2	40	2	1.123	1.125	1.002	0.465
+metagenomeSeq	4	1	1.009	1	0.991	0.028
+ANCOM-II	8	1	1.015	1	0.985	0.105
