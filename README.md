@@ -2,7 +2,7 @@
 
 The code and key intermediate files in this repository correspond to our manuscript:
 
-  _Nearing et al. In Prep. Microbiome differential abundance methods produce disturbingly different results across 38 datasets._
+  _Nearing et al. In Prep. Microbiome differential abundance methods produce different results across 38 datasets._
   
 Our goal with this work was to compare how similarly common DA methods perform on a range of 16S rRNA gene datasets.
 Accordingly for the majority of this work we don't necessarily know the _right_ answer: we can mainly just say which tools are more similar to others.
@@ -82,12 +82,9 @@ However, we also included several analyses to help gauge the false positive rate
   * "RColorBrewer" Version: 1.1.2
   * "ggbeeswarm" Version: 0.6.0
   * "scales" Version: 1.1.0
-  * "ape" Version: 5.3
   * "ComplexHeatmap" Version: 2.2.0
   * "knitr" Version: 1.23
   * "kableExtra" Version: 1.1.0
-  * "Matching" Version: 4.9.7
-  * "rowr" Version: 1.1.3
   * "tidyverse" Version: 1.3.0
   * "vegan" Version: 2.5.6
   * "parallelDist" Version: 0.2.4
