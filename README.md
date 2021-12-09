@@ -1,8 +1,8 @@
 ### Comparison of microbiome differential abundance methods
 
-The code and key intermediate files in this repository correspond to our manuscript:
+The code and key intermediate files in this repository correspond to the following manuscript:
 
-  _Nearing et al. In Prep. Microbiome differential abundance methods produce different results across 38 datasets._
+  _Nearing, Douglas et al. Nature Comm. Microbiome differential abundance methods produce different results across 38 datasets._
   
 Our goal with this work was to compare how similarly common DA methods perform on a range of 16S rRNA gene datasets.
 Accordingly for the majority of this work we don't necessarily know the _right_ answer: we can mainly just say which tools are more similar to others.
