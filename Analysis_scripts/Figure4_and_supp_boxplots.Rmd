@@ -506,10 +506,10 @@ filt_percent_sig_boxplots
 unfilt_percent_sig_boxplots
 
 #write plotting data
-write.table(x=unfilt_percent_sig_boxplots$data, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure4_FDR_boxplots_unfilt.csv", col.names = NA,
+write.table(x=unfilt_percent_sig_boxplots$data, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure4A_boxplots.csv", col.names = NA,
             row.names=T, quote=F, sep=",")
 
-write.table(x=unfilt_percent_sig_boxplots$data, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure4_FDR_boxplots_filt.csv", col.names = NA,
+write.table(x=unfilt_percent_sig_boxplots$data, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure4B_boxplots.csv", col.names = NA,
             row.names=T, quote=F, sep=",")
 
 New_Figure4_boxplots_no_legend <- plot_grid(unfilt_percent_sig_boxplots, filt_percent_sig_boxplots, labels=c("A", "B"), nrow=2)
@@ -518,12 +518,14 @@ New_Figure4 <- plot_grid(New_Figure4_boxplots_no_legend, boxplots_legend, ncol=2
 New_Figure4
 
 
-ggsave(filename=paste(display_items_out, "Main_figures", "FDR_boxplots_Figure4.png", sep="/"),
+ggsave(filename=paste(display_items_out, "Main_figures", "Figure4.png", sep="/"),
        plot = New_Figure4, width = 10, height=10, units="in", dpi=300)
 
-ggsave(filename=paste(display_items_out, "Main_figures", "FDR_boxplots_Figure4.pdf", sep="/"),
+ggsave(filename=paste(display_items_out, "Main_figures", "Figure4.pdf", sep="/"),
        plot = New_Figure4, width = 10, height=10, units="in", dpi=600)
 
+
+#old when boxplots were supplemental data... 
 #ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_FDR_filt_boxplots.png", sep="/"),
        #plot = filt_percent_sig_boxplots, width = 10, height=7, units="in", dpi=300)
 

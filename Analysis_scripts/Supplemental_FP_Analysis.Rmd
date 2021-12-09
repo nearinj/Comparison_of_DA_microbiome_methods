@@ -355,13 +355,13 @@ box_FP_res <- ggplot(total_plot_data, aes(x=FP_class.FP_class, y=depth_diff)) + 
 box_FP_res
 
 
-ggsave(filename=paste(display_items_out, "Supp_figures", "Read_depth_FP_analysis.pdf", sep="/"),
+ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_fig8.pdf", sep="/"),
        plot = box_FP_res, width = 12, height=10, units="in", dpi=600)
 
 
-ggsave(filename=paste(display_items_out, "Supp_figures", "Read_depth_FP_analysis.png", sep="/"),
+ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_fig8.png", sep="/"),
        plot = box_FP_res, width = 12, height=10, units="in", dpi=100)
 
-write.table(x=box_FP_res$data, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/FDR_Read_depth.csv", col.names = NA, row.names = T,
+write.table(x=box_FP_res$data, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/Supp_Fig8_data.csv", col.names = NA, row.names = T,
             quote=F, sep=",")
 ```

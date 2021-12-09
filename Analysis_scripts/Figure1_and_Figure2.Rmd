@@ -722,10 +722,10 @@ filt_ASV_nums <- pheatmap(t(Alpha_order_filt),
                          main="Filtered",
                          angle_col=315)
 
-#write.table(x=order_raw_count_df, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure1_filt_sig_counts.csv", col.names = NA,
+#write.table(x=order_raw_count_df, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure1B_feat_count.csv", col.names = NA,
           #  row.names = T, quote=F, sep=",")
 
-#write.table(x=fixed_hackathon_metadata_filt, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure1_filt_dataset_char.csv", col.names = NA,
+#write.table(x=fixed_hackathon_metadata_filt, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure1B_dataset_characteristics.csv", col.names = NA,
            # row.names=T, quote=F, sep=",")
 ```
 
@@ -809,9 +809,9 @@ unfilt_ASV_nums <- pheatmap(t(Alpha_order_unfilt),
                            main="Unfiltered",
                            angle_col=315)
 
-#write.table(x=fix_raw_counts_unfilt, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure1_unfilt_sig_counts.csv", col.names = NA, 
+#write.table(x=fix_raw_counts_unfilt, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure1A_feat_count.csv", col.names = NA, 
            # row.names = T, quote=F, sep=",")
-#write.table(x=fixed_hackathon_metadata_unfilt, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure1_unfilt_dataset_char.csv", col.names=NA,
+#write.table(x=fixed_hackathon_metadata_unfilt, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure1A_dataset_characteristics.csv", col.names=NA,
             #row.names=T, quote=F, sep=",")
 
 ```
@@ -903,8 +903,8 @@ corrplot(filt_rhos_df[,-3],
          tl.col = "black",
          col = colorRampPalette(c("blue","white","red"))(200))
 
-# Saved manually as 8.5x11 inches as Main_figures/Figure2B_Corrplot_Filt_raw.pdf
-#write.table(x=filt_rhos_df, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure2_filt.csv", col.names = NA,
+# Saved manually as 8.5x11 inches as Misc_figures/Figure2B_Corrplot_Filt_raw.pdf
+#write.table(x=filt_rhos_df, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure2B_rho.csv", col.names = NA,
            # row.names = T, quote=F, sep=",")
 
 #write.table(x=filt_pvals_df, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure2B_pval.csv", col.names=NA, row.names = T, quote=F, sep=",")
@@ -966,7 +966,7 @@ corrplot(as.matrix(unfilt_rhos_df[,-3]),
          tl.col = "black",
          col = colorRampPalette(c("blue","white","red"))(200))
 
-# Saved manually as 8.5x11 inches as Main_figures/Figure2A_Corrplot_Unfilt_raw.pdf
+# Saved manually as 8.5x11 inches as Misc_figures/Figure2A_Corrplot_Unfilt_raw.pdf
 #write.table(x=unfilt_rhos_df, file = "~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure2A_rho.csv", col.names =NA,
  #           row.names = T, quote=F, sep=",")
 

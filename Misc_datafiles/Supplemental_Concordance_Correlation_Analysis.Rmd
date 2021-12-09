@@ -307,8 +307,7 @@ test <- ggplot(remove_ancom_pearson_r_filt, aes(x=Group.1, y=Group.2, fill=x, la
   geom_rect(xmin= -Inf, xmax=Inf, ymin=-Inf,ymax=Inf) +
   scale_fill_gradient(low="white", high="red", name="Mean Pearson's r") + coord_flip() + theme_minimal() +xlab('') + ylab('')
 test
-#okay we have 38 different matrices.. we are interested in the mean value for each correlation...
-#lets first try melting it all 
+
 
 
 ```

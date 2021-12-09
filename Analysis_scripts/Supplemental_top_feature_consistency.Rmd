@@ -22,7 +22,6 @@ setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/")
 ```
 
 # Load in data
-```{r}
 
 read_table_and_check_line_count <- function(filepath, ...) {
   # Function to read in table and to check whether the row count equals the expected line count of the file.
@@ -447,7 +446,7 @@ dplyr::filter(filt_SDs, Group.1=="1") %>% arrange(x)
 #Sd for all features
 dplyr::filter(filt_SDs, Group.1=="14") %>% arrange(x)
 
-write.csv2(filt_final_plot$data, "~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/top_20_consistency_filt.csv")
+write.csv2(filt_final_plot$data, "~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/Supp_Fig5A.csv")
 ```
 
 ## Unfilter Analysis
@@ -498,7 +497,7 @@ unfilt_SD <- aggregate(unfilt_comp_tab$Count, by=list(unfilt_comp_tab$Consistanc
 
 dplyr::filter(unfilt_SD, Group.1=="14") %>% arrange(x)
 
-write.csv2(unfilt_final_plot$data, "~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/top_20_consistency_unfilt.csv")
+write.csv2(unfilt_final_plot$data, "~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/Supp_Fig5B.csv")
 
 ```
 
@@ -508,9 +507,9 @@ final_plot <- plot_grid(filt_final_plot, unfilt_final_plot, labels=c("A", "B"))
 final_plot
 
 
-ggsave(filename=paste(display_items_out, "Supp_figures", "Supplemental_top_20_overlap.pdf", sep="/"),
+ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_Fig4.pdf", sep="/"),
        plot = final_plot, width = 9, height=13, units="in", dpi=600)
 
-ggsave(filename=paste(display_items_out, "Supp_figures", "Supplemental_top_20_overlap.png", sep="/"),
+ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_Fig4.png", sep="/"),
        plot = final_plot, width = 9, height=13, units="in", dpi=150)
 ```

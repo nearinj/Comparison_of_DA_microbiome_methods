@@ -353,10 +353,10 @@ supp_filtered <- plot_grid(eig_filt_plot, plot12, plot13, plot14,
                             nrow=2, label_size=20)
 supp_filtered
 
-ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_PCOA_Filt.pdf", sep="/"),
+ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_Fig7.pdf", sep="/"),
        plot = supp_filtered, width = 10, height=10, units="in", dpi=600)
 
-ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_PCOA_Filt.png", sep="/"),
+ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_Fig7.png", sep="/"),
        plot = supp_filtered, width = 10, height=10, units="in", dpi=100)
 
 #write distance matrix for figure3C-D and the supplemental figures
@@ -439,10 +439,10 @@ supp_unfiltered <- plot_grid(eig_percent_unfilt_plot, plot12_unfilt, plot13_unfi
                             nrow=2, label_size=20)
 supp_unfiltered
 
-ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_PCOA_Unfilt.pdf", sep="/"),
+ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_Fig6.pdf", sep="/"),
        plot = supp_unfiltered, width = 10, height=10, units="in", dpi=600)
 
-ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_PCOA_Unilt.png", sep="/"),
+ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_Fig6.png", sep="/"),
        plot = supp_unfiltered, width = 10, height=10, units="in", dpi=100)
 
 write.table(x=as.matrix(dataset_binary_dist_unfilt), file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure3D_bin_dist.csv",
@@ -816,10 +816,10 @@ mean_RA_plot <- ggplot(mean_RA_sig_data_comb, aes(x=tool_name, y=value)) + geom_
 mean_RA_plot
 
 
-ggsave(filename=paste(display_items_out, "Supp_figures", "Significant_Feats_Abundance.pdf", sep="/"),
-       plot = mean_RA_plot, width = 15, height=6, units="in", dpi=600)
+#ggsave(filename=paste(display_items_out, "Misc_figures", "Significant_Feats_Abundance.pdf", sep="/"),
+ #      plot = mean_RA_plot, width = 15, height=6, units="in", dpi=600)
 
-write.table(x=mean_RA_sig_data_comb, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/Supp_Fig2AB_mean_RA_sig_hits.csv", col.names = NA,
+write.table(x=mean_RA_sig_data_comb, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/Supp_Fig1AB_mean_RA_sig_hits.csv", col.names = NA,
             row.names = T, quote=F, sep=",")
 ```
 
@@ -865,10 +865,10 @@ filt_sig_count <- ggplot(Tool_total_feats_found_filt, aes(x=Tool_rename, y=value
   theme(axis.title.x = element_blank()) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 
-write.table(x=Tool_total_feats_found_unfilt, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/Supp_Fig2C_unfilt_total_hits.csv",
+write.table(x=Tool_total_feats_found_unfilt, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/Supp_Fig1C_unfilt_total_hits.csv",
             col.names = NA, row.names = T, quote=F, sep=",")
 
-write.table(x=Tool_total_feats_found_filt, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/Supp_Fig2D_filt_total_hits.csv",
+write.table(x=Tool_total_feats_found_filt, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Supp_figures/Supp_Fig1D_filt_total_hits.csv",
             col.names = NA, row.names = T, quote = F, sep=",")
 ```
 
@@ -882,9 +882,9 @@ ASV_relabun_and_num_plot <- plot_grid(mean_RA_unfilt_plot,
                                       labels=c('A', 'B', 'C', 'D'))
 
 
-ggsave(filename=paste(display_items_out, "Supp_figures", "Relabun_and_count_sig_hits.pdf", sep="/"),
+ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_Fig1.pdf", sep="/"),
        plot = ASV_relabun_and_num_plot, width = 12, height=10, units="in", dpi=600)
 
-ggsave(filename=paste(display_items_out, "Supp_figures", "Relabun_and_count_sig_hits.png", sep="/"),
+ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_Fig1.png", sep="/"),
        plot = ASV_relabun_and_num_plot, width = 12, height=10, units="in", dpi=100)
 ```

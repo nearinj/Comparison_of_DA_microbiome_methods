@@ -182,7 +182,7 @@ chimera_spearman_plot_w_blank <- plot_grid(chimera_spearman_plot, NULL, nrow = 2
 chimera_plot <- plot_grid(chimera_percent_plot, chimera_spearman_plot_w_blank,
                           labels = c('A', 'B'))
 
-ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_chimeras.pdf", sep="/"),
+ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_Fig2.pdf", sep="/"),
         plot = chimera_plot, width = 7.5, height=7.5, units="in", dpi=600)
  
  

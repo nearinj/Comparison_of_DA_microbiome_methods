@@ -117,7 +117,7 @@ obesity_combined_overlap_obs$genus <- rownames(obesity_combined_overlap_obs)
 obesity_combined_overlap_obs <- obesity_combined_overlap_obs[, c("genus", obesity_combined_overlap_obs_orig_col)]
 
 write.table(x = obesity_combined_overlap_obs,
-            file = "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Plotting_data/Supp_figures/SuppTable3_genera_obesity_observed_consistency.csv",
+            file = "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Plotting_data/Supp_figures/SuppTable1_genera_obesity_observed_consistency.csv",
             col.names = TRUE, row.names = FALSE, quote = FALSE, sep = ",")
 
 
@@ -139,7 +139,7 @@ obesity_combined_overlap_expected$replicate_info <- obesity_combined_overlap_exp
 obesity_combined_overlap_expected <- obesity_combined_overlap_expected[, c("replicate_info", obesity_combined_overlap_expected_orig_col)]
 
 write.table(x = obesity_combined_overlap_expected,
-            file = "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Plotting_data/Supp_figures/SuppTable3_genera_obesity_expected_consistency.csv",
+            file = "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Plotting_data/Supp_figures/SuppTable1_genera_obesity_expected_consistency.csv",
             col.names = TRUE, row.names = FALSE, quote = FALSE, sep = ",")
 
 
@@ -549,7 +549,7 @@ Below are the results for each set of datasets - first as barplots, which enable
       kable(digits=5) %>%
       kable_styling() 
   
-  write.table(x = obesity_summary_out, file = "Display_items/Tables/Supp_obesity_consistency.tsv", col.names = TRUE, row.names = FALSE, sep="\t", quote = FALSE)
+  write.table(x = obesity_summary_out, file = "Display_items/Tables/Supp_table1.tsv", col.names = TRUE, row.names = FALSE, sep="\t", quote = FALSE)
 ```
 
 
