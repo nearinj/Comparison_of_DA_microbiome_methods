@@ -1,6 +1,6 @@
 ### Comparison of microbiome differential abundance methods
 
-The code and key intermediate files in this repository correspond to our manuscript:
+The code and key intermediate files in this repository correspond to the following manuscript:
 
   _Nearing, Douglas et al. Nature Comm. Microbiome differential abundance methods produce different results across 38 datasets._
   
