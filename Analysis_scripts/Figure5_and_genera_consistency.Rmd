@@ -19,16 +19,13 @@ This R notebook contains the analysis code and results for the genus-level consi
 The results shown in this file are based on tables output by other Rscripts (which originally were called `prep_obesity_consistency.R` and `prep_diarrhea_consistency.R`). These Rscripts output the results as RDS files, which can now be read in.
 
 ```{r setup, message=FALSE}
-library(ape)
 library(ComplexHeatmap)
 library(pheatmap)
 library(cowplot)
 library(ggplot2)
 library(knitr)
 library(kableExtra)
-library(Matching)
 library(reshape2)
-library(rowr)
 library(tidyverse)
 library(vegan)
 
@@ -219,7 +216,7 @@ diarrhea_combined_jaccard <- vegdist(t(diarrhea_outputs_binary_clean_combined), 
 # Jaccard distance of two vectors that are all zeros is undefined so set it at 1.
 diarrhea_combined_jaccard[is.na(diarrhea_combined_jaccard)] <- 1
 
-diarrhea_combined_jaccard_PCOA <- pcoa(diarrhea_combined_jaccard)
+diarrhea_combined_jaccard_PCOA <- ape::pcoa(diarrhea_combined_jaccard)
 
 diarrhea_combined_jaccard_PCOA$values$Axis <- 1:nrow(diarrhea_combined_jaccard_PCOA$values)
 
@@ -246,7 +243,7 @@ obesity_combined_jaccard <- vegdist(t(obesity_outputs_binary_clean_combined),  m
 # Jaccard distance of two vectors that are all zeros is undefined so set it at 1.
 obesity_combined_jaccard[is.na(obesity_combined_jaccard)] <- 1
 
-obesity_combined_jaccard_PCOA <- pcoa(obesity_combined_jaccard)
+obesity_combined_jaccard_PCOA <- ape::pcoa(obesity_combined_jaccard)
 
 obesity_combined_jaccard_PCOA$values$Axis <- 1:nrow(obesity_combined_jaccard_PCOA$values)
 
