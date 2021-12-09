@@ -18,7 +18,7 @@ library(ggbeeswarm)
 
 ### Folders where final figures are written
 ### Make sure this is pointed to your home directory
-display_items_out <- "/home/jacob/GitHub_Repos/Clean_Hackathon/Display_items/"
+display_items_out <- "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Display_items/"
 
 Data_set_names <- c(ArcticFireSoils="Soil - Fires",
                          ArcticFreshWater="Freshwater - Arctic",
@@ -70,7 +70,7 @@ tool_names <- c(aldex2="ALDEx2", ancom="ANCOM-II", corncob="corncob", deseq2="DE
 
 # Introduction
 
-The below code parses simulation replicates where we do not expect to see differential abundance differences; the groups being compared are just randomly sampled controls. Heatmaps and boxplots are generated to summarize the data.
+The below code parses simulation replicates where we do not expect to see differential abundance differences; the groups being compared are just randomly sampled controls. Heatmaps and boxplots are generated to summarize the data. Note that despite this script's name, the boxplots are now in the main text and the heatmap is in the supplement, which is a choice we made during revisions.
 
 # Analyses
 
@@ -257,9 +257,6 @@ Unfiltered_FD_data <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/F
 
 Unfiltered_FD_data_ext <- readRDS("/home/jacob/GitHub_Repos/Hackathon_testing/Data/FD_data_ext_21_04_08.RDS")
 
-Unfilt_total_feats <- get_total_features(unfilt_study_tab)
-
-
 ## Has 100 reps for all tools
 ArcticFreshWater_FD_data_comb  <- c(Unfiltered_FD_data[["ArcticFreshWaters"]], Unfiltered_FD_data_ext[["ArcticFreshWaters"]])
 
@@ -371,7 +368,7 @@ ggsave(filename=paste(display_items_out, "Misc_figures", "OLD_Figure4_FDR_heatma
 ```
 
 
-# Supplementary boxplot figures
+# Main-text boxplot figures
 This plots were originally supplementay but we have decided to include them as main figures.
 
 ```{r}
@@ -486,6 +483,23 @@ unfilt_percent_sig_boxplots <- ggplot(unfilt_percent_sig, aes(y = Tool, x = Perc
                                     scale_fill_manual(values = qual_col) +
                                     ggtitle("Unfiltered")
 
+unfilt_percent_sig_boxplots_w_legend <- ggplot(unfilt_percent_sig, aes(y = Tool, x = Percent_sig, fill = Tool)) +
+                                    geom_boxplot(outlier.shape = NA) +
+                                    geom_quasirandom(color = "black", groupOnX = FALSE, size = 1, pch = 21,) +
+                                    theme_bw() +
+                                    xlab(expression("Percent significant after multiple-test correction (log"[10]*"-scale)")) +
+                                    ylab("") +
+                                    theme(plot.title = element_text(hjust = 0.5)) +
+                                    facet_wrap(. ~ Dataset_num, nrow = 2) +
+                                    scale_x_continuous(trans = scales::pseudo_log_trans(base = 10),
+                                                       breaks = c(0, 1, 2, 5, 10, 30, 100),
+                                                       limits = c(0, 100)) +
+                                    scale_fill_manual(values = qual_col, guide = guide_legend(reverse = TRUE)) +
+                                    ggtitle("Unfiltered")
+
+boxplots_legend <- plot_grid(NULL, cowplot::get_legend(unfilt_percent_sig_boxplots_w_legend), NULL, nrow = 3, ncol = 1, rel_widths = c(1/3, 1/3, 1/3))
+
+
 
 filt_percent_sig_boxplots
 
@@ -498,7 +512,9 @@ write.table(x=unfilt_percent_sig_boxplots$data, file="~/GitHub_Repos/Clean_Hacka
 write.table(x=unfilt_percent_sig_boxplots$data, file="~/GitHub_Repos/Clean_Hackathon/Plotting_data/Main_Figures/Figure4_FDR_boxplots_filt.csv", col.names = NA,
             row.names=T, quote=F, sep=",")
 
-New_Figure4 <- plot_grid(unfilt_percent_sig_boxplots, filt_percent_sig_boxplots, labels=c("A", "B"), nrow=2)
+New_Figure4_boxplots_no_legend <- plot_grid(unfilt_percent_sig_boxplots, filt_percent_sig_boxplots, labels=c("A", "B"), nrow=2)
+
+New_Figure4 <- plot_grid(New_Figure4_boxplots_no_legend, boxplots_legend, ncol=2, nrow=1, rel_widths = c(0.8, 0.2))
 New_Figure4
 
 
