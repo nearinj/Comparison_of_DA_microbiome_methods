@@ -1,0 +1,15 @@
+,value,Tool,Tool_rename,Filt
+aldex2,10323,aldex2,ALDEx2,Filtered
+ancom,3758,ancom,ANCOM-II,Filtered
+corncob,17362,corncob,corncob,Filtered
+deseq2,17462,deseq2,DESeq2,Filtered
+edger,29139,edger,edgeR,Filtered
+lefse,23598,lefse,LEfSe,Filtered
+maaslin2,20172,maaslin2,MaAsLin2,Filtered
+maaslin2rare,17193,maaslin2rare,MaAsLin2 (rare),Filtered
+metagenomeSeq,17725,metagenomeSeq,metagenomeSeq,Filtered
+ttestrare,15480,ttestrare,t-test (rare),Filtered
+wilcoxonclr,24134,wilcoxonclr,Wilcoxon (CLR),Filtered
+wilcoxonrare,17471,wilcoxonrare,Wilcoxon (rare),Filtered
+limma_voom_TMM,23412,limma_voom_TMM,limma voom (TMM),Filtered
+limma_voom_TMMwsp,24917,limma_voom_TMMwsp,limma voom (TMMwsp),Filtered
