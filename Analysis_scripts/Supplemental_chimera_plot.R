@@ -6,7 +6,7 @@ library(cowplot)
 library(ggplot2)
 library(reshape2)
 
-display_items_out <- "/home/jacob/GitHub_Repos/Clean_Hackathon/Display_items/"
+display_items_out <- "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Display_items//"
 
 setwd("/home/jacob/projects/HACKATHON_ANCOM_FIX_21_03_13/Hackathon/Studies/")
 
@@ -32,7 +32,7 @@ chimera_percents_csv$dataset <- rownames(chimera_percents_csv)
 chimera_percents_csv <- chimera_percents_csv[, c("dataset", "unfilt_nonrare", "filt_nonrare")]
 colnames(chimera_percents_csv) <- c("Dataset", "Unfiltered", "Filtered")
 write.table(x = chimera_percents_csv,
-            file = "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Plotting_data/Supp_figures/SuppFigure1_chimera_percents.csv",
+            file = "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Plotting_data/Supp_figures/Supp_Fig2A_chimera_percents.csv",
             sep = ",", row.names = FALSE, col.names = TRUE, quote = FALSE)
 
 # Get significant ASVs
@@ -115,10 +115,8 @@ chimera_percent_plot <- ggplot(data = chimera_percents_nonrare_melt, aes(x = var
                               labs(fill="% chimeras") +
                               scale_fill_gradient(low="cornflowerblue", high="dark blue", limits = c(0, 40)) +
                               geom_text(aes(label=round(value, 2)), colour = "white") +
-                              theme(legend.position = "none",
-                                    plot.title = element_text(hjust = 0.5),
-                                    axis.text.x = element_text(angle = 45, vjust = 0.5)) +
-                              ggtitle("\n% chimeras")
+                              theme(plot.title = element_text(hjust = 0.5),
+                                    axis.text.x = element_text(angle = 45, vjust = 0.5))
 
 
 chimera_spearman_df <- data.frame(matrix(NA, nrow = ncol(unfilt_sig_percent) - 1, ncol = 2))
@@ -160,18 +158,24 @@ chimera_spearman_df_melt_Tool_order <- chimera_spearman_df_melt$Tool[-which(dupl
 chimera_spearman_df_melt$Tool <- factor(chimera_spearman_df_melt$Tool,
                                            levels=rev(chimera_spearman_df_melt_Tool_order))
 
+
+# Save chimera spearman correlations to file in plotting data folder (i.e., convert to csv).
+chimera_spearman_csv <- chimera_spearman_df
+chimera_spearman_csv <- chimera_spearman_csv[, c("Tool", "Unfiltered", "Filtered")]
+write.table(x = chimera_spearman_csv,
+            file = "/home/gavin/github_repos/hackathon/Comparison_of_DA_microbiome_methods/Plotting_data/Supp_figures/Supp_Fig2B_chimera_spearman.csv",
+            sep = ",", row.names = FALSE, col.names = TRUE, quote = FALSE)
+
 chimera_spearman_plot <- ggplot(data = chimera_spearman_df_melt, aes(x = variable, y = Tool, fill = value)) +
                                 geom_tile() +
                                 theme_bw() +
                                 xlab("") +
                                 ylab("") +
-                                labs(fill="Spearman correlation") +
+                                labs(fill="Spearman\ncorrelation") +
                                 scale_fill_gradient(low="pink", high="dark red", limits = c(0, 1)) +
                                 geom_text(aes(label=round(value, 2)), colour = "white") +
-                                theme(legend.position = "none",
-                                      plot.title = element_text(hjust = 0.5),
-                                      axis.text.x = element_text(angle = 45, vjust = 0.5)) +
-                                ggtitle("Spearman\ncorrelation")
+                                theme(plot.title = element_text(hjust = 0.5),
+                                      axis.text.x = element_text(angle = 45, vjust = 0.5))
 
 chimera_spearman_plot_w_blank <- plot_grid(chimera_spearman_plot, NULL, nrow = 2)
 
@@ -179,6 +183,6 @@ chimera_plot <- plot_grid(chimera_percent_plot, chimera_spearman_plot_w_blank,
                           labels = c('A', 'B'))
 
 ggsave(filename=paste(display_items_out, "Supp_figures", "Supp_chimeras.pdf", sep="/"),
-        plot = chimera_plot, width = 5, height=7.5, units="in", dpi=600)
+        plot = chimera_plot, width = 7.5, height=7.5, units="in", dpi=600)
  
  
