@@ -62,7 +62,7 @@ However, we also included several analyses to help gauge the false positive rate
   
 #### Docker Image  
   A docker image with the correct versions of all the tools is available at https://hub.docker.com/r/dockerdkd/hackathon2021.
-  For more information on how to access and use the docker image check out this wiki page.
+  For more information on how to access and use the docker image check out this wiki page (https://github.com/nearinj/Comparison_of_DA_microbiome_methods/wiki/Run-multiple-DA-tools-on-datasets-using-Docker-Image).
  
   
 #### Analysis scripts
